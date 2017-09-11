@@ -14,7 +14,6 @@ import Language.Haskell.Liquid.ProofCombinators
 #include "Determinacy.hs"
 #include "Simulations.hs"
 
-
 equiv :: Label -> Program -> Program -> Bool 
 {-@ reflect equiv @-}
 equiv l k k' = ε l k == ε l k'
@@ -23,7 +22,7 @@ equiv l k k' = ε l k == ε l k'
 {-@ 
 nonInterference
    :: l:Label -> n1:Index -> n2:Index 
-   -> k1: {Program | ς k1 } 
+   -> k1:{Program  | ς k1 } 
    -> k2:{Program  | ς k2 } 
    -> {v:Proof     | equiv l k1 k2}
    -> k1':{Program | evalProgram k1 == Pair n1 k1' } 
