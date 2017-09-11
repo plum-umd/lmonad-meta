@@ -11,8 +11,6 @@ data Pair a b = Pair {pFst :: a, pSnd :: b}
   deriving Eq 
 {-@ data Pair a b = Pair {pFst :: a, pSnd :: b} @-}
 
--- | NV QUESTION: is index input or output?
-
 {-@ reflect evalProgram @-}
 evalProgram :: Program -> Pair Index Program
 evalProgram (Pg l m t) = Pair 0 (Pg l m (eval t))

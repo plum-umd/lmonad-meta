@@ -1,5 +1,8 @@
 type Label = Integer
 type Var   = Integer
+-------------------------------------------------------------------------------
+-- | Terms --------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 data Term 
   = THole
@@ -39,7 +42,6 @@ size TTrue          = 1
 size TFalse         = 1 
 size TUnit          = 1 
 
-
 isValue :: Term -> Bool 
 {-@ measure isValue @-}
 isValue (TLam _ _) = True 
@@ -49,6 +51,10 @@ isValue TFalse     = True
 isValue _          = False 
 
 
+-------------------------------------------------------------------------------
+-- | Types --------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
 data Type = TTUnit | TBool | TFun {tFunArg :: Type, tFunRes :: Type} 
   deriving (Eq)
 {-@ data Type = TTUnit | TBool | TFun {tFunArg :: Type, tFunRes :: Type} @-}
@@ -57,12 +63,9 @@ data Type = TTUnit | TBool | TFun {tFunArg :: Type, tFunRes :: Type}
 data Sub = Sub {subVar :: Var, subTerm :: Term}
 {-@ data Sub = Sub {subVar :: Var, subTerm :: Term} @-}
 
-
--- | Figure 2: Evaluation
-
-{-@ type Value    = {t:Term | isValue t} @-}
-{-@ type NonValue = {t:Term | not (isValue t)} @-}
-
+-------------------------------------------------------------------------------
+-- | Evaluation ---------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 {-@ reflect eval @-}
 {-@ eval :: Term -> Term @-}
@@ -75,6 +78,10 @@ eval (TFix t)              = TFix (eval t)
 eval (TApp (TLam x t1) t2) = subst (Sub x t2) t1
 eval (TApp t1 t2)          = TApp (eval t1) t2
 eval v                     = v 
+
+-------------------------------------------------------------------------------
+-- | Substitution -------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 {-@ reflect subst @-}
 {-@ subst :: Sub -> t:Term -> Term / [size t] @-}

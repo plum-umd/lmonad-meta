@@ -47,6 +47,7 @@ simulations' (Pg lcurr m t) l {- | lcurr <= l -}
   ==. mapSnd (ε l) (evalProgram (Pg lcurr m t))
   *** QED 
 
+-- NV: the following holds just for now, when labels are added it will not hold
 {-@ automatic-instances eraseTermIdentity @-}
 {-@ eraseTermIdentity :: l:Label -> t:Term  -> { εTerm l t == t } / [size t] @-}
 eraseTermIdentity :: Label -> Term -> Proof
