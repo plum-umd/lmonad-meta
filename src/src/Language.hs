@@ -1,7 +1,3 @@
-
-
-
-
 type Label = Integer
 type Var   = Integer
 
@@ -37,8 +33,8 @@ size (TIF t1 t2 t3) = 1 + size t1 + size t2 + size t3
 size (TFix t)       = 1 + size t 
 size (TApp t1 t2)   = 1 + size t1 + size t2 
 size THole          = 0
-size (TVar v)       = 1 
-size (TLam v e)     = 1 + size e
+size (TVar _)       = 1 
+size (TLam _ e)     = 1 + size e
 size TTrue          = 1 
 size TFalse         = 1 
 size TUnit          = 1 
@@ -71,8 +67,8 @@ data Sub = Sub {subVar :: Var, subTerm :: Term}
 {-@ reflect eval @-}
 {-@ eval :: Term -> Term @-}
 eval :: Term -> Term
-eval (TIF TTrue  t2 t3)    = t2 
-eval (TIF TFalse t2 t3)    = t3
+eval (TIF TTrue  t2 _)     = t2 
+eval (TIF TFalse _ t3)     = t3
 eval (TIF t1 t2 t3)        = TIF (eval t1) t2 t3
 eval (TFix (TLam x t))     = subst (Sub x (TFix (TLam x t))) t
 eval (TFix t)              = TFix (eval t)
@@ -86,7 +82,7 @@ subst :: Sub -> Term -> Term
 subst (Sub x xt) (TVar y)
   | x == y             = xt 
   | otherwise          = TVar y 
-subst su THole         = THole
+subst _  THole         = THole
 subst su (TApp t1 t2)  = TApp (subst su t1) (subst su t2)
 subst su (TFix t)      = TFix (subst su t)
 subst su (TIF t t1 t2) = TIF (subst su t) (subst su t1) (subst su t2)
@@ -94,7 +90,7 @@ subst su (TIF t t1 t2) = TIF (subst su t) (subst su t1) (subst su t2)
 subst (Sub x xt) (TLam y e)   
   | x == y              = TLam y e
   | otherwise           = TLam y (subst (Sub x xt) e)
-subst su x              = x   
+subst _ x               = x   
 
 
 

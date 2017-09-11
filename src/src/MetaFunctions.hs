@@ -27,8 +27,8 @@
 ςTerm TTrue          = True
 ςTerm TFalse         = True
 ςTerm TUnit          = True
-ςTerm (TVar v)       = True 
-ςTerm (TLam v t)     = ςTerm t
+ςTerm (TVar _)       = True 
+ςTerm (TLam _ t)     = ςTerm t
 ςTerm (TApp t1 t2)   = ςTerm t1 && ςTerm t2
 ςTerm (TFix t)       = ςTerm t 
 ςTerm (TIF t1 t2 t3) = ςTerm t1 && ςTerm t2 && ςTerm t3

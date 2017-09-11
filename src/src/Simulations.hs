@@ -10,7 +10,7 @@ simulations :: Program -> Program -> Index -> Label -> Proof -> Proof
   :: p:Program -> p':Program -> n:Index -> l:Label
   -> {v:Proof | evalProgram p == Pair n p'}
   -> {v:Proof | evalEraseProgram (ε l p) l = Pair n (ε l p')} @-}
-simulations p@(Pg lcurr m t) p' n l evalProp 
+simulations p p' n l evalProp 
   =   evalEraseProgram (ε l p) l 
   ==. mapSnd (ε l) (evalProgram p) ? simulations' p l 
   ==. mapSnd (ε l) (Pair n p')     ? evalProp
@@ -21,7 +21,7 @@ simulations' :: Program -> Label -> Proof
 {-@ simulations' 
   :: p:Program -> l:Label
   -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
-simulations' p@(Pg lcurr m t) l | l < lcurr
+simulations' (Pg lcurr m t) l | l < lcurr
   =   evalEraseProgram (ε l (Pg lcurr m t)) l
   ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr m t)))
   ==. mapSnd (ε l) (evalProgram (Pg lcurr m THole))
@@ -34,7 +34,7 @@ simulations' p@(Pg lcurr m t) l | l < lcurr
   ==. mapSnd (ε l) (evalProgram (Pg lcurr m t))
   *** QED 
 
-simulations' p@(Pg lcurr m t) l | lcurr <= l 
+simulations' (Pg lcurr m t) l {- | lcurr <= l -}
   =   evalEraseProgram (ε l (Pg lcurr m t)) l 
   ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr m t)))
   ==. mapSnd (ε l) (evalProgram (Pg lcurr m (εTerm l t)))
@@ -54,8 +54,8 @@ eraseTermIdentity _ THole          = trivial
 eraseTermIdentity _ TTrue          = trivial 
 eraseTermIdentity _ TUnit          = trivial 
 eraseTermIdentity _ TFalse         = trivial 
-eraseTermIdentity _ (TVar v)       = trivial 
-eraseTermIdentity l (TLam v t)     = eraseTermIdentity l t
+eraseTermIdentity _ (TVar _)       = trivial 
+eraseTermIdentity l (TLam _ t)     = eraseTermIdentity l t
 eraseTermIdentity l (TApp t1 t2)   = eraseTermIdentity l t1 &&& eraseTermIdentity l t2  
 eraseTermIdentity l (TFix t)       = eraseTermIdentity l t 
 eraseTermIdentity l (TIF t1 t2 t3) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2 &&& eraseTermIdentity l t3 
