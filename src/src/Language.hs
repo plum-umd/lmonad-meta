@@ -1,4 +1,4 @@
-type Label = Integer
+type Label = Integer -- JP: Do we need a different type for a partial order?
 type Var   = Integer
 -------------------------------------------------------------------------------
 -- | Terms --------------------------------------------------------------------

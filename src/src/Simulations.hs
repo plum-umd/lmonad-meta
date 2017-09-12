@@ -21,30 +21,30 @@ simulations' :: Program -> Label -> Proof
 {-@ simulations' 
   :: p:Program -> l:Label
   -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
-simulations' (Pg lcurr m t) l | l < lcurr
-  =   evalEraseProgram (ε l (Pg lcurr m t)) l
-  ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr m t)))
-  ==. mapSnd (ε l) (evalProgram (Pg lcurr m THole))
-  ==. mapSnd (ε l) (Pair 0 (Pg lcurr m (eval THole)))
-  ==. mapSnd (ε l) (Pair 0 (Pg lcurr m THole))
-  ==. Pair 0 (ε l (Pg lcurr m THole))
-  ==. Pair 0 (Pg lcurr m THole)
-  ==. Pair 0 (ε l (Pg lcurr m (eval t)))
-  ==. mapSnd (ε l) (Pair 0 (Pg lcurr m (eval t)))
-  ==. mapSnd (ε l) (evalProgram (Pg lcurr m t))
+simulations' (Pg lcurr c m t) l | l < lcurr
+  =   evalEraseProgram (ε l (Pg lcurr c m t)) l
+  ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m t)))
+  ==. mapSnd (ε l) (evalProgram (Pg lcurr c m THole))
+  ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
+  ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m THole))
+  ==. Pair 0 (ε l (Pg lcurr c m THole))
+  ==. Pair 0 (Pg lcurr c m THole)
+  ==. Pair 0 (ε l (Pg lcurr c m (eval t)))
+  ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval t)))
+  ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
   *** QED 
 
-simulations' (Pg lcurr m t) l {- | lcurr <= l -}
-  =   evalEraseProgram (ε l (Pg lcurr m t)) l 
-  ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr m t)))
-  ==. mapSnd (ε l) (evalProgram (Pg lcurr m (εTerm l t)))
-  ==. mapSnd (ε l) (Pair 0 (Pg lcurr m (eval (εTerm l t))))
-  ==. Pair 0 (ε l (Pg lcurr m (eval (εTerm l t))))
-  ==. Pair 0 (Pg lcurr m (εTerm l (eval (εTerm l t))))
-  ==. Pair 0 (Pg lcurr m (εTerm l (eval t))) ? eraseTermIdentity l t 
-  ==. Pair 0 (ε l (Pg lcurr m (eval t)))
-  ==. mapSnd (ε l) (Pair 0 (Pg lcurr m (eval t)))
-  ==. mapSnd (ε l) (evalProgram (Pg lcurr m t))
+simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
+  =   evalEraseProgram (ε l (Pg lcurr c m t)) l 
+  ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m t)))
+  ==. mapSnd (ε l) (evalProgram (Pg lcurr c m (εTerm l t)))
+  ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval (εTerm l t))))
+  ==. Pair 0 (ε l (Pg lcurr c m (eval (εTerm l t))))
+  ==. Pair 0 (Pg lcurr c m (εTerm l (eval (εTerm l t))))
+  ==. Pair 0 (Pg lcurr c m (εTerm l (eval t))) ? eraseTermIdentity l t 
+  ==. Pair 0 (ε l (Pg lcurr c m (eval t)))
+  ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval t)))
+  ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
   *** QED 
 
 -- NV: the following holds just for now, when labels are added it will not hold

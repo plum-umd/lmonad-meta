@@ -17,11 +17,11 @@
 
 {-@ reflect ε @-}
 ε :: Label -> Program -> Program
-ε l (Pg lcur m t) 
+ε l (Pg lcur c m t) 
   | lcur <= l 
-  = Pg lcur m (εTerm l t)
+  = Pg lcur c m (εTerm l t)
   | otherwise 
-  = Pg lcur m THole 
+  = Pg lcur c m THole 
 
 -------------------------------------------------------------------------------
 -- | Safety -------------------------------------------------------------------
@@ -42,5 +42,5 @@
 
 {-@ reflect ς @-}
 ς :: Program -> Bool 
-ς (Pg _ _ t) = ςTerm t 
+ς (Pg _ _ _ t) = ςTerm t 
 
