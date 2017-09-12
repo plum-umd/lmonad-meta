@@ -1,4 +1,35 @@
-type Label = Integer -- JP: Do we need a different type for a partial order?
+-- type Label = Integer -- JP: Do we need a different type for a partial order?
+
+data Label = 
+    LabelAMeetB 
+  | LabelA 
+  | LabelB 
+  | LabelAJoinB
+  deriving (Eq)
+
+{-@ data Label = 
+    LabelAMeetB 
+  | LabelA 
+  | LabelB 
+  | LabelAJoinB
+@-}
+
+{-@ reflect canFlowTo @-}
+canFlowTo :: Label -> Label -> Bool
+canFlowTo _ LabelAJoinB = True
+canFlowTo LabelAJoinB _ = False
+canFlowTo LabelA LabelA = True
+canFlowTo LabelAMeetB LabelA = True
+canFlowTo LabelB LabelA = False
+canFlowTo LabelB LabelB = True
+canFlowTo LabelAMeetB LabelB = True
+canFlowTo LabelA LabelB = False
+canFlowTo LabelAMeetB LabelAMeetB = True
+canFlowTo LabelA LabelAMeetB = False
+canFlowTo LabelB LabelAMeetB = False
+-- canFlowTo x y | x == y = True
+
+
 type Var   = Integer
 -------------------------------------------------------------------------------
 -- | Terms --------------------------------------------------------------------

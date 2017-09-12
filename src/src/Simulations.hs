@@ -21,7 +21,8 @@ simulations' :: Program -> Label -> Proof
 {-@ simulations' 
   :: p:Program -> l:Label
   -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
-simulations' (Pg lcurr c m t) l | l < lcurr
+
+simulations' (Pg lcurr c m t) l | not (lcurr `canFlowTo` l) -- l < lcurr
   =   evalEraseProgram (ε l (Pg lcurr c m t)) l
   ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m t)))
   ==. mapSnd (ε l) (evalProgram (Pg lcurr c m THole))
@@ -33,6 +34,18 @@ simulations' (Pg lcurr c m t) l | l < lcurr
   ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval t)))
   ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
   *** QED 
+
+-- simulations' p@(Pg lc c m TGetLabel) l {- | lcurr <= l -}
+--   = evalEraseProgram (ε l p)
+--   ==. mapSnd (ε l) (evalProgram (ε l p))
+--   ==. mapSnd (ε l) (Pair 0 (Pg lc c m (eval (TLabel lc))))
+--   ==. mapSnd (ε l) (Pair 0 (Pg lc c m (TLabel lc)))
+--   ==. Pair 0 (ε l (Pg lc c m (TLabel lc)))
+--   ==. Pair 0 (Pg lc c m (TLabel lc))
+--   ==. Pair 0 (ε l (Pg lc c m (eval TGetLabel)))
+--   ==. mapSnd (ε l) (Pair 0 (Pg lc c m (eval TGetLabel)))
+--   ==. mapSnd (ε l) (evalProgram (Pg lc c m TGetLabel))
+--   *** QED
 
 simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
   =   evalEraseProgram (ε l (Pg lcurr c m t)) l 

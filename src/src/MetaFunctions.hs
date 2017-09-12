@@ -23,7 +23,7 @@
 {-@ reflect ε @-}
 ε :: Label -> Program -> Program
 ε l (Pg lcur c m t) 
-  | lcur <= l 
+  | lcur `canFlowTo` l 
   = Pg lcur c m (εTerm l t)
   | otherwise 
   = Pg lcur c m THole 

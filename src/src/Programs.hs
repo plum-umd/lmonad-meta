@@ -14,6 +14,7 @@ data Pair a b = Pair {pFst :: a, pSnd :: b}
 {-@ reflect evalProgram @-}
 evalProgram :: Program -> Pair Index Program
 -- evalProgram (Pg l c m TGetLabel) = Pair 0 (Pg l c m (TLabel l))
+-- evalProgram (Pg l c m TGetClearance) = Pair 0 (Pg l c m (TLabel c))
 evalProgram (Pg l c m t) = Pair 0 (Pg l c m (eval t))
 
 {-@ reflect evalEraseProgram @-}
