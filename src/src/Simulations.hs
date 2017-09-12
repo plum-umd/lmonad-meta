@@ -61,3 +61,7 @@ eraseTermIdentity l (TApp t1 t2)   = eraseTermIdentity l t1 &&& eraseTermIdentit
 eraseTermIdentity l (TFix t)       = eraseTermIdentity l t 
 eraseTermIdentity l (TIF t1 t2 t3) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2 &&& eraseTermIdentity l t3 
 
+eraseTermIdentity _ (TLabel _)     = trivial
+
+eraseTermIdentity _ TGetLabel      = trivial
+eraseTermIdentity _ TGetClearance  = trivial

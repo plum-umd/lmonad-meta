@@ -15,6 +15,11 @@
 εTerm l (TFix t)       = TFix (εTerm l t) 
 εTerm l (TIF t1 t2 t3) = TIF (εTerm l t1) (εTerm l t2) (εTerm l t3)
 
+εTerm l v@(TLabel _)   = v
+
+εTerm l TGetLabel     = TGetLabel
+εTerm l TGetClearance = TGetClearance
+
 {-@ reflect ε @-}
 ε :: Label -> Program -> Program
 ε l (Pg lcur c m t) 
@@ -39,6 +44,10 @@
 ςTerm (TFix t)       = ςTerm t 
 ςTerm (TIF t1 t2 t3) = ςTerm t1 && ςTerm t2 && ςTerm t3
 
+ςTerm (TLabel _)     = True 
+
+ςTerm TGetLabel      = True 
+ςTerm TGetClearance  = True 
 
 {-@ reflect ς @-}
 ς :: Program -> Bool 

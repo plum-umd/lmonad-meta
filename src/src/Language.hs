@@ -13,7 +13,12 @@ data Term
   | TVar {tVar :: Var}
   | TApp {tApp1 :: Term, tApp2 :: Term}
   | TFix {tFix :: Term}
-  | TIF  {iIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
+  | TIF  {tIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
+
+  | TLabel Label
+
+  | TGetLabel
+  | TGetClearance
   deriving Eq 
 
 {-@ data Term [size]
@@ -26,6 +31,11 @@ data Term
   | TApp {tApp1 :: Term, tApp2 :: Term}
   | TFix {tFix :: Term}
   | TIF  {iIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
+
+  | TLabel Label
+
+  | TGetLabel
+  | TGetClearance
  @-} 
 
 size :: Term -> Integer 
@@ -42,12 +52,18 @@ size TTrue          = 1
 size TFalse         = 1 
 size TUnit          = 1 
 
+size (TLabel _)      = 1 -- JP: Is this fine???
+
+size TGetLabel      = 0 -- JP: Is this fine???
+size TGetClearance  = 0 -- JP: Is this fine???
+
 isValue :: Term -> Bool 
 {-@ measure isValue @-}
 isValue (TLam _ _) = True 
 isValue TUnit      = True 
 isValue TTrue      = True 
 isValue TFalse     = True 
+isValue (TLabel _) = True 
 isValue _          = False 
 
 
@@ -77,6 +93,8 @@ eval (TFix (TLam x t))     = subst (Sub x (TFix (TLam x t))) t
 eval (TFix t)              = TFix (eval t)
 eval (TApp (TLam x t1) t2) = subst (Sub x t2) t1
 eval (TApp t1 t2)          = TApp (eval t1) t2
+-- eval v | isValue v         = v 
+-- TGetLabel and TGetClearance are unreachable?
 eval v                     = v 
 
 -------------------------------------------------------------------------------
