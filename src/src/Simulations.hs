@@ -23,19 +23,10 @@ simulations' :: Program -> Label -> Proof
   -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
 
 simulations' (Pg lcurr c m t) l | not (lcurr `canFlowTo` l) -- l < lcurr
-  =   evalEraseProgram (ε l (Pg lcurr c m t)) l
-  ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m t)))
-  ==. mapSnd (ε l) (evalProgram (Pg lcurr c m THole))
-  ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
-  ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m THole))
-  ==. Pair 0 (ε l (Pg lcurr c m THole))
-  ==. Pair 0 (Pg lcurr c m THole)
-  ==. Pair 0 (ε l (Pg lcurr c m (eval t)))
-  ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval t)))
-  ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
-  *** QED 
+    = simulationsHoles' (Pg lcurr c m t) l
 
 -- simulations' p@(Pg lc c m TGetLabel) l {- | lcurr <= l -}
+--     = undefined
 --   = evalEraseProgram (ε l p)
 --   ==. mapSnd (ε l) (evalProgram (ε l p))
 --   ==. mapSnd (ε l) (Pair 0 (Pg lc c m (eval (TLabel lc))))
@@ -59,6 +50,39 @@ simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
   ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval t)))
   ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
   *** QED 
+
+-- Simulations case when there are holes (current label exceeds output label).
+{-@ simulationsHoles' 
+  :: p : Program 
+  -> {l : Label | not (canFlowTo (pLabel p) l)}
+  -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
+
+simulationsHoles' :: Program -> Label -> Proof
+simulationsHoles' (Pg lcurr c m TGetLabel) l = 
+        evalEraseProgram (ε l (Pg lcurr c m TGetLabel)) l
+    ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m TGetLabel)))
+    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
+    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m THole))
+    ==. Pair 0 (ε l (Pg lcurr c m THole))
+    ==. Pair 0 (Pg lcurr c m THole)
+    ==. Pair 0 (ε l (Pg lcurr c m (eval THole)))
+    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
+    ==. mapSnd (ε l) (evalProgram (Pg lcurr c m THole))
+    *** QED 
+
+simulationsHoles' (Pg lcurr c m t) l = 
+        evalEraseProgram (ε l (Pg lcurr c m t)) l
+    ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m t)))
+    ==. mapSnd (ε l) (evalProgram (Pg lcurr c m THole))
+    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
+    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m THole))
+    ==. Pair 0 (ε l (Pg lcurr c m THole))
+    ==. Pair 0 (Pg lcurr c m THole)
+    ==. Pair 0 (ε l (Pg lcurr c m (eval t)))
+    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval t)))
+    ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
+    *** QED 
+
 
 -- NV: the following holds just for now, when labels are added it will not hold
 {-@ automatic-instances eraseTermIdentity @-}
