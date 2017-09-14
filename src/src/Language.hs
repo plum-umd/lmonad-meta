@@ -53,6 +53,8 @@ data Term
   | TGetLabel
   | TGetClearance
   | TLowerClearance Term -- JP: Label or Term? Probably term???
+
+  | TException
   deriving Eq 
 
 -- JP: Join, Meet, CanFlowTo...
@@ -73,6 +75,8 @@ data Term
   | TGetLabel
   | TGetClearance
   | TLowerClearance Term
+
+  | TException
  @-} 
 
 size :: Term -> Integer 
@@ -95,6 +99,8 @@ size TGetLabel      = 0 -- JP: Is this fine???
 size TGetClearance  = 0 -- JP: Is this fine???
 size (TLowerClearance t) = 1 + size t
 
+size TException     = 0
+
 isValue :: Term -> Bool 
 {-@ measure isValue @-}
 isValue (TLam _ _) = True 
@@ -102,6 +108,7 @@ isValue TUnit      = True
 isValue TTrue      = True 
 isValue TFalse     = True 
 isValue (TLabel _) = True 
+isValue TException = True
 isValue _          = False 
 
 

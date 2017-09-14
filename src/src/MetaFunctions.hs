@@ -21,6 +21,8 @@
 εTerm l TGetClearance = TGetClearance
 εTerm l (TLowerClearance t) = TLowerClearance (εTerm l t)
 
+εTerm l TException = TException
+
 {-@ reflect ε @-}
 ε :: Label -> Program -> Program
 ε l (Pg lcur c m t) 
@@ -50,6 +52,8 @@
 ςTerm TGetLabel      = True 
 ςTerm TGetClearance  = True 
 ςTerm (TLowerClearance t)  = ςTerm t
+
+ςTerm TException = False -- JP: Is this right?
 
 {-@ reflect ς @-}
 ς :: Program -> Bool 

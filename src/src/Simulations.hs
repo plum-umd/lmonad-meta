@@ -102,3 +102,5 @@ eraseTermIdentity _ (TLabel _)     = trivial
 eraseTermIdentity _ TGetLabel      = trivial
 eraseTermIdentity _ TGetClearance  = trivial
 eraseTermIdentity l (TLowerClearance t) = eraseTermIdentity l t
+
+eraseTermIdentity _ TException  = trivial
