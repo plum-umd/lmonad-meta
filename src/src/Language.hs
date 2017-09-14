@@ -35,6 +35,8 @@ type Var   = Integer
 -- | Terms --------------------------------------------------------------------
 -------------------------------------------------------------------------------
 
+-- JP: Separate values from terms?
+
 data Term 
   = THole
   | TLam {lamVar :: Var, lamTerm :: Term}
@@ -50,7 +52,10 @@ data Term
 
   | TGetLabel
   | TGetClearance
+  | TLowerClearance Term -- JP: Label or Term? Probably term???
   deriving Eq 
+
+-- JP: Join, Meet, CanFlowTo...
 
 {-@ data Term [size]
   = THole 
@@ -67,6 +72,7 @@ data Term
 
   | TGetLabel
   | TGetClearance
+  | TLowerClearance Term
  @-} 
 
 size :: Term -> Integer 
@@ -87,6 +93,7 @@ size (TLabel _)      = 1 -- JP: Is this fine???
 
 size TGetLabel      = 0 -- JP: Is this fine???
 size TGetClearance  = 0 -- JP: Is this fine???
+size (TLowerClearance t) = 1 + size t
 
 isValue :: Term -> Bool 
 {-@ measure isValue @-}
@@ -105,6 +112,7 @@ isValue _          = False
 data Type = TTUnit | TBool | TFun {tFunArg :: Type, tFunRes :: Type} 
   deriving (Eq)
 {-@ data Type = TTUnit | TBool | TFun {tFunArg :: Type, tFunRes :: Type} @-}
+-- TODO: exceptions
 
 
 data Sub = Sub {subVar :: Var, subTerm :: Term}
@@ -124,8 +132,10 @@ eval (TFix (TLam x t))     = subst (Sub x (TFix (TLam x t))) t
 eval (TFix t)              = TFix (eval t)
 eval (TApp (TLam x t1) t2) = subst (Sub x t2) t1
 eval (TApp t1 t2)          = TApp (eval t1) t2
+
+eval (TLowerClearance t)   = TLowerClearance (eval t)
 -- eval v | isValue v         = v 
--- TGetLabel and TGetClearance are unreachable?
+-- TGetLabel, TLowerClearance, and TGetClearance are unreachable?
 eval v                     = v 
 
 -------------------------------------------------------------------------------

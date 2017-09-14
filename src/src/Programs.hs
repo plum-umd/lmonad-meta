@@ -15,6 +15,16 @@ data Pair a b = Pair {pFst :: a, pSnd :: b}
 evalProgram :: Program -> Pair Index Program
 evalProgram (Pg l c m TGetLabel) = Pair 0 (Pg l c m (TLabel l))
 evalProgram (Pg l c m TGetClearance) = Pair 0 (Pg l c m (TLabel c))
+
+-- -- Lower clearance where checks pass.
+-- evalProgram (Pg l c m (TLowerClearance (TLabel c'))) | l `canFlowTo` c' && c' `canFlowTo` c = 
+--     Pair 0 (Pg l c' m TUnit)
+--     
+-- -- TODO: Lower clearance where checks pass. XXX
+-- evalProgram (Pg l c m (TLowerClearance (TLabel c'))) | l `canFlowTo` c' && c' `canFlowTo` c = undefined
+-- 
+-- evalProgram (Pg l c m (TLowerClearance t)) = evalProgram (Pg l c m (TLowerClearance (eval t)))
+
 evalProgram (Pg l c m t) = Pair 0 (Pg l c m (eval t))
 
 {-@ reflect evalEraseProgram @-}

@@ -19,6 +19,7 @@
 
 εTerm l TGetLabel     = TGetLabel
 εTerm l TGetClearance = TGetClearance
+εTerm l (TLowerClearance t) = TLowerClearance (εTerm l t)
 
 {-@ reflect ε @-}
 ε :: Label -> Program -> Program
@@ -48,6 +49,7 @@
 
 ςTerm TGetLabel      = True 
 ςTerm TGetClearance  = True 
+ςTerm (TLowerClearance t)  = ςTerm t
 
 {-@ reflect ς @-}
 ς :: Program -> Bool 
