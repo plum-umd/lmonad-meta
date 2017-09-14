@@ -11,6 +11,7 @@ import Language.Haskell.Liquid.ProofCombinators
 #include "Language.hs"
 #include "Programs.hs"
 #include "MetaFunctions.hs"
+#include "Misc.hs"
 #include "Determinacy.hs"
 #include "Simulations.hs"
 
