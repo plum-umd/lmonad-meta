@@ -73,14 +73,14 @@ simulationsHoles' (Pg lcurr c m TGetLabel) l =
 
 simulationsHoles' p@(Pg lcurr c m TGetClearance) l = 
         evalEraseProgram (ε l (Pg lcurr c m TGetClearance)) l
-    ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m TGetClearance)))
-    ==?? mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
+    ==. mapSnd (ε l) (evalProgram (ε l p))
+    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
     ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m THole))
     ==. Pair 0 (ε l (Pg lcurr c m THole))
     ==. Pair 0 (Pg lcurr c m THole)
     ==. Pair 0 (ε l (Pg lcurr c m (TLabel c)))
     ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (TLabel c)))
-    ==. mapSnd (ε l) (evalProgram (Pg lcurr c m TGetClearance))
+    ==. mapSnd (ε l) (evalProgram p)
     *** QED 
 
 simulationsHoles' (Pg lcurr c m t) l =
