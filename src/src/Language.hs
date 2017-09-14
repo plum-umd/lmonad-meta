@@ -46,7 +46,7 @@ data Term
   | TVar {tVar :: Var}
   | TApp {tApp1 :: Term, tApp2 :: Term}
   | TFix {tFix :: Term}
-  | TIF  {tIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
+  | TIf  {tIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
 
   | TLabel Label
 
@@ -68,7 +68,7 @@ data Term
   | TVar {tVar :: Var}
   | TApp {tApp1 :: Term, tApp2 :: Term}
   | TFix {tFix :: Term}
-  | TIF  {iIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
+  | TIf  {iIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
 
   | TLabel Label
 
@@ -83,7 +83,7 @@ size :: Term -> Integer
 {-@ measure size @-}
 {-@ invariant {t:Term | 0 <= size t} @-}
 {-@ size :: Term -> {v:Integer |  0 <= v }  @-}
-size (TIF t1 t2 t3) = 1 + size t1 + size t2 + size t3 
+size (TIf t1 t2 t3) = 1 + size t1 + size t2 + size t3 
 size (TFix t)       = 1 + size t 
 size (TApp t1 t2)   = 1 + size t1 + size t2 
 size THole          = 0
@@ -132,9 +132,10 @@ data Sub = Sub {subVar :: Var, subTerm :: Term}
 {-@ reflect eval @-}
 {-@ eval :: Term -> Term @-}
 eval :: Term -> Term
-eval (TIF TTrue  t2 _)     = t2 
-eval (TIF TFalse _ t3)     = t3
-eval (TIF t1 t2 t3)        = TIF (eval t1) t2 t3
+eval t | propagateException t = TException
+eval (TIf TTrue  t2 _)     = t2 
+eval (TIf TFalse _ t3)     = t3
+eval (TIf t1 t2 t3)        = TIf (eval t1) t2 t3
 eval (TFix (TLam x t))     = subst (Sub x (TFix (TLam x t))) t
 eval (TFix t)              = TFix (eval t)
 eval (TApp (TLam x t1) t2) = subst (Sub x t2) t1
@@ -144,6 +145,29 @@ eval (TLowerClearance t)   = TLowerClearance (eval t)
 -- eval v | isValue v         = v 
 -- TGetLabel, TLowerClearance, and TGetClearance are unreachable?
 eval v                     = v 
+
+{-@ reflect propagateException @-}
+{-@ propagateException :: Term -> Bool @-}
+propagateException :: Term -> Bool
+propagateException _ = False
+
+propagateException THole = False
+propagateException (TLam _ t) = propagateException t
+propagateException TTrue = False
+propagateException TFalse = False
+propagateException TUnit = False
+propagateException (TVar _) = False
+propagateException (TApp t1 t2) = propagateException t1 || propagateException t2
+propagateException (TFix t1) = propagateException t1
+propagateException (TIf t1 t2 t3) = propagateException t1 || propagateException t2 || propagateException t3
+
+propagateException (TLabel _) = False
+
+propagateException TGetLabel = False
+propagateException TGetClearance = False
+propagateException (TLowerClearance _) = False
+
+propagateException TException = True
 
 -------------------------------------------------------------------------------
 -- | Substitution -------------------------------------------------------------
@@ -158,7 +182,7 @@ subst (Sub x xt) (TVar y)
 subst _  THole         = THole
 subst su (TApp t1 t2)  = TApp (subst su t1) (subst su t2)
 subst su (TFix t)      = TFix (subst su t)
-subst su (TIF t t1 t2) = TIF (subst su t) (subst su t1) (subst su t2)
+subst su (TIf t t1 t2) = TIf (subst su t) (subst su t1) (subst su t2)
 
 subst (Sub x xt) (TLam y e)   
   | x == y              = TLam y e

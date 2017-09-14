@@ -95,7 +95,7 @@ eraseTermIdentity _ (TVar _)       = trivial
 eraseTermIdentity l (TLam _ t)     = eraseTermIdentity l t
 eraseTermIdentity l (TApp t1 t2)   = eraseTermIdentity l t1 &&& eraseTermIdentity l t2  
 eraseTermIdentity l (TFix t)       = eraseTermIdentity l t 
-eraseTermIdentity l (TIF t1 t2 t3) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2 &&& eraseTermIdentity l t3 
+eraseTermIdentity l (TIf t1 t2 t3) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2 &&& eraseTermIdentity l t3 
 
 eraseTermIdentity _ (TLabel _)     = trivial
 

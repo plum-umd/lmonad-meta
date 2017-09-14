@@ -13,7 +13,7 @@
 εTerm l (TLam v t)     = TLam v (εTerm l t)
 εTerm l (TApp t1 t2)   = TApp (εTerm l t1) (εTerm l t2)
 εTerm l (TFix t)       = TFix (εTerm l t) 
-εTerm l (TIF t1 t2 t3) = TIF (εTerm l t1) (εTerm l t2) (εTerm l t3)
+εTerm l (TIf t1 t2 t3) = TIf (εTerm l t1) (εTerm l t2) (εTerm l t3)
 
 εTerm l v@(TLabel _)   = v
 
@@ -45,7 +45,7 @@
 ςTerm (TLam _ t)     = ςTerm t
 ςTerm (TApp t1 t2)   = ςTerm t1 && ςTerm t2
 ςTerm (TFix t)       = ςTerm t 
-ςTerm (TIF t1 t2 t3) = ςTerm t1 && ςTerm t2 && ςTerm t3
+ςTerm (TIf t1 t2 t3) = ςTerm t1 && ςTerm t2 && ςTerm t3
 
 ςTerm (TLabel _)     = True 
 
