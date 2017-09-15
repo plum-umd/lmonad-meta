@@ -132,7 +132,24 @@ data Sub = Sub {subVar :: Var, subTerm :: Term}
 {-@ reflect eval @-}
 {-@ eval :: Term -> Term @-}
 eval :: Term -> Term
-eval t | propagateException t = TException
+
+-- Propagate exceptions first.
+eval (TLam _ TException) = TException
+eval (TApp TException _)      = TException
+eval (TApp _ TException)      = TException
+eval (TFix TException)        = TException
+eval (TIf TException _ _)     = TException
+eval (TIf _ TException _)     = TException
+eval (TIf _ _ TException)     = TException
+eval (TLowerClearance TException) = TException
+eval TException = TException
+
+
+-- eval t | propagateException t = TException
+
+
+
+
 eval (TIf TTrue  t2 _)     = t2 
 eval (TIf TFalse _ t3)     = t3
 eval (TIf t1 t2 t3)        = TIf (eval t1) t2 t3
@@ -146,28 +163,28 @@ eval (TLowerClearance t)   = TLowerClearance (eval t)
 -- TGetLabel, TLowerClearance, and TGetClearance are unreachable?
 eval v                     = v 
 
-{-@ reflect propagateException @-}
-{-@ propagateException :: Term -> Bool @-}
-propagateException :: Term -> Bool
-propagateException _ = False
-
-propagateException THole = False
-propagateException (TLam _ t) = propagateException t
-propagateException TTrue = False
-propagateException TFalse = False
-propagateException TUnit = False
-propagateException (TVar _) = False
-propagateException (TApp t1 t2) = propagateException t1 || propagateException t2
-propagateException (TFix t1) = propagateException t1
-propagateException (TIf t1 t2 t3) = propagateException t1 || propagateException t2 || propagateException t3
-
-propagateException (TLabel _) = False
-
-propagateException TGetLabel = False
-propagateException TGetClearance = False
-propagateException (TLowerClearance _) = False
-
-propagateException TException = True
+-- {-@ reflect propagateException @-}
+-- {-@ propagateException :: Term -> Bool @-}
+-- propagateException :: Term -> Bool
+-- propagateException _ = False
+-- 
+-- propagateException THole = False
+-- propagateException (TLam _ t) = propagateException t
+-- propagateException TTrue = False
+-- propagateException TFalse = False
+-- propagateException TUnit = False
+-- propagateException (TVar _) = False
+-- propagateException (TApp t1 t2) = propagateException t1 || propagateException t2
+-- propagateException (TFix t1) = propagateException t1
+-- propagateException (TIf t1 t2 t3) = propagateException t1 || propagateException t2 || propagateException t3
+-- 
+-- propagateException (TLabel _) = False
+-- 
+-- propagateException TGetLabel = False
+-- propagateException TGetClearance = False
+-- propagateException (TLowerClearance _) = False
+-- 
+-- propagateException TException = True
 
 -------------------------------------------------------------------------------
 -- | Substitution -------------------------------------------------------------
