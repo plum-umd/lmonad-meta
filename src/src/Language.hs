@@ -132,24 +132,8 @@ data Sub = Sub {subVar :: Var, subTerm :: Term}
 {-@ reflect eval @-}
 {-@ eval :: Term -> Term @-}
 eval :: Term -> Term
-
--- Propagate exceptions first.
-eval (TLam _ TException) = TException
-eval (TApp TException _)      = TException
-eval (TApp _ TException)      = TException
-eval (TFix TException)        = TException
-eval (TIf TException _ _)     = TException
-eval (TIf _ TException _)     = TException
-eval (TIf _ _ TException)     = TException
-eval (TLowerClearance TException) = TException
-eval TException = TException
-
-
 -- eval t | propagateException t = TException
-
-
-
-
+eval t | hasException t    = TException
 eval (TIf TTrue  t2 _)     = t2 
 eval (TIf TFalse _ t3)     = t3
 eval (TIf t1 t2 t3)        = TIf (eval t1) t2 t3
@@ -163,6 +147,22 @@ eval (TLowerClearance t)   = TLowerClearance (eval t)
 -- TGetLabel, TLowerClearance, and TGetClearance are unreachable?
 eval v                     = v 
 
+-- NV: Should that be recursively deinfed? 
+{-@ reflect hasException @-}
+hasException :: Term -> Bool 
+hasException (TLam _ TException)          = True
+hasException (TApp TException _)          = True
+hasException (TApp _ TException)          = True
+hasException (TFix TException)            = True
+hasException (TIf TException _ _)         = True
+hasException (TIf _ TException _)         = True
+hasException (TIf _ _ TException)         = True
+hasException (TLowerClearance TException) = True
+hasException TException                   = True
+hasException _                            = False 
+
+
+-- Propagate exceptions first.
 -- {-@ reflect propagateException @-}
 -- {-@ propagateException :: Term -> Bool @-}
 -- propagateException :: Term -> Bool
@@ -196,15 +196,12 @@ subst :: Sub -> Term -> Term
 subst (Sub x xt) (TVar y)
   | x == y             = xt 
   | otherwise          = TVar y 
+subst (Sub x xt) (TLam y e)   
+  | x == y             = TLam y e
+  | otherwise          = TLam y (subst (Sub x xt) e)
+
 subst _  THole         = THole
 subst su (TApp t1 t2)  = TApp (subst su t1) (subst su t2)
 subst su (TFix t)      = TFix (subst su t)
 subst su (TIf t t1 t2) = TIf (subst su t) (subst su t1) (subst su t2)
-
-subst (Sub x xt) (TLam y e)   
-  | x == y              = TLam y e
-  | otherwise           = TLam y (subst (Sub x xt) e)
-subst _ x               = x   
-
-
-
+subst _  x             = x 

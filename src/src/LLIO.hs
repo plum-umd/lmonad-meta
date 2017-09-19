@@ -1,5 +1,7 @@
 {-@ LIQUID "--exactdc"                                  @-}
 {-@ LIQUID "--higherorder"                              @-}
+{-@ LIQUID "--trustinternals"                           @-}
+
 {-@ LIQUID "--automatic-instances=liquidinstanceslocal" @-}
 
 {-# LANGUAGE CPP                                        #-}
@@ -12,6 +14,7 @@ import Language.Haskell.Liquid.ProofCombinators
 #include "Programs.hs"
 #include "MetaFunctions.hs"
 #include "Misc.hs"
+
 #include "Determinacy.hs"
 #include "Simulations.hs"
 
