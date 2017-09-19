@@ -151,15 +151,29 @@ eval v                     = v
 {-@ reflect hasException @-}
 hasException :: Term -> Bool 
 hasException (TLam _ TException)          = True
+hasException (TLam _ _)                   = False
 hasException (TApp TException _)          = True
 hasException (TApp _ TException)          = True
+hasException (TApp _ _)                   = False
 hasException (TFix TException)            = True
+hasException (TFix _)                     = False
 hasException (TIf TException _ _)         = True
 hasException (TIf _ TException _)         = True
 hasException (TIf _ _ TException)         = True
+hasException (TIf _ _ _)                  = False
 hasException (TLowerClearance TException) = True
+hasException (TLowerClearance _)          = False
 hasException TException                   = True
-hasException _                            = False 
+
+hasException THole = False
+hasException TTrue = False
+hasException TFalse = False
+hasException TUnit = False
+hasException (TVar _) = False
+hasException (TLabel _) = False
+hasException TGetLabel = False
+hasException TGetClearance = False
+-- hasException _                            = False 
 
 
 -- Propagate exceptions first.
