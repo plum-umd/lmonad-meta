@@ -15,13 +15,13 @@
 εTerm l (TFix t)       = TFix (εTerm l t) 
 εTerm l (TIf t1 t2 t3) = TIf (εTerm l t1) (εTerm l t2) (εTerm l t3)
 
-εTerm l v@(TLabel _)   = v
+εTerm _ v@(TLabel _)   = v
 
-εTerm l TGetLabel     = TGetLabel
-εTerm l TGetClearance = TGetClearance
+εTerm _ TGetLabel     = TGetLabel
+εTerm _ TGetClearance = TGetClearance
 εTerm l (TLowerClearance t) = TLowerClearance (εTerm l t)
 
-εTerm l TException = TException
+εTerm _ TException = TException
 
 {-@ reflect ε @-}
 ε :: Label -> Program -> Program
