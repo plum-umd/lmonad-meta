@@ -52,7 +52,7 @@ data Term
 
   | TGetLabel
   | TGetClearance
-  | TLowerClearance Term -- JP: Label or Term? Probably term???
+--   | TLowerClearance Term -- JP: Label or Term? Probably term???
 
   | TException
   deriving Eq 
@@ -74,10 +74,10 @@ data Term
 
   | TGetLabel
   | TGetClearance
-  | TLowerClearance Term
 
   | TException
  @-} 
+--  | TLowerClearance Term
 
 size :: Term -> Integer 
 {-@ measure size @-}
@@ -97,7 +97,7 @@ size (TLabel _)      = 1 -- JP: Is this fine???
 
 size TGetLabel      = 0 -- JP: Is this fine???
 size TGetClearance  = 0 -- JP: Is this fine???
-size (TLowerClearance t) = 1 + size t
+-- size (TLowerClearance t) = 1 + size t
 
 size TException     = 0
 
@@ -142,7 +142,7 @@ eval (TFix t)              = TFix (eval t)
 eval (TApp (TLam x t1) t2) = subst (Sub x t2) t1
 eval (TApp t1 t2)          = TApp (eval t1) t2
 
-eval (TLowerClearance t)   = TLowerClearance (eval t)
+-- eval (TLowerClearance t)   = TLowerClearance (eval t)
 -- eval v | isValue v         = v 
 -- TGetLabel, TLowerClearance, and TGetClearance are unreachable?
 eval v                     = v 
@@ -161,8 +161,8 @@ hasException (TIf TException _ _)         = True
 hasException (TIf _ TException _)         = True
 hasException (TIf _ _ TException)         = True
 hasException (TIf _ _ _)                  = False
-hasException (TLowerClearance TException) = True
-hasException (TLowerClearance _)          = False
+-- hasException (TLowerClearance TException) = True
+-- hasException (TLowerClearance _)          = False
 hasException TException                   = True
 
 hasException THole = False

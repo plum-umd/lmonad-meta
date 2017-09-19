@@ -45,18 +45,25 @@ simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
   -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
 
 simulationsHoles' :: Program -> Label -> Proof
+-- simulationsHoles' (Pg lcurr c m TException) l = 
+--         evalEraseProgram (ε l (Pg lcurr c m TException)) l
+--     ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m TException)))
+-- 
+--     ==. mapSnd (ε l) (evalProgram (Pg lcurr c m TException))
+--     *** QED
 
 simulationsHoles' (Pg lcurr c m TGetLabel) l = 
 --         undefined
         evalEraseProgram (ε l (Pg lcurr c m TGetLabel)) l
-    ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m TGetLabel)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m THole))
-    ==. Pair 0 (ε l (Pg lcurr c m THole))
-    ==. Pair 0 (Pg lcurr c m THole)
-    ==. Pair 0 (ε l (Pg lcurr c m (TLabel lcurr)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (TLabel lcurr)))
-    ==. mapSnd (ε l) (evalProgram (Pg lcurr c m TGetLabel))
+    ==?? mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m TGetLabel)))
+    ==?? mapSnd (ε l) (evalProgram (Pg lcurr c m THole))
+    ==?? mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
+    ==?? mapSnd (ε l) (Pair 0 (Pg lcurr c m THole))
+    ==?? Pair 0 (ε l (Pg lcurr c m THole))
+    ==?? Pair 0 (Pg lcurr c m THole)
+    ==?? Pair 0 (ε l (Pg lcurr c m (TLabel lcurr)))
+    ==?? mapSnd (ε l) (Pair 0 (Pg lcurr c m (TLabel lcurr)))
+    ==?? mapSnd (ε l) (evalProgram (Pg lcurr c m TGetLabel))
     *** QED 
 
 simulationsHoles' p@(Pg lcurr c m TGetClearance) l = 
@@ -105,6 +112,6 @@ eraseTermIdentity _ (TLabel _)     = trivial
 
 eraseTermIdentity _ TGetLabel      = trivial
 eraseTermIdentity _ TGetClearance  = trivial
-eraseTermIdentity l (TLowerClearance t) = eraseTermIdentity l t
+-- eraseTermIdentity l (TLowerClearance t) = eraseTermIdentity l t
 
 eraseTermIdentity _ TException  = trivial
