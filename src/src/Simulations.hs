@@ -70,15 +70,15 @@ simulationsHoles' :: Program -> Label -> Proof
 simulationsHoles' (Pg lcurr c m TGetLabel) l = 
 --         undefined
         evalEraseProgram (ε l (Pg lcurr c m TGetLabel)) l
-    ==?? mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m TGetLabel)))
-    ==?? mapSnd (ε l) (evalProgram (Pg lcurr c m THole))
-    ==?? mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
-    ==?? mapSnd (ε l) (Pair 0 (Pg lcurr c m THole)) -- ? evalTHole
-    ==?? Pair 0 (ε l (Pg lcurr c m THole))
-    ==?? Pair 0 (Pg lcurr c m THole)
-    ==?? Pair 0 (ε l (Pg lcurr c m (TLabel lcurr)))
-    ==?? mapSnd (ε l) (Pair 0 (Pg lcurr c m (TLabel lcurr)))
-    ==?? mapSnd (ε l) (evalProgram (Pg lcurr c m TGetLabel))
+    ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m TGetLabel)))
+    ==. mapSnd (ε l) (evalProgram (Pg lcurr c m THole))
+    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
+    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m THole)) -- ? evalTHole
+    ==. Pair 0 (ε l (Pg lcurr c m THole))
+    ==. Pair 0 (Pg lcurr c m THole)
+    ==. Pair 0 (ε l (Pg lcurr c m (TLabel lcurr)))
+    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (TLabel lcurr)))
+    ==. mapSnd (ε l) (evalProgram (Pg lcurr c m TGetLabel))
     *** QED 
 
 simulationsHoles' p@(Pg lcurr c m TGetClearance) l = 
@@ -124,6 +124,9 @@ eraseTermIdentity l (TFix t)       = eraseTermIdentity l t
 eraseTermIdentity l (TIf t1 t2 t3) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2 &&& eraseTermIdentity l t3 
 
 eraseTermIdentity _ (TLabel _)     = trivial
+eraseTermIdentity l (TMeet t1 t2)      = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
+eraseTermIdentity l (TJoin t1 t2)      = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
+eraseTermIdentity l (TCanFlowTo t1 t2) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
 
 eraseTermIdentity _ TGetLabel      = trivial
 eraseTermIdentity _ TGetClearance  = trivial

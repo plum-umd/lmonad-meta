@@ -35,6 +35,37 @@ canFlowTo LabelA LabelAMeetB = False
 canFlowTo LabelB LabelAMeetB = False
 -- canFlowTo x y | x == y = True
 
+{-@ reflect join @-}
+join :: Label -> Label -> Label
+join LabelAJoinB _ = LabelAJoinB
+join _ LabelAJoinB = LabelAJoinB
+join LabelA LabelB = LabelAJoinB
+join LabelA LabelA = LabelA
+join LabelA LabelAMeetB = LabelA
+join LabelB LabelA = LabelAJoinB
+join LabelB LabelB = LabelB
+join LabelB LabelAMeetB = LabelB
+join LabelAMeetB LabelA = LabelA
+join LabelAMeetB LabelB = LabelB
+join LabelAMeetB LabelAMeetB = LabelAMeetB
+
+{-@ reflect meet @-}
+meet :: Label -> Label -> Label
+meet LabelAMeetB _ = LabelAMeetB
+meet _ LabelAMeetB = LabelAMeetB
+meet LabelA LabelB = LabelAMeetB
+meet LabelA LabelA = LabelA
+meet LabelA LabelAJoinB = LabelA
+meet LabelB LabelA = LabelAMeetB
+meet LabelB LabelB = LabelB
+meet LabelB LabelAJoinB = LabelB
+meet LabelAJoinB v = v
+
+{-@ reflect boolToTerm @-}
+boolToTerm :: Bool -> Term
+boolToTerm True  = TTrue
+boolToTerm False = TFalse
+
 
 type Var   = Integer
 -------------------------------------------------------------------------------
@@ -55,6 +86,9 @@ data Term
   | TIf  {tIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
 
   | TLabel Label
+  | TJoin Term Term
+  | TMeet Term Term
+  | TCanFlowTo Term Term
 
   | TGetLabel
   | TGetClearance
@@ -98,6 +132,9 @@ size (TLam _ e)     = 1 + size e
 size TTrue          = 1 
 size TFalse         = 1 
 size TUnit          = 1 
+size (TJoin t1 t2)  = 1 + size t1 + size t2
+size (TMeet t1 t2)  = 1 + size t1 + size t2
+size (TCanFlowTo t1 t2)  = 1 + size t1 + size t2
 
 size (TLabel _)     = 1 -- JP: Is this fine???
 
@@ -148,6 +185,18 @@ eval (TFix t)              = TFix (eval t)
 eval (TApp (TLam x t1) t2) = subst (Sub x t2) t1
 eval (TApp t1 t2)          = TApp (eval t1) t2
 
+eval (TJoin (TLabel l1) (TLabel l2)) = TLabel (join l1 l2)
+eval (TJoin (TLabel l1) t2)          = TJoin (TLabel l1) (eval t2)
+eval (TJoin t1 t2)                   = TJoin (eval t1) t2
+
+eval (TMeet (TLabel l1) (TLabel l2)) = TLabel (meet l1 l2)
+eval (TMeet (TLabel l1) t2)          = TMeet (TLabel l1) (eval t2)
+eval (TMeet t1 t2)                   = TMeet (eval t1) t2
+
+eval (TCanFlowTo (TLabel l1) (TLabel l2)) = boolToTerm (canFlowTo l1 l2)
+eval (TCanFlowTo (TLabel l1) t2)          = TJoin (TLabel l1) (eval t2)
+eval (TCanFlowTo t1 t2)                   = TJoin (eval t1) t2
+
 -- eval (TLowerClearance t)   = TLowerClearance (eval t)
 -- eval v | isValue v         = v 
 -- TGetLabel, TLowerClearance, and TGetClearance are unreachable?
@@ -176,7 +225,18 @@ hasException TTrue = False
 hasException TFalse = False
 hasException TUnit = False
 hasException (TVar _) = False
+
 hasException (TLabel _) = False
+hasException (TJoin TException _) = True
+hasException (TJoin _ TException) = True
+hasException (TJoin _ _) = False
+hasException (TMeet TException _) = True
+hasException (TMeet _ TException) = True
+hasException (TMeet _ _) = False
+hasException (TCanFlowTo TException _) = True
+hasException (TCanFlowTo _ TException) = True
+hasException (TCanFlowTo _ _) = False
+
 hasException TGetLabel = False
 hasException TGetClearance = False
 -- hasException _                            = False 
