@@ -128,6 +128,8 @@ eraseTermIdentity l (TMeet t1 t2)      = eraseTermIdentity l t1 &&& eraseTermIde
 eraseTermIdentity l (TJoin t1 t2)      = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
 eraseTermIdentity l (TCanFlowTo t1 t2) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
 
+eraseTermIdentity l (TBind t1 t2) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
+
 eraseTermIdentity _ TGetLabel      = trivial
 eraseTermIdentity _ TGetClearance  = trivial
 -- eraseTermIdentity l (TLowerClearance t) = eraseTermIdentity l t

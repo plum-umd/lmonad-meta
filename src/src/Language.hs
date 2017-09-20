@@ -90,6 +90,9 @@ data Term
   | TMeet {tMeet1 :: Term, tMeet2 :: Term}
   | TCanFlowTo {tCanFlowTo1 :: Term, tCanFlowTo2 :: Term}
 
+  | TBind Term Term
+  -- JP: Omitting return for now. Maybe not needed.
+
   | TGetLabel
   | TGetClearance
 
@@ -114,6 +117,8 @@ data Term
   | TMeet {tMeet1 :: Term, tMeet2 :: Term}
   | TCanFlowTo {tCanFlowTo1 :: Term, tCanFlowTo2 :: Term}
 
+  | TBind Term Term
+
   | TGetLabel
   | TGetClearance
 
@@ -134,11 +139,13 @@ size (TLam _ e)     = 1 + size e
 size TTrue          = 1 
 size TFalse         = 1 
 size TUnit          = 1 
+
+size (TLabel _)     = 1 -- JP: Is this fine???
 size (TJoin t1 t2)  = 1 + size t1 + size t2
 size (TMeet t1 t2)  = 1 + size t1 + size t2
 size (TCanFlowTo t1 t2)  = 1 + size t1 + size t2
 
-size (TLabel _)     = 1 -- JP: Is this fine???
+size (TBind t1 t2)  = 1 + size t1 + size t2
 
 size TGetLabel      = 0 -- JP: Is this fine???
 size TGetClearance  = 0 -- JP: Is this fine???
@@ -196,8 +203,8 @@ eval (TMeet (TLabel l1) t2)          = TMeet (TLabel l1) (eval t2)
 eval (TMeet t1 t2)                   = TMeet (eval t1) t2
 
 eval (TCanFlowTo (TLabel l1) (TLabel l2)) = boolToTerm (canFlowTo l1 l2)
-eval (TCanFlowTo (TLabel l1) t2)          = TJoin (TLabel l1) (eval t2)
-eval (TCanFlowTo t1 t2)                   = TJoin (eval t1) t2
+eval (TCanFlowTo (TLabel l1) t2)          = TCanFlowTo (TLabel l1) (eval t2)
+eval (TCanFlowTo t1 t2)                   = TCanFlowTo (eval t1) t2
 
 -- eval (TLowerClearance t)   = TLowerClearance (eval t)
 -- eval v | isValue v         = v 
@@ -227,6 +234,10 @@ hasException TTrue = False
 hasException TFalse = False
 hasException TUnit = False
 hasException (TVar _) = False
+
+hasException (TBind TException _) = True
+hasException (TBind _ TException) = True
+hasException (TBind _ _) = False
 
 hasException (TLabel _) = False
 hasException (TJoin TException _) = True
@@ -286,4 +297,15 @@ subst _  THole         = THole
 subst su (TApp t1 t2)  = TApp (subst su t1) (subst su t2)
 subst su (TFix t)      = TFix (subst su t)
 subst su (TIf t t1 t2) = TIf (subst su t) (subst su t1) (subst su t2)
-subst _  x             = x 
+subst _ TTrue         = TTrue
+subst _ TFalse        = TFalse
+subst _ TUnit         = TUnit
+subst _ t@(TLabel _)  = t
+subst su (TJoin t1 t2) = TJoin (subst su t1) (subst su t2)
+subst su (TMeet t1 t2) = TMeet (subst su t1) (subst su t2)
+subst su (TCanFlowTo t1 t2) = TCanFlowTo (subst su t1) (subst su t2)
+subst su (TBind t1 t2) = TBind (subst su t1) (subst su t2)
+subst _ TGetLabel          = TGetLabel
+subst _ TGetClearance          = TGetClearance
+subst _ TException          = TException
+-- subst _  x             = x 
