@@ -86,13 +86,12 @@ data Term
   | TIf  {tIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
 
   | TLabel Label
-  | TJoin Term Term
-  | TMeet Term Term
-  | TCanFlowTo Term Term
+  | TJoin {tJoin1 :: Term, tJoin2 :: Term}
+  | TMeet {tMeet1 :: Term, tMeet2 :: Term}
+  | TCanFlowTo {tCanFlowTo1 :: Term, tCanFlowTo2 :: Term}
 
   | TGetLabel
   | TGetClearance
---   | TLowerClearance Term -- JP: Label or Term? Probably term???
 
   | TException
   deriving (Eq, Show)
@@ -111,6 +110,9 @@ data Term
   | TIf  {iIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
 
   | TLabel Label
+  | TJoin {tJoin1 :: Term, tJoin2 :: Term}
+  | TMeet {tMeet1 :: Term, tMeet2 :: Term}
+  | TCanFlowTo {tCanFlowTo1 :: Term, tCanFlowTo2 :: Term}
 
   | TGetLabel
   | TGetClearance
