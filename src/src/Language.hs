@@ -5,7 +5,7 @@ data Label =
   | LabelA 
   | LabelB 
   | LabelAJoinB
-  deriving (Eq)
+  deriving (Eq, Show)
 
 {-@ data Label = 
     LabelAMeetB 
@@ -55,7 +55,7 @@ data Term
 --   | TLowerClearance Term -- JP: Label or Term? Probably term???
 
   | TException
-  deriving Eq 
+  deriving (Eq, Show)
 
 -- JP: Join, Meet, CanFlowTo...
 

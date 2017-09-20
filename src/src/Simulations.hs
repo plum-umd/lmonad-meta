@@ -17,6 +17,10 @@ simulations p p' n l evalProp
   ==. Pair n (ε l p')
   *** QED 
 
+{-@ evalTHole :: {v : Proof | eval THole = THole} @-}
+evalTHole :: Proof
+evalTHole = undefined
+
 simulations' :: Program -> Label -> Proof
 {-@ simulations' 
   :: p:Program -> l:Label
@@ -58,7 +62,7 @@ simulationsHoles' (Pg lcurr c m TGetLabel) l =
     ==?? mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m TGetLabel)))
     ==?? mapSnd (ε l) (evalProgram (Pg lcurr c m THole))
     ==?? mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
-    ==?? mapSnd (ε l) (Pair 0 (Pg lcurr c m THole))
+    ==?? mapSnd (ε l) (Pair 0 (Pg lcurr c m THole)) -- ? evalTHole
     ==?? Pair 0 (ε l (Pg lcurr c m THole))
     ==?? Pair 0 (Pg lcurr c m THole)
     ==?? Pair 0 (ε l (Pg lcurr c m (TLabel lcurr)))

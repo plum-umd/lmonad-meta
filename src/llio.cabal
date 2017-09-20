@@ -2,7 +2,7 @@ name:                llio
 version:             0.1.0.0
 synopsis:            Verification of non-interference using Liquid Haskell
 license:             MIT
-license-file:        LICENSE
+-- license-file:        LICENSE
 author:              Niki Vazou
 maintainer:          nikivazou@gmail.com
 category:            Theorem Proving
@@ -11,9 +11,16 @@ extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     LLIO   
+  exposed-modules:     LLIO
   build-depends:       base >=4.9 && <4.10, liquidhaskell
   hs-source-dirs:      src
+  ghc-options:         -W -Werror
+  default-language:    Haskell98
+
+executable lmonad-meta-exe
+  hs-source-dirs:      test
+  build-depends:       base >=4.9 && <4.10, liquidhaskell, llio
+  main-is:             Main.hs
   ghc-options:         -W -Werror
   default-language:    Haskell98
 
@@ -21,6 +28,6 @@ test-suite tests
   default-language:  Haskell98
   build-depends:     base >=4.9 && <4.10, process
   type:              exitcode-stdio-1.0
-  hs-source-dirs:    src/tests
+  hs-source-dirs:    tests
   ghc-options:       -W -Werror
   main-is:           Test.hs

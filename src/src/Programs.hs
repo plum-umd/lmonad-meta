@@ -1,7 +1,7 @@
 data Program = Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term}
-  deriving Eq 
+  deriving (Eq, Show)
 data Memory  = Memory
-  deriving Eq
+  deriving (Eq, Show)
 type Index = Integer
 
 {-@ data Program = Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term} @-}
