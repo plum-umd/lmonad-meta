@@ -1,3 +1,14 @@
+{-@ LIQUID "--exactdc"                                  @-}
+{-@ LIQUID "--higherorder"                              @-}
+
+module Simulations where
+
+import Language.Haskell.Liquid.ProofCombinators
+
+import Language 
+import Programs 
+import MetaFunctions 
+
 {-@ simulationsCorollary 
   :: p:Program -> p':Program -> n:Index -> l:Label
   -> {v:Proof | evalProgram p == Pair n p'}

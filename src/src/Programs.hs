@@ -1,3 +1,12 @@
+{-@ LIQUID "--exactdc"                                  @-}
+{-@ LIQUID "--higherorder"                              @-}
+{-@ LIQUID "--trustinternals"                           @-}
+
+{-@ LIQUID "--automatic-instances=liquidinstanceslocal" @-}
+module Programs where
+
+import Language 
+
 data Program = Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term}
   deriving (Eq, Show)
 data Memory  = Memory
@@ -26,10 +35,6 @@ evalProgram (Pg l c m TGetClearance) = Pair 0 (Pg l c m (TLabel c))
 -- evalProgram (Pg l c m (TLowerClearance t)) = evalProgram (Pg l c m (TLowerClearance (eval t)))
 
 evalProgram (Pg l c m t) = Pair 0 (Pg l c m (eval t))
-
-{-@ reflect evalEraseProgram @-}
-evalEraseProgram :: Program -> Label -> Pair Index Program 
-evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 
 {-@ reflect mapSnd @-}
 mapSnd :: (b -> c) -> Pair a b -> Pair a c 

@@ -10,13 +10,12 @@ module LLIO where
 
 import Language.Haskell.Liquid.ProofCombinators
 
-#include "Language.hs"
-#include "Programs.hs"
-#include "MetaFunctions.hs"
-#include "Misc.hs"
+import Language
+import Programs
+import MetaFunctions
 
-#include "Determinacy.hs"
-#include "Simulations.hs"
+import Determinacy
+import Simulations
 
 εEquiv :: Label -> Program -> Program -> Bool 
 {-@ reflect εEquiv @-}

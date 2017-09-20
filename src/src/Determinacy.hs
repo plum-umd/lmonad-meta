@@ -1,3 +1,14 @@
+{-@ LIQUID "--exactdc"                                  @-}
+{-@ LIQUID "--higherorder"                              @-}
+
+module Determinacy where
+
+import Language.Haskell.Liquid.ProofCombinators
+
+import Language 
+import Programs 
+import MetaFunctions 
+
 {-@ determinacy :: l:Label -> k:Program -> k1:Program -> k2:Program -> n1:Index -> n2:Index
        -> {v:Proof | evalEraseProgram k l == Pair n1 k1 && evalEraseProgram k l == Pair n2 k2} 
        -> {k1 == k2 && n1 == n2} @-}

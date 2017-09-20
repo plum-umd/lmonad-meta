@@ -1,3 +1,9 @@
+{-@ LIQUID "--exactdc"                                  @-}
+{-@ LIQUID "--higherorder"                              @-}
+{-@ LIQUID "--trustinternals"                           @-}
+
+module Language where
+
 -- type Label = Integer -- JP: Do we need a different type for a partial order?
 
 data Label = 
@@ -93,7 +99,7 @@ size TTrue          = 1
 size TFalse         = 1 
 size TUnit          = 1 
 
-size (TLabel _)      = 1 -- JP: Is this fine???
+size (TLabel _)     = 1 -- JP: Is this fine???
 
 size TGetLabel      = 0 -- JP: Is this fine???
 size TGetClearance  = 0 -- JP: Is this fine???
