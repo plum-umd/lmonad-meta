@@ -1,3 +1,17 @@
+{-@ LIQUID "--exactdc"                                  @-}
+{-@ LIQUID "--higherorder"                              @-}
+{-@ LIQUID "--trustinternals"                           @-}
+
+{-@ LIQUID "--automatic-instances=liquidinstanceslocal" @-}
+module MetaFunctions where
+
+import Language 
+import Programs 
+
+{-@ reflect evalEraseProgram @-}
+evalEraseProgram :: Program -> Label -> Pair Index Program 
+evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
+
 -------------------------------------------------------------------------------
 -- | Erasure ------------------------------------------------------------------
 -------------------------------------------------------------------------------
