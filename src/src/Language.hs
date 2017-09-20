@@ -90,7 +90,7 @@ data Term
   | TMeet {tMeet1 :: Term, tMeet2 :: Term}
   | TCanFlowTo {tCanFlowTo1 :: Term, tCanFlowTo2 :: Term}
 
-  | TBind Term Term
+  | TBind {tBind1 :: Term, tBind2 :: Term}
   -- JP: Omitting return for now. Maybe not needed.
 
   | TGetLabel
@@ -117,7 +117,7 @@ data Term
   | TMeet {tMeet1 :: Term, tMeet2 :: Term}
   | TCanFlowTo {tCanFlowTo1 :: Term, tCanFlowTo2 :: Term}
 
-  | TBind Term Term
+  | TBind {tBind1 :: Term, tBind2 :: Term}
 
   | TGetLabel
   | TGetClearance
