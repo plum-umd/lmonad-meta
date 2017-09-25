@@ -98,6 +98,7 @@ data Term
   | TLowerClearance Term
 
   | TLabeledTCB Label Term
+  | TLabelOf Term
 
   | TException
   deriving (Eq, Show)
@@ -157,6 +158,7 @@ size TGetClearance  = 0 -- JP: Is this fine???
 size (TLowerClearance t) = 1 + size t
 
 size (TLabeledTCB _ t) = 1 + size t
+size (TLabelOf t) = 1 + size t
 
 size TException     = 0
 
@@ -230,6 +232,9 @@ eval (TLowerClearance t)                  = TLowerClearance (eval t)
 
 eval t@(TLabeledTCB _ _)                  = t
 
+eval (TLabelOf (TLabeledTCB l _))         = TLabel l
+eval (TLabelOf t)                         = TLabelOf (eval t)
+
 eval t@TException                         = t
 
 -- eval (TLowerClearance t)   = TLowerClearance (eval t)
@@ -280,6 +285,9 @@ hasException TGetClearance = False
 
 hasException (TLabeledTCB _ TException) = True -- JP: Do we propagate here?
 hasException (TLabeledTCB _ _) = False
+
+hasException (TLabelOf TException) = True
+hasException (TLabelOf _) = False
 
 -- hasException _                            = False 
 
@@ -335,10 +343,11 @@ subst su (TMeet t1 t2) = TMeet (subst su t1) (subst su t2)
 subst su (TCanFlowTo t1 t2) = TCanFlowTo (subst su t1) (subst su t2)
 subst su (TBind t1 t2) = TBind (subst su t1) (subst su t2)
 subst _ TGetLabel          = TGetLabel
-subst _ TGetClearance          = TGetClearance
+subst _ TGetClearance        = TGetClearance
 subst su (TLowerClearance t) = TLowerClearance (subst su t)
 
-subst su (TLabeledTCB l t)          = TLabeledTCB l (subst su t)
+subst su (TLabeledTCB l t)   = TLabeledTCB l (subst su t)
+subst su (TLabelOf t)        = TLabelOf (subst su t)
 
-subst _ TException          = TException
+subst _ TException           = TException
 -- subst _  x             = x 
