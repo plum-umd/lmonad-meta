@@ -354,7 +354,7 @@ subst _ TGetLabel          = TGetLabel
 subst _ TGetClearance        = TGetClearance
 subst su (TLowerClearance t) = TLowerClearance (subst su t)
 
-subst su (TLabeledTCB l t)    = TLabeledTCB l (subst su t)
+subst _ (TLabeledTCB l t)    = TLabeledTCB l t -- JP: Does it make sense for unbound variables to exist in t??? --  (subst su t)
 subst su (TLabelOf t)        = TLabelOf (subst su t)
 subst su (TUnlabel t)        = TUnlabel (subst su t)
 
