@@ -97,6 +97,8 @@ data Term
   | TGetClearance
   | TLowerClearance Term
 
+  | TLabeledTCB Label Term
+
   | TException
   deriving (Eq, Show)
 
@@ -123,6 +125,8 @@ data Term
   | TGetLabel
   | TGetClearance
   | TLowerClearance Term
+
+  | TLabeledTCB Label Term
 
   | TException
  @-} 
@@ -151,6 +155,8 @@ size (TBind t1 t2)  = 1 + size t1 + size t2
 size TGetLabel      = 0 -- JP: Is this fine???
 size TGetClearance  = 0 -- JP: Is this fine???
 size (TLowerClearance t) = 1 + size t
+
+size (TLabeledTCB _ t) = 1 + size t
 
 size TException     = 0
 
@@ -222,6 +228,8 @@ eval t@TGetLabel                          = t
 eval t@TGetClearance                      = t
 eval (TLowerClearance t)                  = TLowerClearance (eval t)
 
+eval t@(TLabeledTCB _ _)                  = t
+
 eval t@TException                         = t
 
 -- eval (TLowerClearance t)   = TLowerClearance (eval t)
@@ -269,6 +277,10 @@ hasException (TCanFlowTo _ _) = False
 
 hasException TGetLabel = False
 hasException TGetClearance = False
+
+hasException (TLabeledTCB _ TException) = True -- JP: Do we propagate here?
+hasException (TLabeledTCB _ _) = False
+
 -- hasException _                            = False 
 
 
@@ -325,5 +337,8 @@ subst su (TBind t1 t2) = TBind (subst su t1) (subst su t2)
 subst _ TGetLabel          = TGetLabel
 subst _ TGetClearance          = TGetClearance
 subst su (TLowerClearance t) = TLowerClearance (subst su t)
+
+subst su (TLabeledTCB l t)          = TLabeledTCB l (subst su t)
+
 subst _ TException          = TException
 -- subst _  x             = x 

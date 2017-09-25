@@ -40,6 +40,8 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 εTerm _ TGetClearance = TGetClearance
 εTerm l (TLowerClearance t) = TLowerClearance (εTerm l t)
 
+εTerm l (TLabeledTCB l' t) = TLabeledTCB l' (εTerm l t)
+
 εTerm _ TException = TException
 
 {-@ reflect ε @-}
@@ -76,6 +78,8 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 ςTerm TGetLabel      = True 
 ςTerm TGetClearance  = True 
 ςTerm (TLowerClearance t)  = ςTerm t
+
+ςTerm (TLabeledTCB _ _)  = False
 
 ςTerm TException = False -- JP: Is this right?
 
