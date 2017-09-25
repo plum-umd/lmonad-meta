@@ -36,7 +36,13 @@ evalProgram (Pg l c m (TLowerClearance (TVLabel c'))) | l `canFlowTo` c' && c' `
 -- Lower clearance where checks don't pass.
 evalProgram (Pg l c m (TLowerClearance (TVLabel _))) = Pair 0 (Pg l c m TException)
 
--- Unlabel where checks pass.
+-- Label where checks pass.
+evalProgram (Pg l c m (TLabel (TVLabel ll) t)) | l `canFlowTo` ll && ll `canFlowTo` c = Pair 0 (Pg l c m (TLabeledTCB ll t))
+
+-- Label where checks don't pass.
+evalProgram (Pg l c m (TLabel (TVLabel _) _)) = Pair 0 (Pg l c m TException)
+
+-- Unlabel.
 evalProgram (Pg l c m (TUnlabel (TLabeledTCB ll t))) = 
     let l' = l `join` ll in
     -- Checks pass.

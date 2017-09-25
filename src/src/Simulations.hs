@@ -136,6 +136,7 @@ eraseTermIdentity l (TLowerClearance t) = eraseTermIdentity l t
 
 eraseTermIdentity l (TLabeledTCB _ t) = eraseTermIdentity l t
 eraseTermIdentity l (TLabelOf t) = eraseTermIdentity l t
+eraseTermIdentity l (TLabel t1 t2) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
 eraseTermIdentity l (TUnlabel t) = eraseTermIdentity l t
 
 eraseTermIdentity _ TException  = trivial

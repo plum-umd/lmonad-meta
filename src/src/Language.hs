@@ -99,6 +99,7 @@ data Term
 
   | TLabeledTCB Label Term
   | TLabelOf Term
+  | TLabel {tLabelLabel :: Term, tLabelTerm :: Term}
   | TUnlabel Term
 
   | TException
@@ -130,6 +131,7 @@ data Term
 
   | TLabeledTCB Label Term
   | TLabelOf Term
+  | TLabel {tLabelLabel :: Term, tLabelTerm :: Term}
   | TUnlabel Term
 
   | TException
@@ -162,6 +164,7 @@ size (TLowerClearance t) = 1 + size t
 
 size (TLabeledTCB _ t) = 1 + size t
 size (TLabelOf t) = 1 + size t
+size (TLabel t1 t2) = 1 + size t1 + size t2
 size (TUnlabel t) = 1 + size t
 
 size TException     = 0
@@ -234,6 +237,8 @@ eval t@TGetLabel                          = t
 eval t@TGetClearance                      = t
 eval (TLowerClearance t)                  = TLowerClearance (eval t)
 eval (TUnlabel t)                         = TUnlabel (eval t)
+eval (TLabel l@(TVLabel _) t2)            = TLabel l (eval t2)
+eval (TLabel t1 t2)                       = TLabel (eval t1) t2
 
 eval t@(TLabeledTCB _ _)                  = t
 
@@ -293,6 +298,10 @@ hasException (TLabeledTCB _ _) = False
 
 hasException (TLabelOf TException) = True
 hasException (TLabelOf _) = False
+
+hasException (TLabel TException _) = True
+hasException (TLabel _ TException) = True
+hasException (TLabel _ _) = False
 
 hasException (TUnlabel TException) = True
 hasException (TUnlabel _) = False
@@ -356,6 +365,7 @@ subst su (TLowerClearance t) = TLowerClearance (subst su t)
 
 subst _ (TLabeledTCB l t)    = TLabeledTCB l t -- JP: Does it make sense for unbound variables to exist in t??? --  (subst su t)
 subst su (TLabelOf t)        = TLabelOf (subst su t)
+subst su (TLabel t1 t2)      = TLabel (subst su t1) (subst su t2)
 subst su (TUnlabel t)        = TUnlabel (subst su t)
 
 subst _ TException           = TException
