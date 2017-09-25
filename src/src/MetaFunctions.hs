@@ -81,7 +81,7 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 
 ςTerm (TLabeledTCB _ _)  = False
 
-ςTerm TException = False -- JP: Is this right?
+ςTerm TException = True -- JP: Is this right?
 
 {-@ reflect ς @-}
 ς :: Program -> Bool 
