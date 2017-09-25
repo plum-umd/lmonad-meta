@@ -42,6 +42,7 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 
 εTerm l (TLabeledTCB l' t) = TLabeledTCB l' (εTerm l t)
 εTerm l (TLabelOf t) = TLabelOf (εTerm l t)
+εTerm l (TUnlabel t) = TUnlabel (εTerm l t)
 
 εTerm _ TException = TException
 
@@ -82,6 +83,7 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 
 ςTerm (TLabeledTCB _ _)  = False
 ςTerm (TLabelOf t) = ςTerm t
+ςTerm (TUnlabel t) = ςTerm t
 
 ςTerm TException = True -- JP: Is this right?
 

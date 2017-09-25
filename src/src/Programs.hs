@@ -36,6 +36,16 @@ evalProgram (Pg l c m (TLowerClearance (TLabel c'))) | l `canFlowTo` c' && c' `c
 -- Lower clearance where checks don't pass.
 evalProgram (Pg l c m (TLowerClearance (TLabel _))) = Pair 0 (Pg l c m TException)
 
+-- Unlabel where checks pass.
+evalProgram (Pg l c m (TUnlabel (TLabeledTCB ll t))) = 
+    let l' = l `join` ll in
+    -- Checks pass.
+    if l' `canFlowTo` c then
+        Pair 0 (Pg l' c m t)
+    -- Checks don't pass.
+    else
+        Pair 0 (Pg l c m TException) -- JP: Not l' right?
+
 evalProgram (Pg l c m t) = Pair 0 (Pg l c m (eval t))
 
 {-@ reflect mapSnd @-}

@@ -99,6 +99,7 @@ data Term
 
   | TLabeledTCB Label Term
   | TLabelOf Term
+  | TUnlabel Term
 
   | TException
   deriving (Eq, Show)
@@ -128,6 +129,8 @@ data Term
   | TLowerClearance Term
 
   | TLabeledTCB Label Term
+  | TLabelOf Term
+  | TUnlabel Term
 
   | TException
  @-} 
@@ -159,6 +162,7 @@ size (TLowerClearance t) = 1 + size t
 
 size (TLabeledTCB _ t) = 1 + size t
 size (TLabelOf t) = 1 + size t
+size (TUnlabel t) = 1 + size t
 
 size TException     = 0
 
@@ -229,6 +233,7 @@ eval t@(TBind _ _)                        = t
 eval t@TGetLabel                          = t
 eval t@TGetClearance                      = t
 eval (TLowerClearance t)                  = TLowerClearance (eval t)
+eval (TUnlabel t)                         = TUnlabel (eval t)
 
 eval t@(TLabeledTCB _ _)                  = t
 
@@ -289,6 +294,9 @@ hasException (TLabeledTCB _ _) = False
 hasException (TLabelOf TException) = True
 hasException (TLabelOf _) = False
 
+hasException (TUnlabel TException) = True
+hasException (TUnlabel _) = False
+
 -- hasException _                            = False 
 
 
@@ -346,8 +354,9 @@ subst _ TGetLabel          = TGetLabel
 subst _ TGetClearance        = TGetClearance
 subst su (TLowerClearance t) = TLowerClearance (subst su t)
 
-subst su (TLabeledTCB l t)   = TLabeledTCB l (subst su t)
+subst su (TLabeledTCB l t)    = TLabeledTCB l (subst su t)
 subst su (TLabelOf t)        = TLabelOf (subst su t)
+subst su (TUnlabel t)        = TUnlabel (subst su t)
 
 subst _ TException           = TException
 -- subst _  x             = x 
