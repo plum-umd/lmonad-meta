@@ -6,7 +6,7 @@ import Programs
 main :: IO ()
 main = do
     let vL = 63
-    let tC = TCanFlowTo (TVar vL) $ TLabel LabelAJoinB
+    let tC = TCanFlowTo (TVar vL) $ TVLabel LabelAJoinB
     let t = TBind TGetClearance $ TLam vL $ TIf tC (TVar 1) (TVar 0)
     let p0 = Pg LabelA LabelA Memory t
     putStrLn $ show p0

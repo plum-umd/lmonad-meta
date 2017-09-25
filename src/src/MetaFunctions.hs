@@ -29,7 +29,7 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 εTerm l (TFix t)       = TFix (εTerm l t) 
 εTerm l (TIf t1 t2 t3) = TIf (εTerm l t1) (εTerm l t2) (εTerm l t3)
 
-εTerm _ v@(TLabel _)   = v
+εTerm _ v@(TVLabel _)   = v
 εTerm l (TJoin t1 t2)  = TJoin (εTerm l t1) (εTerm l t2)
 εTerm l (TMeet t1 t2)  = TMeet (εTerm l t1) (εTerm l t2)
 εTerm l (TCanFlowTo t1 t2) = TCanFlowTo (εTerm l t1) (εTerm l t2)
@@ -70,7 +70,7 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 ςTerm (TFix t)       = ςTerm t 
 ςTerm (TIf t1 t2 t3) = ςTerm t1 && ςTerm t2 && ςTerm t3
 
-ςTerm (TLabel _)       = True 
+ςTerm (TVLabel _)       = True 
 ςTerm (TJoin _ _)      = True 
 ςTerm (TMeet _ _)      = True 
 ςTerm (TCanFlowTo _ _) = True 

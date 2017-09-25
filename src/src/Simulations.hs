@@ -76,8 +76,8 @@ simulationsHoles' (Pg lcurr c m TGetLabel) l =
     ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m THole)) -- ? evalTHole
     ==. Pair 0 (ε l (Pg lcurr c m THole))
     ==. Pair 0 (Pg lcurr c m THole)
-    ==. Pair 0 (ε l (Pg lcurr c m (TLabel lcurr)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (TLabel lcurr)))
+    ==. Pair 0 (ε l (Pg lcurr c m (TVLabel lcurr)))
+    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (TVLabel lcurr)))
     ==. mapSnd (ε l) (evalProgram (Pg lcurr c m TGetLabel))
     *** QED 
 
@@ -89,8 +89,8 @@ simulationsHoles' p@(Pg lcurr c m TGetClearance) l =
     ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m THole))
     ==. Pair 0 (ε l (Pg lcurr c m THole))
     ==. Pair 0 (Pg lcurr c m THole)
-    ==. Pair 0 (ε l (Pg lcurr c m (TLabel c)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (TLabel c)))
+    ==. Pair 0 (ε l (Pg lcurr c m (TVLabel c)))
+    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (TVLabel c)))
     ==. mapSnd (ε l) (evalProgram p)
     *** QED 
 
@@ -123,7 +123,7 @@ eraseTermIdentity l (TApp t1 t2)   = eraseTermIdentity l t1 &&& eraseTermIdentit
 eraseTermIdentity l (TFix t)       = eraseTermIdentity l t 
 eraseTermIdentity l (TIf t1 t2 t3) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2 &&& eraseTermIdentity l t3 
 
-eraseTermIdentity _ (TLabel _)     = trivial
+eraseTermIdentity _ (TVLabel _)     = trivial
 eraseTermIdentity l (TMeet t1 t2)      = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
 eraseTermIdentity l (TJoin t1 t2)      = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
 eraseTermIdentity l (TCanFlowTo t1 t2) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2

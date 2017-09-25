@@ -85,7 +85,7 @@ data Term
   | TFix {tFix :: Term}
   | TIf  {tIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
 
-  | TLabel Label
+  | TVLabel Label
   | TJoin {tJoin1 :: Term, tJoin2 :: Term}
   | TMeet {tMeet1 :: Term, tMeet2 :: Term}
   | TCanFlowTo {tCanFlowTo1 :: Term, tCanFlowTo2 :: Term}
@@ -117,7 +117,7 @@ data Term
   | TFix {tFix :: Term}
   | TIf  {iIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
 
-  | TLabel Label
+  | TVLabel Label
   | TJoin {tJoin1 :: Term, tJoin2 :: Term}
   | TMeet {tMeet1 :: Term, tMeet2 :: Term}
   | TCanFlowTo {tCanFlowTo1 :: Term, tCanFlowTo2 :: Term}
@@ -149,7 +149,7 @@ size TTrue          = 1
 size TFalse         = 1 
 size TUnit          = 1 
 
-size (TLabel _)     = 1 -- JP: Is this fine???
+size (TVLabel _)     = 1 -- JP: Is this fine???
 size (TJoin t1 t2)  = 1 + size t1 + size t2
 size (TMeet t1 t2)  = 1 + size t1 + size t2
 size (TCanFlowTo t1 t2)  = 1 + size t1 + size t2
@@ -172,7 +172,7 @@ isValue (TLam _ _) = True
 isValue TUnit      = True 
 isValue TTrue      = True 
 isValue TFalse     = True 
-isValue (TLabel _) = True 
+isValue (TVLabel _) = True 
 isValue TException = True
 isValue _          = False 
 
@@ -207,16 +207,16 @@ eval (TFix t)              = TFix (eval t)
 eval (TApp (TLam x t1) t2) = subst (Sub x t2) t1
 eval (TApp t1 t2)          = TApp (eval t1) t2
 
-eval (TJoin (TLabel l1) (TLabel l2)) = TLabel (join l1 l2)
-eval (TJoin (TLabel l1) t2)          = TJoin (TLabel l1) (eval t2)
+eval (TJoin (TVLabel l1) (TVLabel l2)) = TVLabel (join l1 l2)
+eval (TJoin (TVLabel l1) t2)          = TJoin (TVLabel l1) (eval t2)
 eval (TJoin t1 t2)                   = TJoin (eval t1) t2
 
-eval (TMeet (TLabel l1) (TLabel l2)) = TLabel (meet l1 l2)
-eval (TMeet (TLabel l1) t2)          = TMeet (TLabel l1) (eval t2)
+eval (TMeet (TVLabel l1) (TVLabel l2)) = TVLabel (meet l1 l2)
+eval (TMeet (TVLabel l1) t2)          = TMeet (TVLabel l1) (eval t2)
 eval (TMeet t1 t2)                   = TMeet (eval t1) t2
 
-eval (TCanFlowTo (TLabel l1) (TLabel l2)) = boolToTerm (canFlowTo l1 l2)
-eval (TCanFlowTo (TLabel l1) t2)          = TCanFlowTo (TLabel l1) (eval t2)
+eval (TCanFlowTo (TVLabel l1) (TVLabel l2)) = boolToTerm (canFlowTo l1 l2)
+eval (TCanFlowTo (TVLabel l1) t2)          = TCanFlowTo (TVLabel l1) (eval t2)
 eval (TCanFlowTo t1 t2)                   = TCanFlowTo (eval t1) t2
 
 eval THole                                = THole
@@ -226,7 +226,7 @@ eval t@TFalse                             = t
 eval t@TUnit                              = t
 eval t@(TVar _)                           = t
 
-eval t@(TLabel _)                         = t
+eval t@(TVLabel _)                         = t
 
 -- Monadic
 eval t@(TBind _ _)                        = t
@@ -237,7 +237,7 @@ eval (TUnlabel t)                         = TUnlabel (eval t)
 
 eval t@(TLabeledTCB _ _)                  = t
 
-eval (TLabelOf (TLabeledTCB l _))         = TLabel l
+eval (TLabelOf (TLabeledTCB l _))         = TVLabel l
 eval (TLabelOf t)                         = TLabelOf (eval t)
 
 eval t@TException                         = t
@@ -274,7 +274,7 @@ hasException (TBind TException _) = True
 hasException (TBind _ TException) = True
 hasException (TBind _ _) = False
 
-hasException (TLabel _) = False
+hasException (TVLabel _) = False
 hasException (TJoin TException _) = True
 hasException (TJoin _ TException) = True
 hasException (TJoin _ _) = False
@@ -316,7 +316,7 @@ hasException (TUnlabel _) = False
 -- propagateException (TFix t1) = propagateException t1
 -- propagateException (TIf t1 t2 t3) = propagateException t1 || propagateException t2 || propagateException t3
 -- 
--- propagateException (TLabel _) = False
+-- propagateException (TVLabel _) = False
 -- 
 -- propagateException TGetLabel = False
 -- propagateException TGetClearance = False
@@ -345,7 +345,7 @@ subst su (TIf t t1 t2) = TIf (subst su t) (subst su t1) (subst su t2)
 subst _ TTrue         = TTrue
 subst _ TFalse        = TFalse
 subst _ TUnit         = TUnit
-subst _ t@(TLabel _)  = t
+subst _ t@(TVLabel _)  = t
 subst su (TJoin t1 t2) = TJoin (subst su t1) (subst su t2)
 subst su (TMeet t1 t2) = TMeet (subst su t1) (subst su t2)
 subst su (TCanFlowTo t1 t2) = TCanFlowTo (subst su t1) (subst su t2)
