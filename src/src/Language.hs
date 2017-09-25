@@ -95,6 +95,7 @@ data Term
 
   | TGetLabel
   | TGetClearance
+  | TLowerClearance Term
 
   | TException
   deriving (Eq, Show)
@@ -121,10 +122,10 @@ data Term
 
   | TGetLabel
   | TGetClearance
+  | TLowerClearance Term
 
   | TException
  @-} 
---  | TLowerClearance Term
 
 size :: Term -> Integer 
 {-@ measure size @-}
@@ -149,7 +150,7 @@ size (TBind t1 t2)  = 1 + size t1 + size t2
 
 size TGetLabel      = 0 -- JP: Is this fine???
 size TGetClearance  = 0 -- JP: Is this fine???
--- size (TLowerClearance t) = 1 + size t
+size (TLowerClearance t) = 1 + size t
 
 size TException     = 0
 
@@ -206,10 +207,26 @@ eval (TCanFlowTo (TLabel l1) (TLabel l2)) = boolToTerm (canFlowTo l1 l2)
 eval (TCanFlowTo (TLabel l1) t2)          = TCanFlowTo (TLabel l1) (eval t2)
 eval (TCanFlowTo t1 t2)                   = TCanFlowTo (eval t1) t2
 
+eval THole                                = THole
+eval t@(TLam _ _)                         = t
+eval t@TTrue                              = t
+eval t@TFalse                             = t
+eval t@TUnit                              = t
+eval t@(TVar _)                           = t
+
+eval t@(TLabel _)                         = t
+
+-- Monadic
+eval t@(TBind _ _)                        = t
+eval t@TGetLabel                          = t
+eval t@TGetClearance                      = t
+eval (TLowerClearance t)                  = TLowerClearance (eval t)
+
+eval t@TException                         = t
+
 -- eval (TLowerClearance t)   = TLowerClearance (eval t)
 -- eval v | isValue v         = v 
--- TGetLabel, TLowerClearance, and TGetClearance are unreachable?
-eval v                     = v 
+-- eval v                     = v 
 
 -- NV: Should that be recursively deinfed? 
 {-@ reflect hasException @-}
@@ -225,8 +242,8 @@ hasException (TIf TException _ _)         = True
 hasException (TIf _ TException _)         = True
 hasException (TIf _ _ TException)         = True
 hasException (TIf _ _ _)                  = False
--- hasException (TLowerClearance TException) = True
--- hasException (TLowerClearance _)          = False
+hasException (TLowerClearance TException) = True
+hasException (TLowerClearance _)          = False
 hasException TException                   = True
 
 hasException THole = False
@@ -307,5 +324,6 @@ subst su (TCanFlowTo t1 t2) = TCanFlowTo (subst su t1) (subst su t2)
 subst su (TBind t1 t2) = TBind (subst su t1) (subst su t2)
 subst _ TGetLabel          = TGetLabel
 subst _ TGetClearance          = TGetClearance
+subst su (TLowerClearance t) = TLowerClearance (subst su t)
 subst _ TException          = TException
 -- subst _  x             = x 

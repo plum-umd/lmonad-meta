@@ -132,6 +132,6 @@ eraseTermIdentity l (TBind t1 t2) = eraseTermIdentity l t1 &&& eraseTermIdentity
 
 eraseTermIdentity _ TGetLabel      = trivial
 eraseTermIdentity _ TGetClearance  = trivial
--- eraseTermIdentity l (TLowerClearance t) = eraseTermIdentity l t
+eraseTermIdentity l (TLowerClearance t) = eraseTermIdentity l t
 
 eraseTermIdentity _ TException  = trivial

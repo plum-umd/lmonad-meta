@@ -29,14 +29,12 @@ evalProgram (Pg l c m (TBind t1 t2)) =
 evalProgram (Pg l c m TGetLabel) = Pair 0 (Pg l c m (TLabel l))
 evalProgram (Pg l c m TGetClearance) = Pair 0 (Pg l c m (TLabel c))
 
--- -- Lower clearance where checks pass.
--- evalProgram (Pg l c m (TLowerClearance (TLabel c'))) | l `canFlowTo` c' && c' `canFlowTo` c = 
---     Pair 0 (Pg l c' m TUnit)
---     
--- -- TODO: Lower clearance where checks pass. XXX
--- evalProgram (Pg l c m (TLowerClearance (TLabel c'))) | l `canFlowTo` c' && c' `canFlowTo` c = undefined
--- 
--- evalProgram (Pg l c m (TLowerClearance t)) = evalProgram (Pg l c m (TLowerClearance (eval t)))
+-- Lower clearance where checks pass.
+evalProgram (Pg l c m (TLowerClearance (TLabel c'))) | l `canFlowTo` c' && c' `canFlowTo` c = 
+    Pair 0 (Pg l c' m TUnit)
+    
+-- Lower clearance where checks don't pass.
+evalProgram (Pg l c m (TLowerClearance (TLabel _))) = Pair 0 (Pg l c m TException)
 
 evalProgram (Pg l c m t) = Pair 0 (Pg l c m (eval t))
 
