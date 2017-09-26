@@ -385,3 +385,4 @@ subst su (TToLabeled t1 t2)        = TToLabeled (subst su t1) (subst su t2)
 
 subst _ TException           = TException
 -- subst _  x             = x 
+
