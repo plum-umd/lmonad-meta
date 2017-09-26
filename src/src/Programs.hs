@@ -52,6 +52,22 @@ evalProgram (Pg l c m (TUnlabel (TLabeledTCB ll t))) =
     else
         Pair 0 (Pg l c m TException) -- JP: Not l' right?
 
+-- ToLabeled.
+evalProgram (Pg l c m (TToLabeled (TVLabel ll) t)) | l `canFlowTo` ll && ll `canFlowTo` c = 
+    let (Pair n (Pg l' _ m' t')) = evalProgram (Pg l c m t) in
+
+    case t' of
+        -- Need to fully evaluate to exception, or surround with catch???
+        -- TException -> ...
+        _ ->
+            -- Make sure resulting label doesn't exceed ll.
+            if l' `canFlowTo` ll then
+                Pair (n+1) (Pg l c m' (TLabeledTCB ll t'))
+            else
+                Pair (n+1) (Pg l c m' (TLabeledTCB ll TException))
+            
+evalProgram (Pg l c m (TToLabeled (TVLabel _) _)) = Pair 0 (Pg l c m TException)
+
 evalProgram (Pg l c m t) = Pair 0 (Pg l c m (eval t))
 
 {-@ reflect mapSnd @-}

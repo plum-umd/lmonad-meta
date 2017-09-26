@@ -139,4 +139,6 @@ eraseTermIdentity l (TLabelOf t) = eraseTermIdentity l t
 eraseTermIdentity l (TLabel t1 t2) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
 eraseTermIdentity l (TUnlabel t) = eraseTermIdentity l t
 
+eraseTermIdentity l (TToLabeled t1 t2) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
+
 eraseTermIdentity _ TException  = trivial

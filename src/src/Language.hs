@@ -97,10 +97,12 @@ data Term
   | TGetClearance
   | TLowerClearance Term
 
-  | TLabeledTCB Label Term
+  | TLabeledTCB {tLabeledLabel :: Label, tLabeledTerm :: Term}
   | TLabelOf Term
   | TLabel {tLabelLabel :: Term, tLabelTerm :: Term}
   | TUnlabel Term
+
+  | TToLabeled {tToLabeledLabel :: Term, tToLabeledTerm :: Term}
 
   | TException
   deriving (Eq, Show)
@@ -129,10 +131,12 @@ data Term
   | TGetClearance
   | TLowerClearance Term
 
-  | TLabeledTCB Label Term
+  | TLabeledTCB {tLabeledLabel :: Label, tLabeledTerm :: Term}
   | TLabelOf Term
   | TLabel {tLabelLabel :: Term, tLabelTerm :: Term}
   | TUnlabel Term
+
+  | TToLabeled {tToLabeledLabel :: Term, tToLabeledTerm :: Term}
 
   | TException
  @-} 
@@ -166,6 +170,8 @@ size (TLabeledTCB _ t) = 1 + size t
 size (TLabelOf t) = 1 + size t
 size (TLabel t1 t2) = 1 + size t1 + size t2
 size (TUnlabel t) = 1 + size t
+
+size (TToLabeled t1 t2) = 1 + size t1 + size t2
 
 size TException     = 0
 
@@ -245,6 +251,9 @@ eval t@(TLabeledTCB _ _)                  = t
 eval (TLabelOf (TLabeledTCB l _))         = TVLabel l
 eval (TLabelOf t)                         = TLabelOf (eval t)
 
+eval (TToLabeled l@(TVLabel _) t)         = TToLabeled l (eval t)
+eval (TToLabeled t1 t2)                   = TToLabeled (eval t1) t2
+
 eval t@TException                         = t
 
 -- eval (TLowerClearance t)   = TLowerClearance (eval t)
@@ -293,7 +302,7 @@ hasException (TCanFlowTo _ _) = False
 hasException TGetLabel = False
 hasException TGetClearance = False
 
-hasException (TLabeledTCB _ TException) = True -- JP: Do we propagate here?
+-- hasException (TLabeledTCB _ TException) = True -- JP: Do we propagate here?
 hasException (TLabeledTCB _ _) = False
 
 hasException (TLabelOf TException) = True
@@ -305,6 +314,10 @@ hasException (TLabel _ _) = False
 
 hasException (TUnlabel TException) = True
 hasException (TUnlabel _) = False
+
+-- hasException (TToLabeled TException _) = True
+-- hasException (TToLabeled _ TException) = True
+hasException (TToLabeled _ _) = False
 
 -- hasException _                            = False 
 
@@ -367,6 +380,8 @@ subst _ (TLabeledTCB l t)    = TLabeledTCB l t -- JP: Does it make sense for unb
 subst su (TLabelOf t)        = TLabelOf (subst su t)
 subst su (TLabel t1 t2)      = TLabel (subst su t1) (subst su t2)
 subst su (TUnlabel t)        = TUnlabel (subst su t)
+
+subst su (TToLabeled t1 t2)        = TToLabeled (subst su t1) (subst su t2)
 
 subst _ TException           = TException
 -- subst _  x             = x 
