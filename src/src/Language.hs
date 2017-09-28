@@ -221,6 +221,21 @@ hasException TGetClearance       = False
 -- hasException (TLabeledTCB _ TException) = True -- JP: Do we propagate here?
 hasException (TLabeledTCB _ _)   = False
 
+hasException (TLam _ e)          = e  == TException 
+hasException (TApp e1 e2)        = e1 == TException || e2 == TException 
+hasException (TFix e)            = e  == TException 
+hasException (TIf e e1 e2)       = e  == TException || e1 == TException || e2 == TException 
+hasException (TLowerClearance e) = e  == TException
+hasException (TBind e1 e2)       = e1 == TException || e2 == TException  
+hasException (TJoin e1 e2)       = e1 == TException || e2 == TException 
+hasException (TMeet e1 e2)       = e1 == TException || e2 == TException 
+hasException (TCanFlowTo e1 e2)  = e1 == TException || e2 == TException 
+hasException (TLabelOf e)        = e  == TException 
+hasException (TLabel e1 e2)      = e1 == TException || e2 == TException  
+hasException (TUnlabel e)        = e  == TException 
+hasException (TToLabeled e1 e2)  = e1 == TException || e2 == TException  
+
+{- 
 hasException (TLam _ e)          = hasException e 
 hasException (TApp e1 e2)        = hasException e1 || hasException e2 
 hasException (TFix e)            = hasException e 
@@ -234,7 +249,7 @@ hasException (TLabelOf e)        = hasException e
 hasException (TLabel e1 e2)      = hasException e1 || hasException e2 
 hasException (TUnlabel e)        = hasException e 
 hasException (TToLabeled e1 e2)  = hasException e1 || hasException e2 
-
+-}
 -- hasException (TToLabeled TException _) = True
 -- hasException (TToLabeled _ TException) = True
 
