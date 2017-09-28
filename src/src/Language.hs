@@ -151,7 +151,7 @@ data Sub = Sub {subVar :: Var, subTerm :: Term}
 {-@ eval :: Term -> Term @-}
 eval :: Term -> Term
 -- eval t | propagateException t = TException
-eval t | hasException t    = TException
+eval t | propagateException t    = TException
 eval (TIf TTrue  t2 _)     = t2 
 eval (TIf TFalse _ t3)     = t3
 eval (TIf t1 t2 t3)        = TIf (eval t1) t2 t3
@@ -205,35 +205,35 @@ eval t@TException                         = t
 -- eval v                     = v 
 
 -- NV: Should that be recursively deinfed? 
-{-@ reflect hasException @-}
-hasException :: Term -> Bool 
+{-@ reflect propagateException @-}
+propagateException :: Term -> Bool 
 
-hasException TException          = True
+propagateException TException          = True
 
-hasException THole               = False
-hasException TTrue               = False
-hasException TFalse              = False
-hasException TUnit               = False
-hasException (TVar _)            = False
-hasException (TVLabel _)         = False
-hasException TGetLabel           = False
-hasException TGetClearance       = False
--- hasException (TLabeledTCB _ TException) = True -- JP: Do we propagate here?
-hasException (TLabeledTCB _ _)   = False
+propagateException THole               = False
+propagateException TTrue               = False
+propagateException TFalse              = False
+propagateException TUnit               = False
+propagateException (TVar _)            = False
+propagateException (TVLabel _)         = False
+propagateException TGetLabel           = False
+propagateException TGetClearance       = False
+-- propagateException (TLabeledTCB _ TException) = True -- JP: Do we propagate here?
+propagateException (TLabeledTCB _ _)   = False
 
-hasException (TLam _ e)          = e  == TException 
-hasException (TApp e1 e2)        = e1 == TException || e2 == TException 
-hasException (TFix e)            = e  == TException 
-hasException (TIf e e1 e2)       = e  == TException || e1 == TException || e2 == TException 
-hasException (TLowerClearance e) = e  == TException
-hasException (TBind e1 e2)       = e1 == TException || e2 == TException  
-hasException (TJoin e1 e2)       = e1 == TException || e2 == TException 
-hasException (TMeet e1 e2)       = e1 == TException || e2 == TException 
-hasException (TCanFlowTo e1 e2)  = e1 == TException || e2 == TException 
-hasException (TLabelOf e)        = e  == TException 
-hasException (TLabel e1 e2)      = e1 == TException || e2 == TException  
-hasException (TUnlabel e)        = e  == TException 
-hasException (TToLabeled e1 e2)  = e1 == TException || e2 == TException  
+propagateException (TLam _ e)          = e  == TException 
+propagateException (TApp e1 e2)        = e1 == TException || e2 == TException 
+propagateException (TFix e)            = e  == TException 
+propagateException (TIf e e1 e2)       = e  == TException || e1 == TException || e2 == TException 
+propagateException (TLowerClearance e) = e  == TException
+propagateException (TBind e1 e2)       = e1 == TException || e2 == TException  
+propagateException (TJoin e1 e2)       = e1 == TException || e2 == TException 
+propagateException (TMeet e1 e2)       = e1 == TException || e2 == TException 
+propagateException (TCanFlowTo e1 e2)  = e1 == TException || e2 == TException 
+propagateException (TLabelOf e)        = e  == TException 
+propagateException (TLabel e1 e2)      = e1 == TException || e2 == TException  
+propagateException (TUnlabel e)        = e  == TException 
+propagateException (TToLabeled e1 e2)  = e1 == TException || e2 == TException  
 
 {- 
 hasException (TLam _ e)          = hasException e 
@@ -255,30 +255,6 @@ hasException (TToLabeled e1 e2)  = hasException e1 || hasException e2
 
 -- hasException _                            = False 
 
-
--- Propagate exceptions first.
--- {-@ reflect propagateException @-}
--- {-@ propagateException :: Term -> Bool @-}
--- propagateException :: Term -> Bool
--- propagateException _ = False
--- 
--- propagateException THole = False
--- propagateException (TLam _ t) = propagateException t
--- propagateException TTrue = False
--- propagateException TFalse = False
--- propagateException TUnit = False
--- propagateException (TVar _) = False
--- propagateException (TApp t1 t2) = propagateException t1 || propagateException t2
--- propagateException (TFix t1) = propagateException t1
--- propagateException (TIf t1 t2 t3) = propagateException t1 || propagateException t2 || propagateException t3
--- 
--- propagateException (TVLabel _) = False
--- 
--- propagateException TGetLabel = False
--- propagateException TGetClearance = False
--- propagateException (TLowerClearance _) = False
--- 
--- propagateException TException = True
 
 -------------------------------------------------------------------------------
 -- | Substitution -------------------------------------------------------------

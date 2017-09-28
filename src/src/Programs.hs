@@ -5,6 +5,7 @@
 {-@ LIQUID "--automatic-instances=liquidinstanceslocal" @-}
 module Programs where
 
+import Label
 import Language 
 
 data Program = Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term}

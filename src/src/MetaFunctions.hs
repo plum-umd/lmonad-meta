@@ -5,6 +5,7 @@
 {-@ LIQUID "--automatic-instances=liquidinstanceslocal" @-}
 module MetaFunctions where
 
+import Label
 import Language 
 import Programs 
 

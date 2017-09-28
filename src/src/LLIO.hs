@@ -10,7 +10,7 @@ module LLIO where
 
 import Language.Haskell.Liquid.ProofCombinators
 
-import Language
+import Label
 import Programs
 import MetaFunctions
 

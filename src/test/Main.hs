@@ -1,5 +1,6 @@
 module Main where
 
+import Label
 import Language
 import Programs
 

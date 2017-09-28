@@ -5,6 +5,7 @@ module Simulations where
 
 import Language.Haskell.Liquid.ProofCombinators
 
+import Label
 import Language 
 import Programs 
 import MetaFunctions 
