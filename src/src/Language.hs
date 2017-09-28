@@ -4,63 +4,7 @@
 
 module Language where
 
--- type Label = Integer -- JP: Do we need a different type for a partial order?
-
-data Label = 
-    LabelAMeetB 
-  | LabelA 
-  | LabelB 
-  | LabelAJoinB
-  deriving (Eq, Show)
-
-{-@ data Label = 
-    LabelAMeetB 
-  | LabelA 
-  | LabelB 
-  | LabelAJoinB
-@-}
-
-{-@ reflect canFlowTo @-}
-canFlowTo :: Label -> Label -> Bool
-canFlowTo _ LabelAJoinB = True
-canFlowTo LabelAJoinB _ = False
-canFlowTo LabelA LabelA = True
-canFlowTo LabelAMeetB LabelA = True
-canFlowTo LabelB LabelA = False
-canFlowTo LabelB LabelB = True
-canFlowTo LabelAMeetB LabelB = True
-canFlowTo LabelA LabelB = False
-canFlowTo LabelAMeetB LabelAMeetB = True
-canFlowTo LabelA LabelAMeetB = False
-canFlowTo LabelB LabelAMeetB = False
--- canFlowTo x y | x == y = True
-
-{-@ reflect join @-}
-join :: Label -> Label -> Label
-join LabelAJoinB _ = LabelAJoinB
-join _ LabelAJoinB = LabelAJoinB
-join LabelA LabelB = LabelAJoinB
-join LabelA LabelA = LabelA
-join LabelA LabelAMeetB = LabelA
-join LabelB LabelA = LabelAJoinB
-join LabelB LabelB = LabelB
-join LabelB LabelAMeetB = LabelB
-join LabelAMeetB LabelA = LabelA
-join LabelAMeetB LabelB = LabelB
-join LabelAMeetB LabelAMeetB = LabelAMeetB
-
-{-@ reflect meet @-}
-meet :: Label -> Label -> Label
-meet LabelAMeetB _ = LabelAMeetB
-meet _ LabelAMeetB = LabelAMeetB
-meet LabelA LabelB = LabelAMeetB
-meet LabelA LabelA = LabelA
-meet LabelA LabelAJoinB = LabelA
-meet LabelB LabelA = LabelAMeetB
-meet LabelB LabelB = LabelB
-meet LabelB LabelAJoinB = LabelB
-meet LabelAJoinB v = v
-
+import Label 
 {-@ reflect boolToTerm @-}
 boolToTerm :: Bool -> Term
 boolToTerm True  = TTrue
@@ -235,7 +179,7 @@ eval t@TFalse                             = t
 eval t@TUnit                              = t
 eval t@(TVar _)                           = t
 
-eval t@(TVLabel _)                         = t
+eval t@(TVLabel _)                        = t
 
 -- Monadic
 eval t@(TBind _ _)                        = t
@@ -263,61 +207,51 @@ eval t@TException                         = t
 -- NV: Should that be recursively deinfed? 
 {-@ reflect hasException @-}
 hasException :: Term -> Bool 
-hasException (TLam _ TException)          = True
-hasException (TLam _ _)                   = False
-hasException (TApp TException _)          = True
-hasException (TApp _ TException)          = True
-hasException (TApp _ _)                   = False
-hasException (TFix TException)            = True
-hasException (TFix _)                     = False
-hasException (TIf TException _ _)         = True
-hasException (TIf _ TException _)         = True
-hasException (TIf _ _ TException)         = True
-hasException (TIf _ _ _)                  = False
-hasException (TLowerClearance TException) = True
-hasException (TLowerClearance _)          = False
-hasException TException                   = True
 
-hasException THole = False
-hasException TTrue = False
-hasException TFalse = False
-hasException TUnit = False
-hasException (TVar _) = False
+hasException TException          = True
 
-hasException (TBind TException _) = True
-hasException (TBind _ TException) = True
-hasException (TBind _ _) = False
-
-hasException (TVLabel _) = False
-hasException (TJoin TException _) = True
-hasException (TJoin _ TException) = True
-hasException (TJoin _ _) = False
-hasException (TMeet TException _) = True
-hasException (TMeet _ TException) = True
-hasException (TMeet _ _) = False
-hasException (TCanFlowTo TException _) = True
-hasException (TCanFlowTo _ TException) = True
-hasException (TCanFlowTo _ _) = False
-
-hasException TGetLabel = False
-hasException TGetClearance = False
-
+hasException THole               = False
+hasException TTrue               = False
+hasException TFalse              = False
+hasException TUnit               = False
+hasException (TVar _)            = False
+hasException (TVLabel _)         = False
+hasException TGetLabel           = False
+hasException TGetClearance       = False
 -- hasException (TLabeledTCB _ TException) = True -- JP: Do we propagate here?
-hasException (TLabeledTCB _ _) = False
+hasException (TLabeledTCB _ _)   = False
 
-hasException (TLabelOf TException) = True
-hasException (TLabelOf _) = False
+hasException (TLam _ e)          = e  == TException 
+hasException (TApp e1 e2)        = e1 == TException || e2 == TException 
+hasException (TFix e)            = e  == TException 
+hasException (TIf e e1 e2)       = e  == TException || e1 == TException || e2 == TException 
+hasException (TLowerClearance e) = e  == TException
+hasException (TBind e1 e2)       = e1 == TException || e2 == TException  
+hasException (TJoin e1 e2)       = e1 == TException || e2 == TException 
+hasException (TMeet e1 e2)       = e1 == TException || e2 == TException 
+hasException (TCanFlowTo e1 e2)  = e1 == TException || e2 == TException 
+hasException (TLabelOf e)        = e  == TException 
+hasException (TLabel e1 e2)      = e1 == TException || e2 == TException  
+hasException (TUnlabel e)        = e  == TException 
+hasException (TToLabeled e1 e2)  = e1 == TException || e2 == TException  
 
-hasException (TLabel TException _) = True
-hasException (TLabel _ TException) = True
-hasException (TLabel _ _) = False
-
-hasException (TUnlabel TException) = True
-hasException (TUnlabel _) = False
-
+{- 
+hasException (TLam _ e)          = hasException e 
+hasException (TApp e1 e2)        = hasException e1 || hasException e2 
+hasException (TFix e)            = hasException e 
+hasException (TIf e e1 e2)       = hasException e  || hasException e1 || hasException e2
+hasException (TLowerClearance e) = hasException e 
+hasException (TBind e1 e2)       = hasException e1 || hasException e2 
+hasException (TJoin e1 e2)       = hasException e1 || hasException e2 
+hasException (TMeet e1 e2)       = hasException e1 || hasException e2 
+hasException (TCanFlowTo e1 e2)  = hasException e1 || hasException e2 
+hasException (TLabelOf e)        = hasException e 
+hasException (TLabel e1 e2)      = hasException e1 || hasException e2 
+hasException (TUnlabel e)        = hasException e 
+hasException (TToLabeled e1 e2)  = hasException e1 || hasException e2 
+-}
 -- hasException (TToLabeled TException _) = True
 -- hasException (TToLabeled _ TException) = True
-hasException (TToLabeled _ _) = False
 
 -- hasException _                            = False 
 
