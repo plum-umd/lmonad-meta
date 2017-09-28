@@ -150,7 +150,6 @@ data Sub = Sub {subVar :: Var, subTerm :: Term}
 {-@ reflect eval @-}
 {-@ eval :: Term -> Term @-}
 eval :: Term -> Term
--- eval t | propagateException t = TException
 eval t | propagateException t    = TException
 eval (TIf TTrue  t2 _)     = t2 
 eval (TIf TFalse _ t3)     = t3
@@ -204,7 +203,6 @@ eval t@TException                         = t
 -- eval v | isValue v         = v 
 -- eval v                     = v 
 
--- NV: Should that be recursively deinfed? 
 {-@ reflect propagateException @-}
 propagateException :: Term -> Bool 
 
@@ -221,6 +219,7 @@ propagateException TGetClearance       = False
 -- propagateException (TLabeledTCB _ TException) = True -- JP: Do we propagate here?
 propagateException (TLabeledTCB _ _)   = False
 
+{- 
 propagateException (TLam _ e)          = e  == TException 
 propagateException (TApp e1 e2)        = e1 == TException || e2 == TException 
 propagateException (TFix e)            = e  == TException 
@@ -234,26 +233,22 @@ propagateException (TLabelOf e)        = e  == TException
 propagateException (TLabel e1 e2)      = e1 == TException || e2 == TException  
 propagateException (TUnlabel e)        = e  == TException 
 propagateException (TToLabeled e1 e2)  = e1 == TException || e2 == TException  
-
-{- 
-hasException (TLam _ e)          = hasException e 
-hasException (TApp e1 e2)        = hasException e1 || hasException e2 
-hasException (TFix e)            = hasException e 
-hasException (TIf e e1 e2)       = hasException e  || hasException e1 || hasException e2
-hasException (TLowerClearance e) = hasException e 
-hasException (TBind e1 e2)       = hasException e1 || hasException e2 
-hasException (TJoin e1 e2)       = hasException e1 || hasException e2 
-hasException (TMeet e1 e2)       = hasException e1 || hasException e2 
-hasException (TCanFlowTo e1 e2)  = hasException e1 || hasException e2 
-hasException (TLabelOf e)        = hasException e 
-hasException (TLabel e1 e2)      = hasException e1 || hasException e2 
-hasException (TUnlabel e)        = hasException e 
-hasException (TToLabeled e1 e2)  = hasException e1 || hasException e2 
 -}
--- hasException (TToLabeled TException _) = True
--- hasException (TToLabeled _ TException) = True
 
--- hasException _                            = False 
+propagateException (TLam _ e)          = propagateException e 
+propagateException (TApp e1 e2)        = propagateException e1 || propagateException e2 
+propagateException (TFix e)            = propagateException e 
+propagateException (TIf e e1 e2)       = propagateException e  || propagateException e1 || propagateException e2
+propagateException (TLowerClearance e) = propagateException e 
+propagateException (TBind e1 e2)       = propagateException e1 || propagateException e2 
+propagateException (TJoin e1 e2)       = propagateException e1 || propagateException e2 
+propagateException (TMeet e1 e2)       = propagateException e1 || propagateException e2 
+propagateException (TCanFlowTo e1 e2)  = propagateException e1 || propagateException e2 
+propagateException (TLabelOf e)        = propagateException e 
+propagateException (TLabel e1 e2)      = propagateException e1 || propagateException e2 
+propagateException (TUnlabel e)        = propagateException e 
+propagateException (TToLabeled e1 _e2)  = propagateException e1
+    -- || propagateException e2 
 
 
 -------------------------------------------------------------------------------
