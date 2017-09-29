@@ -2,8 +2,7 @@ name:                llio
 version:             0.1.0.0
 synopsis:            Verification of non-interference using Liquid Haskell
 license:             MIT
--- license-file:        LICENSE
-author:              Niki Vazou
+author:              Niki Vazou and James Parker
 maintainer:          nikivazou@gmail.com
 category:            Theorem Proving
 build-type:          Simple
@@ -15,6 +14,9 @@ library
                        Label
                        Language
                        Programs
+                       Determinacy
+                       MetaFunctions
+                       Simulations
   build-depends:       base >=4.9 && <4.10, liquidhaskell
   hs-source-dirs:      src
   ghc-options:         -W -Werror
