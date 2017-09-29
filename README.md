@@ -25,8 +25,3 @@ cabal configure --enable-tests
 cabal build
 cabal test
 ```
-
-# Editing
-
-**ATTENTION** Reflection & Modules does not work well together in Liquid Haskell. 
-All the files are imported using CPP hacks. 
