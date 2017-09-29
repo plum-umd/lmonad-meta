@@ -6,7 +6,7 @@ module Simulations where
 import Language.Haskell.Liquid.ProofCombinators
 
 import Label
-import Language 
+import Language
 import Programs 
 import MetaFunctions 
 
@@ -22,12 +22,15 @@ simulations :: Program -> Program -> Index -> Label -> Proof -> Proof
   :: p:Program -> p':Program -> n:Index -> l:Label
   -> {v:Proof | evalProgram p == Pair n p'}
   -> {v:Proof | evalEraseProgram (ε l p) l = Pair n (ε l p')} @-}
+simulations = undefined 
+{-   
 simulations p p' n l evalProp 
   =   evalEraseProgram (ε l p) l 
   ==. mapSnd (ε l) (evalProgram p) ? simulations' p l 
   ==. mapSnd (ε l) (Pair n p')     ? evalProp
   ==. Pair n (ε l p')
   *** QED 
+-}
 
 {-@ evalTHole :: {v : Proof | eval THole = THole} @-}
 evalTHole :: Proof
@@ -61,6 +64,8 @@ simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
   -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
 
 simulationsHoles' :: Program -> Label -> Proof
+simulationsHoles' _ _ = undefined 
+{- 
 -- simulationsHoles' (Pg lcurr c m TException) l = 
 --         evalEraseProgram (ε l (Pg lcurr c m TException)) l
 --     ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m TException)))
@@ -110,10 +115,14 @@ simulationsHoles' (Pg lcurr c m t) l =
     ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
     *** QED 
 
+-}
+
 -- NV: the following holds just for now, when labels are added it will not hold
-{-@ automatic-instances eraseTermIdentity @-}
+{- automatic-instances eraseTermIdentity @-}
 {-@ eraseTermIdentity :: l:Label -> t:Term  -> { εTerm l t == t } / [size t] @-}
 eraseTermIdentity :: Label -> Term -> Proof
+eraseTermIdentity _ _ = undefined 
+{- 
 eraseTermIdentity _ THole          = trivial 
 eraseTermIdentity _ TTrue          = trivial 
 eraseTermIdentity _ TUnit          = trivial 
@@ -143,3 +152,4 @@ eraseTermIdentity l (TUnlabel t) = eraseTermIdentity l t
 eraseTermIdentity l (TToLabeled t1 t2) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
 
 eraseTermIdentity _ TException  = trivial
+-}

@@ -10,12 +10,16 @@ module LLIO where
 
 import Language.Haskell.Liquid.ProofCombinators
 
+import Language
 import Label
 import Programs
 import MetaFunctions
 
 import Determinacy
 import Simulations
+
+_hackImport  :: Term 
+_hackImport = THole 
 
 εEquiv :: Label -> Program -> Program -> Bool 
 {-@ reflect εEquiv @-}

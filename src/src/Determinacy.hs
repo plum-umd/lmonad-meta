@@ -6,8 +6,12 @@ module Determinacy where
 import Language.Haskell.Liquid.ProofCombinators
 
 import Label
+import Language 
 import Programs 
 import MetaFunctions 
+
+_hackImport  :: Term 
+_hackImport = THole 
 
 {-@ determinacy :: l:Label -> k:Program -> k1:Program -> k2:Program -> n1:Index -> n2:Index
        -> {v:Proof | evalEraseProgram k l == Pair n1 k1 && evalEraseProgram k l == Pair n2 k2} 
