@@ -14,9 +14,6 @@ data Memory  = Memory
   deriving (Eq, Show)
 type Index = Integer
 
-{-@ data Program = Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term} @-}
-{-@ data Memory  = Memory @-}
-
 data Pair a b = Pair {pFst :: a, pSnd :: b}
   deriving Eq 
 {-@ data Pair a b = Pair {pFst :: a, pSnd :: b} @-}

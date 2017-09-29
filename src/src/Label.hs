@@ -1,6 +1,5 @@
 {-@ LIQUID "--exactdc"                                  @-}
 {-@ LIQUID "--higherorder"                              @-}
-{-@ LIQUID "--trustinternals"                           @-}
 
 module Label where
 
@@ -12,13 +11,6 @@ data Label =
   | LabelB 
   | LabelAJoinB
   deriving (Eq, Show)
-
-{-@ data Label = 
-    LabelAMeetB 
-  | LabelA 
-  | LabelB 
-  | LabelAJoinB
-@-}
 
 {-@ reflect canFlowTo @-}
 canFlowTo :: Label -> Label -> Bool

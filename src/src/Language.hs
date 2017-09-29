@@ -1,6 +1,5 @@
 {-@ LIQUID "--exactdc"                                  @-}
 {-@ LIQUID "--higherorder"                              @-}
-{-@ LIQUID "--trustinternals"                           @-}
 
 module Language where
 
@@ -53,37 +52,7 @@ data Term
 
 -- JP: Join, Meet, CanFlowTo...
 
-{-@ data Term [size]
-  = THole 
-  | TLam {lamVar :: Var, lamTerm :: Term}
-  | TTrue 
-  | TFalse 
-  | TUnit 
-  | TVar {tVar :: Var}
-  | TApp {tApp1 :: Term, tApp2 :: Term}
-  | TFix {tFix :: Term}
-  | TIf  {iIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
-
-  | TVLabel Label
-  | TJoin {tJoin1 :: Term, tJoin2 :: Term}
-  | TMeet {tMeet1 :: Term, tMeet2 :: Term}
-  | TCanFlowTo {tCanFlowTo1 :: Term, tCanFlowTo2 :: Term}
-
-  | TBind {tBind1 :: Term, tBind2 :: Term}
-
-  | TGetLabel
-  | TGetClearance
-  | TLowerClearance Term
-
-  | TLabeledTCB {tLabeledLabel :: Label, tLabeledTerm :: Term}
-  | TLabelOf Term
-  | TLabel {tLabelLabel :: Term, tLabelTerm :: Term}
-  | TUnlabel Term
-
-  | TToLabeled {tToLabeledLabel :: Term, tToLabeledTerm :: Term}
-
-  | TException
- @-} 
+{-@ data Term [size] @-}
 
 size :: Term -> Integer 
 {-@ measure size @-}
@@ -136,9 +105,6 @@ isValue _          = False
 
 data Type = TTUnit | TBool | TFun {tFunArg :: Type, tFunRes :: Type} 
   deriving (Eq)
-{-@ data Type = TTUnit | TBool | TFun {tFunArg :: Type, tFunRes :: Type} @-}
--- TODO: exceptions
-
 
 data Sub = Sub {subVar :: Var, subTerm :: Term}
 {-@ data Sub = Sub {subVar :: Var, subTerm :: Term} @-}
