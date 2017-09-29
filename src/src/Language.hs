@@ -89,14 +89,14 @@ size (TToLabeled t1 t2) = 1 + size t1 + size t2
 size TException     = 0
 
 isValue :: Term -> Bool 
-{-@ measure isValue @-}
-isValue (TLam _ _) = True 
-isValue TUnit      = True 
-isValue TTrue      = True 
-isValue TFalse     = True 
+{-@ reflect isValue @-}
+isValue (TLam _ _)  = True  -- TLam :: _ -> _ -> {v:Term | isValue v}
+isValue TUnit       = True  -- TUnit :: {v:Term | isValue v}
+isValue TTrue       = True 
+isValue TFalse      = True 
 isValue (TVLabel _) = True 
-isValue TException = True
-isValue _          = False 
+isValue TException  = True
+isValue _           = False 
 
 
 -------------------------------------------------------------------------------

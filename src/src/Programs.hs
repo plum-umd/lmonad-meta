@@ -12,10 +12,10 @@ data Program = Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTer
   deriving (Eq, Show)
 
 {-@ data Program <p :: Term -> Bool>
-  = Pg { pLabel :: Label
+  = Pg { pLabel     :: Label
        , pClearance :: Label
-       , pMemory :: Memory
-       , pTerm :: Term
+       , pMemory    :: Memory
+       , pTerm      :: (Term<p>)
        }
  @-}
 
@@ -72,14 +72,17 @@ evalProgram (Pg l c m (TToLabeled (TVLabel _) _)) = Pair 0 (Pg l c m TException)
 
 evalProgram (Pg l c m t) = Pair 0 (Pg l c m (eval t))
 
+{-@ lazy evalProgramStar @-}
 
 {-@ reflect evalProgramStar @-}
+{-@ evalProgramStar :: Pair Index Program -> Pair Index (Program <{\v -> isValue v}>) @-}
 evalProgramStar :: Pair Index Program -> Pair Index Program
 evalProgramStar (Pair n (Pg l c m t))
   | isValue t 
   = Pair n (Pg l c m t)
-evalProgramStar (Pair _ p)
+evalProgramStar (Pair n p)
   = evalProgramStar (evalProgram p)
+
 
 {-@ reflect mapSnd @-}
 mapSnd :: (b -> c) -> Pair a b -> Pair a c 
