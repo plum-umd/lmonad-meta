@@ -6,7 +6,7 @@ import System.Process
 main :: IO ()
 main = do 
   c1 <- runCommand' ("cd " ++ sourceDir)
-  runLiquid "Labels.hs"
+  runLiquid "Label.hs"
 
 runLiquid :: String -> IO ExitCode
 runLiquid fname = runCommand' ("stack exec -- liquid " ++ fname)
