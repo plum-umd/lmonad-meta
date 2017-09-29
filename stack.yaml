@@ -1,0 +1,27 @@
+resolver: lts-8.9
+
+packages:
+- 'src'
+
+- location:
+    git: https://github.com/ucsd-progsys/liquid-fixpoint.git
+    commit: 138184a41dc73fec45393a980240e573c028fee3
+
+- location:
+    git: https://github.com/ucsd-progsys/liquidhaskell.git
+    commit: dcf9f89c35451d6c957de0d3c066a265addf4511
+
+
+extra-deps:
+- aeson-0.11.3.0
+- csv-table-0.1.0.1
+- dotgen-0.4.2
+- fgl-visualize-0.1.0.1
+- intern-0.9.1.4
+- located-base-0.1.1.0
+
+flags:
+  liquidhaskell:
+    devel: true
+
+extra-package-dbs: []

@@ -26,7 +26,5 @@ addons:
     - ghc-8.0.2
 
 script:
-  - cabal install liquidhaskell
-  - cabal configure --enable-tests
-  - cabal build
-  - cabal test
+  - stack build 
+  - stack --skip-ghc-check test llio
