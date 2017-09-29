@@ -1,9 +1,16 @@
 resolver: lts-8.9
 
 packages:
-- '../liquidhaskell/liquid-fixpoint/'
-- '../liquidhaskell'
 - 'src'
+
+- location:
+    git: https://github.com/ucsd-progsys/liquid-fixpoint.git
+    commit: 138184a41dc73fec45393a980240e573c028fee3
+
+- location:
+    git: https://github.com/ucsd-progsys/liquidhaskell.git
+    commit: fcb687b0482eacb36ce29012d8bc5ea4d7d4211b
+
 
 extra-deps:
 - aeson-0.11.3.0

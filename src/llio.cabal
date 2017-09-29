@@ -31,6 +31,6 @@ test-suite tests
   default-language:  Haskell98
   build-depends:     base >=4.9 && <4.10, process
   type:              exitcode-stdio-1.0
-  hs-source-dirs:    tests
+  hs-source-dirs:    test
   ghc-options:       -W -Werror
   main-is:           Test.hs
