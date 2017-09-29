@@ -10,6 +10,8 @@ import Language
 import Programs 
 import MetaFunctions 
 
+import Misc
+
 {-@ simulationsCorollary 
   :: p:Program -> p':Program -> n:Index -> l:Label
   -> {v:Proof | evalProgram p == Pair n p'}
@@ -17,12 +19,28 @@ import MetaFunctions
 simulationsCorollary :: Program -> Program -> Index -> Label -> Proof -> (Index, Proof)
 simulationsCorollary p p' n l evalProp = (n, simulations p p' n l evalProp)
 
+{-@ tmp :: p : Program -> p' : Program -> n : Index -> l : Label -> {v:Proof | evalEraseProgram (ε l p) l == mapSnd (ε l) (Pair n p')} @-}
+tmp :: Program -> Program -> Index -> Label -> Proof
+tmp = undefined
+
+{-@ tmp' :: l : Label -> n : Index -> p : Program -> {v : Proof | mapSnd (ε l) (Pair n p) == Pair n (ε l p)} @-}
+tmp' :: Label -> Index -> Program -> Proof
+tmp' = undefined
+
 simulations :: Program -> Program -> Index -> Label -> Proof -> Proof
 {-@ simulations 
   :: p:Program -> p':Program -> n:Index -> l:Label
   -> {v:Proof | evalProgram p == Pair n p'}
   -> {v:Proof | evalEraseProgram (ε l p) l = Pair n (ε l p')} @-}
-simulations = undefined 
+simulations p p' n l evalProp 
+  =   evalEraseProgram (ε l p) l
+  ==. mapSnd (ε l) (Pair n p')  ? tmp p p' n l
+  ==. Pair n (ε l p') -- ? tmp' l n p'
+  -- ==. mapSnd (ε l) (evalProgram p) ? tmp p l -- simulations' p l
+  -- ==. mapSnd (ε l) (Pair n p')     ? evalProp
+  -- ==. Pair n (ε l p') 
+  *** QED
+
 {-   
 simulations p p' n l evalProp 
   =   evalEraseProgram (ε l p) l 
