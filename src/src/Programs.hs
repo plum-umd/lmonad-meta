@@ -80,8 +80,9 @@ evalProgramStar :: Pair Index Program -> Pair Index Program
 evalProgramStar (Pair n (Pg l c m t))
   | isValue t 
   = Pair n (Pg l c m t)
-evalProgramStar (Pair n p)
-  = evalProgramStar (evalProgram p)
+evalProgramStar (Pair n p) =
+    let (Pair n' p') = evalProgramStar (evalProgram p) in
+    Pair (n + n') p'
 
 
 {-@ reflect mapSnd @-}
