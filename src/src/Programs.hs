@@ -10,12 +10,18 @@ import Language
 
 data Program = Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term}
   deriving (Eq, Show)
+
+{-@ data Program <p :: Term -> Bool>
+  = Pg { pLabel     :: Label
+       , pClearance :: Label
+       , pMemory    :: Memory
+       , pTerm      :: (Term<p>)
+       }
+ @-}
+
 data Memory  = Memory
   deriving (Eq, Show)
 type Index = Integer
-
-{-@ data Program = Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term} @-}
-{-@ data Memory  = Memory @-}
 
 data Pair a b = Pair {pFst :: a, pSnd :: b}
   deriving Eq 
@@ -55,14 +61,9 @@ evalProgram (Pg l c m (TUnlabel (TLabeledTCB ll t))) =
 
 -- ToLabeled.
 evalProgram (Pg l c m (TToLabeled (TVLabel ll) t)) | l `canFlowTo` ll && ll `canFlowTo` c = 
-    let (Pair n (Pg l' _ m' t')) = evalProgram (Pg l c m t) in
+    let (Pair n (Pg l' _ m' t')) = evalProgramStar (Pair 0 (Pg l c m t)) in
 
-    case t' of
-        -- Need to fully evaluate to exception, or surround with catch???
-        -- TException -> ...
-        _ ->
-            -- Make sure resulting label doesn't exceed ll.
-            if l' `canFlowTo` ll then
+    if l' `canFlowTo` ll then
                 Pair (n+1) (Pg l c m' (TLabeledTCB ll t'))
             else
                 Pair (n+1) (Pg l c m' (TLabeledTCB ll TException))
@@ -70,6 +71,18 @@ evalProgram (Pg l c m (TToLabeled (TVLabel ll) t)) | l `canFlowTo` ll && ll `can
 evalProgram (Pg l c m (TToLabeled (TVLabel _) _)) = Pair 0 (Pg l c m TException)
 
 evalProgram (Pg l c m t) = Pair 0 (Pg l c m (eval t))
+
+{-@ lazy evalProgramStar @-}
+
+{-@ reflect evalProgramStar @-}
+{-@ evalProgramStar :: Pair Index Program -> Pair Index (Program <{\v -> isValue v}>) @-}
+evalProgramStar :: Pair Index Program -> Pair Index Program
+evalProgramStar (Pair n (Pg l c m t))
+  | isValue t 
+  = Pair n (Pg l c m t)
+evalProgramStar (Pair n p)
+  = evalProgramStar (evalProgram p)
+
 
 {-@ reflect mapSnd @-}
 mapSnd :: (b -> c) -> Pair a b -> Pair a c 
