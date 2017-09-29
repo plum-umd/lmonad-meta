@@ -10,6 +10,15 @@ import Language
 
 data Program = Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term}
   deriving (Eq, Show)
+
+{-@ data Program <p :: Term -> Bool>
+  = Pg { pLabel :: Label
+       , pClearance :: Label
+       , pMemory :: Memory
+       , pTerm :: Term
+       }
+ @-}
+  
 data Memory  = Memory
   deriving (Eq, Show)
 type Index = Integer
