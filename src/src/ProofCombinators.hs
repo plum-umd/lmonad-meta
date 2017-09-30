@@ -29,13 +29,16 @@ module ProofCombinators (
   --   but takes optional proof argument.
   , (==.)
 
+  -- * Combining Proofs 
+  , (&&&)
+
 ) where
 
 -------------------------------------------------------------------------------
 -- | Proof is just a () alias -------------------------------------------------
 -------------------------------------------------------------------------------
 
-data Proof = Proof ()
+type Proof = ()
 
 -------------------------------------------------------------------------------
 -- | Proof Construction -------------------------------------------------------
@@ -44,10 +47,10 @@ data Proof = Proof ()
 -- | trivial is proof by SMT
 
 trivial :: Proof
-trivial = Proof ()
+trivial =  ()
 
 -- All proof terms are deleted at runtime.
-{-# RULE "proofs are irrelevant" forall (p :: Proof). p = () #-}
+{- RULE "proofs are irrelevant" forall (p :: Proof). p = () #-}
 
 -- | proof casting 
 -- | `x *** QED`: x is a proof certificate* strong enough for SMT to prove your theorem
@@ -56,7 +59,7 @@ trivial = Proof ()
 infixl 3 *** 
 {-@ assume (***) :: a -> p:QED -> { if (isAdmitted p) then false else true } @-}
 (***) :: a -> QED -> Proof 
-_ *** _ = Proof ()
+_ *** _ = ()
 
 data QED = Admitted | QED    
 
@@ -145,3 +148,11 @@ instance (a~b) => OptEq a b where
   ==. :: x:a -> y:{a| x == y} -> {v:b | v ~~ x && v ~~ y }
   @-}
   (==.) x _ = x
+
+-------------------------------------------------------------------------------
+-- | * Combining Proof Certificates -------------------------------------------
+-------------------------------------------------------------------------------
+
+
+(&&&) :: Proof -> Proof -> Proof
+x &&& _ = x 
