@@ -17,8 +17,16 @@ module ProofCombinators (
   -- * Proof certificate constructors
   , (?)
 
-  , (==?), (==!), (==:)
+  -- * These two operators check all intermediate equalities 
+  , (==!) -- proof of equality is implicit eg. x ==! y
+  , (==:) -- proof of equality is explitic eg. x ==: y ? p
+
+  -- Uncheck operator used only for proof debugging
   
+  , (==?) -- x ==? y always succeds 
+
+  -- * The below operator does not check intermediate equalities
+  --   but takes optional proof argument.
   , (==.)
 
 ) where
