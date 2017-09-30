@@ -3,14 +3,12 @@
 
 module Simulations where
 
-import Language.Haskell.Liquid.ProofCombinators
-
 import Label
 import Language
 import Programs 
 import MetaFunctions 
 
-import Misc
+import ProofCombinators
 
 {-@ simulationsCorollary 
   :: p:Program -> p':Program -> n:Index -> l:Label
@@ -34,8 +32,10 @@ simulations :: Program -> Program -> Index -> Label -> Proof -> Proof
   -> {v:Proof | evalEraseProgram (ε l p) l = Pair n (ε l p')} @-}
 simulations p p' n l evalProp 
   =   evalEraseProgram (ε l p) l
-  ==. mapSnd (ε l) (Pair n p')  ? tmp p p' n l
-  ==. Pair n (ε l p') -- ? tmp' l n p'
+  -- use ==: when provide explicit proof argument 
+  ==: mapSnd (ε l) (Pair n p')  ? tmp p p' n l
+  -- use ==? when you cannot actually prove the step
+  ==? Pair n (ε l p') -- ? tmp' l n p'
   -- ==. mapSnd (ε l) (evalProgram p) ? tmp p l -- simulations' p l
   -- ==. mapSnd (ε l) (Pair n p')     ? evalProp
   -- ==. Pair n (ε l p') 
