@@ -1,4 +1,4 @@
--- module Misc where
+module Misc where
 
 infixl 3 ==??
 {-@ (==??) :: x:a -> y:{a | y == x} -> {v:a | v == x && v == y} @-} 

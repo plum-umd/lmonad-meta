@@ -30,7 +30,7 @@ data Pair a b = Pair {pFst :: a, pSnd :: b}
 {-@ reflect evalProgram @-}
 evalProgram :: Program -> Pair Index Program
 evalProgram (Pg l c m (TBind t1 t2)) = 
-    let (Pair n (Pg l' c' m' t')) = evalProgram (Pg l c m t1) in -- JP: TODO: Make this a star. XXX
+    let (Pair n (Pg l' c' m' t')) = evalProgramStar (Pair 0 (Pg l c m t1)) in
     Pair n (Pg l' c' m' (TApp t2 t'))
 
 evalProgram (Pg l c m TGetLabel) = Pair 0 (Pg l c m (TVLabel l))
@@ -80,8 +80,9 @@ evalProgramStar :: Pair Index Program -> Pair Index Program
 evalProgramStar (Pair n (Pg l c m t))
   | isValue t 
   = Pair n (Pg l c m t)
-evalProgramStar (Pair n p)
-  = evalProgramStar (evalProgram p)
+evalProgramStar (Pair n p) =
+    let (Pair n' p') = evalProgramStar (evalProgram p) in
+    Pair (n + n') p'
 
 
 {-@ reflect mapSnd @-}
