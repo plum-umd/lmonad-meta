@@ -52,3 +52,7 @@ meet LabelB LabelA = LabelAMeetB
 meet LabelB LabelB = LabelB
 meet LabelB LabelAJoinB = LabelB
 meet LabelAJoinB v = v
+
+{-@ reflect bottom @-}
+bottom :: Label
+bottom = LabelAMeetB
