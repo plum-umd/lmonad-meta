@@ -19,14 +19,6 @@ import Misc
 simulationsCorollary :: Program -> Program -> Index -> Label -> Proof -> (Index, Proof)
 simulationsCorollary p p' n l evalProp = (n, simulations p p' n l evalProp)
 
-{-@ tmp :: p : Program -> p' : Program -> n : Index -> l : Label -> {v:Proof | evalEraseProgram (ε l p) l == mapSnd (ε l) (Pair n p')} @-}
-tmp :: Program -> Program -> Index -> Label -> Proof
-tmp = undefined
-
-{-@ tmp' :: l : Label -> n : Index -> p : Program -> {v : Proof | mapSnd (ε l) (Pair n p) == Pair n (ε l p)} @-}
-tmp' :: Label -> Index -> Program -> Proof
-tmp' = undefined
-
 simulations :: Program -> Program -> Index -> Label -> Proof -> Proof
 {-@ simulations 
   :: p:Program -> p':Program -> n:Index -> l:Label
@@ -34,11 +26,9 @@ simulations :: Program -> Program -> Index -> Label -> Proof -> Proof
   -> {v:Proof | evalEraseProgram (ε l p) l = Pair n (ε l p')} @-}
 simulations p p' n l evalProp 
   =   evalEraseProgram (ε l p) l
-  ==. mapSnd (ε l) (Pair n p')  ? tmp p p' n l
-  ==. Pair n (ε l p') -- ? tmp' l n p'
-  -- ==. mapSnd (ε l) (evalProgram p) ? tmp p l -- simulations' p l
-  -- ==. mapSnd (ε l) (Pair n p')     ? evalProp
-  -- ==. Pair n (ε l p') 
+  ==. mapSnd (ε l) (evalProgram p)
+  ==. mapSnd (ε l) (Pair n p') ? simulations' p l
+  ==. Pair n (ε l p')
   *** QED
 
 {-   
@@ -75,6 +65,19 @@ simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
   ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
   *** QED 
 
+
+{-@ simulationsHoles'' :: p : Program -> {l : Label | not (canFlowTo (pLabel p) l)} -> {v:Proof | evalEraseProgram (ε l (Pg (pLabel p) (pClearance p) (pMemory p) (pTerm p))) l = Pair 0 (Pg (pLabel p) (pClearance p) (pMemory p) THole)} @-}
+simulationsHoles'' :: Program -> Label -> Proof
+simulationsHoles'' p@(Pg lc cc m _) l = 
+        evalEraseProgram (ε l p) l
+    ==. evalEraseProgram (Pg lc cc m THole) l
+    ==. mapSnd (ε l) (evalProgram (Pg lc cc m THole))
+    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m (eval THole)))
+    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m THole))
+    ==. Pair 0 (ε l (Pg lc cc m THole))
+    ==. Pair 0 (Pg lc cc m THole)
+    *** QED
+
 -- Simulations case when there are holes (current label exceeds output label).
 {-@ simulationsHoles' 
   :: p : Program 
@@ -82,7 +85,43 @@ simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
   -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
 
 simulationsHoles' :: Program -> Label -> Proof
-simulationsHoles' _ _ = undefined 
+simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l = undefined
+
+simulationsHoles' p@(Pg lc cc m TGetLabel) l =
+        evalEraseProgram (ε l p) l
+    ==. Pair 0 (Pg lc cc m THole) ? simulationsHoles'' p l
+    ==. Pair 0 (ε l (Pg lc cc m (TVLabel lc)))
+    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m (TVLabel lc)))
+    ==. mapSnd (ε l) (evalProgram p)
+    *** QED
+
+simulationsHoles' p@(Pg lc cc m TGetClearance) l =
+        evalEraseProgram (ε l p) l
+    ==. Pair 0 (Pg lc cc m THole) ? simulationsHoles'' p l
+    ==. Pair 0 (ε l (Pg lc cc m (TVLabel cc)))
+    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m (TVLabel cc)))
+    ==. mapSnd (ε l) (evalProgram p)
+    *** QED
+        
+simulationsHoles' p@(Pg lc cc m (TLowerClearance (TVLabel c'))) l | lc `canFlowTo` c' && c' `canFlowTo` cc = 
+        evalEraseProgram (ε l p) l
+    ==. Pair 0 (Pg lc cc m THole) ? simulationsHoles'' p l
+    ==. Pair 0 (ε l (Pg lc c' m TUnit))
+    ==. mapSnd (ε l) (Pair 0 (Pg lc c' m TUnit))
+    ==. mapSnd (ε l) (evalProgram p)
+    *** QED
+
+simulationsHoles' p@(Pg lc cc m TException) l = 
+        evalEraseProgram (ε l p) l
+    ==. Pair 0 (Pg lc cc m THole) ? simulationsHoles'' p l
+    ==. Pair 0 (ε l (Pg lc cc m TException))
+    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m TException))
+    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m (eval TException)))
+    ==. mapSnd (ε l) (evalProgram p)
+    *** QED
+
+simulationsHoles' _ _ = undefined
+
 {- 
 -- simulationsHoles' (Pg lcurr c m TException) l = 
 --         evalEraseProgram (ε l (Pg lcurr c m TException)) l
