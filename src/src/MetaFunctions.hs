@@ -62,7 +62,7 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
   | lcur `canFlowTo` l 
   = Pg lcur c m (εTerm l t)
   | otherwise 
-  = Pg bottom bottom m THole 
+  = PgHole
 
 -------------------------------------------------------------------------------
 -- | Safety -------------------------------------------------------------------

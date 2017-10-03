@@ -8,7 +8,9 @@ module Programs where
 import Label
 import Language 
 
-data Program = Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term}
+data Program =
+      Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term}
+    | PgHole
   deriving (Eq, Show)
 
 {-@ data Program <p :: Term -> Bool>
@@ -17,6 +19,7 @@ data Program = Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTer
        , pMemory    :: Memory
        , pTerm      :: (Term<p>)
        }
+    | PgHole
  @-}
 
 data Memory  = Memory
@@ -29,6 +32,8 @@ data Pair a b = Pair {pFst :: a, pSnd :: b}
 
 {-@ reflect evalProgram @-}
 evalProgram :: Program -> Pair Index Program
+evalProgram PgHole = Pair 0 PgHole
+
 evalProgram (Pg l c m (TBind t1 t2)) = 
     let (Pair n (Pg l' c' m' t')) = evalProgramStar (Pair 0 (Pg l c m t1)) in
     Pair n (Pg l' c' m' (TApp t2 t'))
