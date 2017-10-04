@@ -58,7 +58,7 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 
 {-@ reflect ε @-}
 ε :: Label -> Program -> Program
-ε l PgHole = PgHole
+ε _ PgHole = PgHole
 ε l (Pg lcur c m t) 
   | lcur `canFlowTo` l 
   = Pg lcur c m (εTerm l t)

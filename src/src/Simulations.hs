@@ -67,26 +67,23 @@ simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
 
 -- simulations' PgHole _ = undefined
 
-{-@ tmp' :: p : Program -> l : Label -> {v:Proof | Pair 0 (ε l (Pg bottom bottom (pMemory p) THole)) = Pair 0 (Pg bottom bottom (pMemory p) THole)} @-}
+{-@ tmp' :: p : {Program | ς p} -> {l : Label | not (canFlowTo (pLabel p) l)} -> {v:Proof | evalEraseProgram (ε l p) l = Pair 0 PgHole} @-}
 tmp' :: Program -> Label -> Proof
 tmp' = undefined
 
 
-{-@ simulationsHoles'' :: p : {Program | ς p} -> {l : Label | not (canFlowTo (pLabel p) l)} -> {v:Proof | evalEraseProgram (ε l (Pg (pLabel p) (pClearance p) (pMemory p) (pTerm p))) l = Pair 0 (Pg bottom bottom (pMemory p) THole)} @-}
+{-@ simulationsHoles'' :: p : {Program | ς p} -> {l : Label | not (canFlowTo (pLabel p) l)} -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (Pair 0 PgHole)} @-}
 simulationsHoles'' :: Program -> Label -> Proof
 simulationsHoles'' p@(Pg lc cc m _) l =
         evalEraseProgram (ε l p) l
-    ==. evalEraseProgram (Pg bottom bottom m THole) l
-    ==. mapSnd (ε l) (evalProgram (Pg bottom bottom m THole))
-    ==. mapSnd (ε l) (Pair 0 (Pg bottom bottom m (eval THole)))
-    ==. mapSnd (ε l) (Pair 0 (Pg bottom bottom m THole))
-    ==. Pair 0 (ε l (Pg bottom bottom m THole))
-    ==. Pair 0 (Pg bottom bottom m THole) -- ? tmp' p l
+    ==. evalEraseProgram PgHole l
+    ==. mapSnd (ε l) (evalProgram PgHole)
+    ==. mapSnd (ε l) (Pair 0 PgHole)
     *** QED
 
 -- Simulations case when there are holes (current label exceeds output label).
 {-@ simulationsHoles' 
-  :: p : Program 
+  :: {p : Program | ς p}
   -> {l : Label | not (canFlowTo (pLabel p) l)}
   -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
 
