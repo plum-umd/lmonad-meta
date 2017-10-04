@@ -35,8 +35,11 @@ evalProgram :: Program -> Pair Index Program
 evalProgram PgHole = Pair 0 PgHole
 
 evalProgram (Pg l c m (TBind t1 t2)) = 
-    let (Pair n (Pg l' c' m' t')) = evalProgramStar (Pair 0 (Pg l c m t1)) in
-    Pair n (Pg l' c' m' (TApp t2 t'))
+    case evalProgramStar (Pair 0 (Pg l c m t1)) of
+        (Pair n (Pg l' c' m' t')) -> 
+            Pair n (Pg l' c' m' (TApp t2 t'))
+        (Pair n PgHole) ->
+            Pair n PgHole
 
 evalProgram (Pg l c m TGetLabel) = Pair 0 (Pg l c m (TVLabel l))
 evalProgram (Pg l c m TGetClearance) = Pair 0 (Pg l c m (TVLabel c))
@@ -66,12 +69,16 @@ evalProgram (Pg l c m (TUnlabel (TLabeledTCB ll t))) =
 
 -- ToLabeled.
 evalProgram (Pg l c m (TToLabeled (TVLabel ll) t)) | l `canFlowTo` ll && ll `canFlowTo` c = 
-    let (Pair n (Pg l' _ m' t')) = evalProgramStar (Pair 0 (Pg l c m t)) in
-
-    if l' `canFlowTo` ll then
+    case evalProgramStar (Pair 0 (Pg l c m t)) of
+        (Pair n (Pg l' _ m' t')) -> 
+            if l' `canFlowTo` ll then
                 Pair (n+1) (Pg l c m' (TLabeledTCB ll t'))
             else
                 Pair (n+1) (Pg l c m' (TLabeledTCB ll TException))
+
+        -- JP: Does this make sense? What do we do for labels + memory?
+        (Pair n PgHole) ->
+            Pair (n+1) (Pg l c m (TLabeledTCB ll THole))
             
 evalProgram (Pg l c m (TToLabeled (TVLabel _) _)) = Pair 0 (Pg l c m TException)
 

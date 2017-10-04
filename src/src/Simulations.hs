@@ -13,7 +13,7 @@ import MetaFunctions
 import Misc
 
 {-@ simulationsCorollary 
-  :: p:Program -> p':Program -> n:Index -> l:Label
+  :: p:{Program | ς p} -> p':Program -> n:Index -> l:Label
   -> {v:Proof | evalProgram p == Pair n p'}
   -> (n'::Index, {v:Proof | n' <= n && evalEraseProgram (ε l p) l = Pair n' (ε l p')}) @-}
 simulationsCorollary :: Program -> Program -> Index -> Label -> Proof -> (Index, Proof)
@@ -21,7 +21,7 @@ simulationsCorollary p p' n l evalProp = (n, simulations p p' n l evalProp)
 
 simulations :: Program -> Program -> Index -> Label -> Proof -> Proof
 {-@ simulations 
-  :: p:Program -> p':Program -> n:Index -> l:Label
+  :: {p:Program | ς p} -> p':Program -> n:Index -> l:Label
   -> {v:Proof | evalProgram p == Pair n p'}
   -> {v:Proof | evalEraseProgram (ε l p) l = Pair n (ε l p')} @-}
 simulations p p' n l evalProp 
@@ -46,7 +46,7 @@ evalTHole = undefined
 
 simulations' :: Program -> Label -> Proof
 {-@ simulations' 
-  :: p:Program -> l:Label
+  :: {p:Program | ς p} -> l:Label
   -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
 
 simulations' (Pg lcurr c m t) l | not (lcurr `canFlowTo` l) -- l < lcurr
@@ -65,12 +65,14 @@ simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
   ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
   *** QED 
 
+-- simulations' PgHole _ = undefined
+
 {-@ tmp' :: p : Program -> l : Label -> {v:Proof | Pair 0 (ε l (Pg bottom bottom (pMemory p) THole)) = Pair 0 (Pg bottom bottom (pMemory p) THole)} @-}
 tmp' :: Program -> Label -> Proof
 tmp' = undefined
 
 
-{-@ simulationsHoles'' :: p : Program -> {l : Label | not (canFlowTo (pLabel p) l)} -> {v:Proof | evalEraseProgram (ε l (Pg (pLabel p) (pClearance p) (pMemory p) (pTerm p))) l = Pair 0 (Pg bottom bottom (pMemory p) THole)} @-}
+{-@ simulationsHoles'' :: p : {Program | ς p} -> {l : Label | not (canFlowTo (pLabel p) l)} -> {v:Proof | evalEraseProgram (ε l (Pg (pLabel p) (pClearance p) (pMemory p) (pTerm p))) l = Pair 0 (Pg bottom bottom (pMemory p) THole)} @-}
 simulationsHoles'' :: Program -> Label -> Proof
 simulationsHoles'' p@(Pg lc cc m _) l =
         evalEraseProgram (ε l p) l
