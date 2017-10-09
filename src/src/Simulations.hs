@@ -65,9 +65,13 @@ simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
   ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
   *** QED 
 
--- simulations' PgHole _ = undefined
+simulations' PgHole _ = undefined -- TODO: remove this. XXX
 
-{-@ tmp' :: p : {Program | ς p} -> {l : Label | not (canFlowTo (pLabel p) l)} -> {v:Proof | evalEraseProgram (ε l p) l = Pair 0 PgHole} @-}
+{-@ tmp :: p : {Program | ς p} -> {l : Label | not (canFlowTo (pLabel p) l)} -> {v:Proof | Pair 0 (ε l (Pg (pLabel p) (pClearance p) (pMemory p) TException)) = mapSnd (ε l) (Pair 0 (Pg (pLabel p) (pClearance p) (pMemory p) TException))} @-}
+tmp :: Program -> Label -> Proof
+tmp = undefined
+
+{-@ tmp' :: p : {Program | ς p} -> {l : Label | not (canFlowTo (pLabel p) l)} -> {v:Proof | Pair 0 PgHole = Pair 0 (ε l (Pg (pLabel p) (pClearance p) (pMemory p) TException))} @-}
 tmp' :: Program -> Label -> Proof
 tmp' = undefined
 
@@ -83,6 +87,8 @@ simulationsHoles'' p@(Pg lc cc m _) l =
     ==. Pair 0 PgHole
     *** QED
 
+simulationsHoles'' PgHole _ = undefined -- TODO: Remove this XXX
+
 -- Simulations case when there are holes (current label exceeds output label).
 {-@ simulationsHoles' 
   :: {p : Program | ς p}
@@ -90,7 +96,7 @@ simulationsHoles'' p@(Pg lc cc m _) l =
   -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
 
 simulationsHoles' :: Program -> Label -> Proof
-simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l = undefined
+-- simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l = undefined
 
 simulationsHoles' p@(Pg lc cc m TGetLabel) l =
         evalEraseProgram (ε l p) l
@@ -107,7 +113,7 @@ simulationsHoles' p@(Pg lc cc m TGetClearance) l =
     ==. mapSnd (ε l) (Pair 0 (Pg lc cc m (TVLabel cc)))
     ==. mapSnd (ε l) (evalProgram p)
     *** QED
-        
+
 simulationsHoles' p@(Pg lc cc m (TLowerClearance (TVLabel c'))) l | lc `canFlowTo` c' && c' `canFlowTo` cc = 
         evalEraseProgram (ε l p) l
     ==. Pair 0 PgHole ? simulationsHoles'' p l
@@ -115,6 +121,30 @@ simulationsHoles' p@(Pg lc cc m (TLowerClearance (TVLabel c'))) l | lc `canFlowT
     ==. mapSnd (ε l) (Pair 0 (Pg lc c' m TUnit))
     ==. mapSnd (ε l) (evalProgram p)
     *** QED
+
+simulationsHoles' p@(Pg lc cc m (TLowerClearance (TVLabel c'))) l = 
+        evalEraseProgram (ε l p) l
+    ==. Pair 0 PgHole ? simulationsHoles'' p l
+    ==. Pair 0 (ε l (Pg lc cc m TException))
+    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m TException))
+    ==. mapSnd (ε l) (evalProgram p)
+    *** QED
+
+simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel ll) t)) l | lc `canFlowTo` l && l `canFlowTo` cc =
+        evalEraseProgram (ε l p) l
+    ==. Pair 0 PgHole ? simulationsHoles'' p l
+    ==. Pair 0 (ε l (Pg lc cc m (TLabeledTCB ll t)))
+    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m (TLabeledTCB ll t)))
+    ==. mapSnd (ε l) (evalProgram p)
+    *** QED
+
+-- simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel _) t)) l =
+--         evalEraseProgram (ε l p) l
+--     ==. Pair 0 PgHole ? simulationsHoles'' p l
+--     ==. Pair 0 (ε l (Pg lc cc m TException)) ? tmp' p l
+--     ==. mapSnd (ε l) (Pair 0 (Pg lc cc m TException)) ? tmp p l
+--     ==. mapSnd (ε l) (evalProgram p)
+--     *** QED
 
 simulationsHoles' p@(Pg lc cc m TException) l = 
         evalEraseProgram (ε l p) l
