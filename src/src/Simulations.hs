@@ -26,8 +26,8 @@ simulations :: Program -> Program -> Index -> Label -> Proof -> Proof
   -> {v:Proof | evalEraseProgram (ε l p) l = Pair n (ε l p')} @-}
 simulations p p' n l evalProp 
   =   evalEraseProgram (ε l p) l
-  ==. mapSnd (ε l) (evalProgram p)
-  ==. mapSnd (ε l) (Pair n p') ? simulations' p l
+  ==. mapSnd (ε l) (evalProgram p) ? simulations' p l
+  ==. mapSnd (ε l) (Pair n p') ? evalProp
   ==. Pair n (ε l p')
   *** QED
 
