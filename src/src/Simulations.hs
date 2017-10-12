@@ -22,7 +22,7 @@ simulations :: Program -> Program -> Index -> Label -> Proof -> Proof
   :: {p:Program | ς p} -> p':Program -> n:Index -> l:Label
   -> {v:Proof | evalProgram p == Pair n p'}
   -> {v:Proof | evalEraseProgram (ε l p) l = Pair n (ε l p')} @-}
-simulations p p' n l _ 
+simulations p p' n l evalProp 
   =   evalEraseProgram (ε l p) l
   ==. mapSnd (ε l) (evalProgram p) ? simulations' p l
   ==. mapSnd (ε l) (Pair n p') ? evalProp
