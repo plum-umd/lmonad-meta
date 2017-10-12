@@ -18,6 +18,7 @@ import MetaFunctions
 import Determinacy
 import Simulations
 
+-- Hack for liquidhaskell#1102
 _hackImport  :: Term 
 _hackImport = THole 
 

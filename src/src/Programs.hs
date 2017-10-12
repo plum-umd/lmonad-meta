@@ -55,6 +55,7 @@ evalProgram (Pg l c m (TLowerClearance (TVLabel _))) = Pair 0 (Pg l c m TExcepti
 evalProgram (Pg l c m (TLabel (TVLabel ll) t)) | l `canFlowTo` ll && ll `canFlowTo` c = Pair 0 (Pg l c m (TLabeledTCB ll t))
 
 -- Label where checks don't pass.
+-- evalProgram (Pg l c m (TLabel (TVLabel ll) _)) | not (l `canFlowTo` ll && ll `canFlowTo` c) = Pair 0 (Pg l c m TException)
 evalProgram (Pg l c m (TLabel (TVLabel _) _)) = Pair 0 (Pg l c m TException)
 
 -- Unlabel.
