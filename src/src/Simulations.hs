@@ -136,7 +136,7 @@ simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel ll) t)) l | lc `canFlowTo` ll &
     ==. mapSnd (ε l) (evalProgram p)
     *** QED
 
-simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel ll) _)) l 
+simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel _ll) _)) l 
     =   evalEraseProgram (ε l p) l
     ==: Pair 0 PgHole ? simulationsHoles'' p l
     ==! Pair 0 (ε l (Pg lc cc m TException))
