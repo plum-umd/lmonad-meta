@@ -128,7 +128,7 @@ simulationsHoles' p@(Pg lc cc m (TLowerClearance (TVLabel _c'))) l =
     ==. mapSnd (ε l) (evalProgram p)
     *** QED
 
-simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel ll) t)) l | lc `canFlowTo` l && l `canFlowTo` cc =
+simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel ll) t)) l | lc `canFlowTo` ll && ll `canFlowTo` cc =
         evalEraseProgram (ε l p) l
     ==. Pair 0 PgHole ? simulationsHoles'' p l
     ==. Pair 0 (ε l (Pg lc cc m (TLabeledTCB ll t)))
@@ -136,14 +136,12 @@ simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel ll) t)) l | lc `canFlowTo` l &&
     ==. mapSnd (ε l) (evalProgram p)
     *** QED
 
--- simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel _) t)) l | not (lc `canFlowTo` l && l `canFlowTo` cc) =
 simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel ll) _)) l 
-    | ll == l 
     =   evalEraseProgram (ε l p) l
     ==: Pair 0 PgHole ? simulationsHoles'' p l
     ==! Pair 0 (ε l (Pg lc cc m TException))
     ==! mapSnd (ε l) (Pair 0 (Pg lc cc m TException))
-    ==! mapSnd (ε l) (evalProgram p) -- This assertion fails.
+    ==! mapSnd (ε l) (evalProgram p)
     *** QED
 
 simulationsHoles' p@(Pg lc cc m TException) l = 
