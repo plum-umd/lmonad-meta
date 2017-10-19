@@ -47,9 +47,9 @@ simulations p p' n l evalProp
   *** QED 
 -}
 
-{-@ evalTHole :: {v : Proof | eval THole = THole} @-}
-evalTHole :: Proof
-evalTHole = undefined
+-- {-@ evalTHole :: {v : Proof | eval THole = THole} @-}
+-- evalTHole :: Proof
+-- evalTHole = undefined
 
 simulations' :: Program -> Label -> Proof
 {-@ simulations' 
@@ -138,9 +138,17 @@ simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel ll) t)) l | lc `canFlowTo` ll &
 
 simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel _ll) _)) l 
     =   evalEraseProgram (ε l p) l
+    ==. Pair 0 PgHole ? simulationsHoles'' p l
+    ==. Pair 0 (ε l (Pg lc cc m TException))
+    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m TException))
+    ==. mapSnd (ε l) (evalProgram p)
+    *** QED
+
+simulationsHoles' p@(Pg lc cc m (TUnlabel (TLabeledTCB ll t))) l | (lc `join` ll) `canFlowTo` cc = 
+        evalEraseProgram (ε l p) l
     ==: Pair 0 PgHole ? simulationsHoles'' p l
-    ==! Pair 0 (ε l (Pg lc cc m TException))
-    ==! mapSnd (ε l) (Pair 0 (Pg lc cc m TException))
+    ==: Pair 0 (ε l (Pg (lc `join` ll) cc m t)) ? joinLeftNotFlowTo l lc ll
+    ==! mapSnd (ε l) (Pair 0 (Pg (lc `join` ll) cc m t))
     ==! mapSnd (ε l) (evalProgram p)
     *** QED
 
@@ -154,6 +162,30 @@ simulationsHoles' p@(Pg lc cc m TException) l =
     *** QED
 
 simulationsHoles' _ _ = undefined
+
+-- joinLeftNotFlowTo l lc ll = 
+--         canFlowTo (join lc ll) l
+--     ==. 
+--     ==. False
+--     *** QED
+
+--        not (canFlowTo (join lc ll) l)
+--    ==. not (canFlowTo lc l) ? joinLeftCanFlowTo lc ll l
+--    ==. True
+
+{-@ eraseJoinLeft 
+ :: l:Label 
+ -> lc:{Label | not (canFlowTo lc l)} 
+ -> ll:Label
+ -> cc:Label 
+ -> m:Memory
+ -> t:Term
+ -> v:{Proof | ε l (Pg (join lc ll) cc m t) = PgHole} 
+@-}
+eraseJoinLeft :: Label -> Label -> Label -> Label -> Memory -> Term -> Proof
+eraseJoinLeft l lc ll cc m t = 
+        ε l (Pg (join lc ll) cc m t) ==. PgHole ? joinLeftNotFlowTo l lc ll
+    *** QED
 
 {- 
 -- simulationsHoles' (Pg lcurr c m TException) l = 

@@ -1,7 +1,10 @@
 {-@ LIQUID "--exactdc"                                  @-}
 {-@ LIQUID "--higherorder"                              @-}
+{-@ LIQUID "--automatic-instances=liquidinstanceslocal" @-}
 
 module Label where
+
+import ProofCombinators
 
 -- type Label = Integer -- JP: Do we need a different type for a partial order?
 
@@ -56,3 +59,15 @@ meet LabelAJoinB v = v
 {-@ reflect bottom @-}
 bottom :: Label
 bottom = LabelAMeetB
+
+{-@ automatic-instances joinLeftNotFlowTo @-}
+{-@
+joinLeftNotFlowTo 
+ :: l : Label
+ -> lc : {Label | canFlowTo lc l = False} 
+ -> ll : Label
+ -> v : {Proof | canFlowTo (join lc ll) l = False}
+@-}
+joinLeftNotFlowTo :: Label -> Label -> Label -> Proof
+joinLeftNotFlowTo _ _ _ = trivial
+

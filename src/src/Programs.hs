@@ -7,6 +7,7 @@ module Programs where
 
 import Label
 import Language 
+import ProofCombinators ()
 
 data Program =
       Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term}
@@ -59,14 +60,14 @@ evalProgram (Pg l c m (TLabel (TVLabel ll) t)) | l `canFlowTo` ll && ll `canFlow
 evalProgram (Pg l c m (TLabel (TVLabel _) _)) = Pair 0 (Pg l c m TException)
 
 -- Unlabel.
-evalProgram (Pg l c m (TUnlabel (TLabeledTCB ll t))) = 
-    let l' = l `join` ll in
+evalProgram (Pg lc cc m (TUnlabel (TLabeledTCB ll t))) = 
+    let l' = lc `join` ll in
     -- Checks pass.
-    if l' `canFlowTo` c then
-        Pair 0 (Pg l' c m t)
+    if l' `canFlowTo` cc then
+        Pair 0 (Pg l' cc m t)
     -- Checks don't pass.
     else
-        Pair 0 (Pg l c m TException) -- JP: Not l' right?
+        Pair 0 (Pg lc cc m TException) -- JP: Not l' right?
 
 -- ToLabeled.
 evalProgram (Pg l c m (TToLabeled (TVLabel ll) t)) | l `canFlowTo` ll && ll `canFlowTo` c = 

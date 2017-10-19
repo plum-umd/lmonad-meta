@@ -3,12 +3,13 @@
 
 module Determinacy where
 
-import Language.Haskell.Liquid.ProofCombinators
+-- import Language.Haskell.Liquid.ProofCombinators
 
 import Label
 import Language 
 import Programs 
 import MetaFunctions 
+import ProofCombinators
 
 _hackImport  :: Term 
 _hackImport = THole 

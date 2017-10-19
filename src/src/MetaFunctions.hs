@@ -8,6 +8,7 @@ module MetaFunctions where
 import Label
 import Language 
 import Programs 
+import ProofCombinators ()
 
 {-@ reflect evalEraseProgram @-}
 evalEraseProgram :: Program -> Label -> Pair Index Program 

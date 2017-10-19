@@ -14,6 +14,7 @@ library
                        Label
                        Language
                        Programs
+                       ProofCombinators
                        Determinacy
                        MetaFunctions
                        Simulations
