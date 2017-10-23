@@ -4,7 +4,6 @@
 
 module Label where
 
-import ProofCombinators
 
 -- type Label = Integer -- JP: Do we need a different type for a partial order?
 
@@ -66,8 +65,8 @@ joinLeftNotFlowTo
  :: l : Label
  -> lc : {Label | canFlowTo lc l = False} 
  -> ll : Label
- -> v : {Proof | canFlowTo (join lc ll) l = False}
+ -> v : {canFlowTo (join lc ll) l = False}
 @-}
-joinLeftNotFlowTo :: Label -> Label -> Label -> Proof
-joinLeftNotFlowTo _ _ _ = trivial
+joinLeftNotFlowTo :: Label -> Label -> Label -> ()
+joinLeftNotFlowTo _ _ _ = ()
 

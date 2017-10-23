@@ -7,7 +7,6 @@ module Programs where
 
 import Label
 import Language 
-import ProofCombinators 
 
 data Program =
       Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term}
