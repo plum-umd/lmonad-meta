@@ -4,7 +4,7 @@
 module Language where
 
 import Label 
-import ProofCombinators ()
+import ProofCombinators 
 
 {-@ reflect boolToTerm @-}
 boolToTerm :: Bool -> Term

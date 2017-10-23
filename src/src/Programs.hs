@@ -7,7 +7,7 @@ module Programs where
 
 import Label
 import Language 
-import ProofCombinators ()
+import ProofCombinators 
 
 data Program =
       Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term}
@@ -89,7 +89,9 @@ evalProgram (Pg l c m t) = Pair 0 (Pg l c m (eval t))
 {-@ lazy evalProgramStar @-}
 
 {-@ reflect evalProgramStar @-}
-{-@ evalProgramStar :: Pair Index Program -> Pair Index (Program <{\v -> isValue v}>) @-}
+-- TODO: 
+-- {-@ evalProgramStar :: Pair Index Program -> Pair Index (Program <{\v -> isValue v}>) @-}
+{-@ evalProgramStar :: Pair Index Program -> Pair Index Program @-}
 evalProgramStar :: Pair Index Program -> Pair Index Program
 evalProgramStar (Pair n (Pg l c m t))
   | isValue t 
