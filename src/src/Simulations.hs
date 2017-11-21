@@ -85,7 +85,7 @@ simulationsHoles'' p@(Pg _ _ _ _) l =
     ==. Pair 0 PgHole
     *** QED
 
-simulationsHoles'' PgHole _ = undefined -- TODO: Remove this XXX
+simulationsHoles'' PgHole _ = trivial -- undefined -- TODO: Remove this XXX
 
 -- Simulations case when there are holes (current label exceeds output label).
 {-@ simulationsHoles' 
