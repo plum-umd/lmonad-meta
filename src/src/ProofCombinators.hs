@@ -12,7 +12,7 @@ module ProofCombinators (
   Proof
   
   -- * Proof constructors 
-  , trivial, (***), QED(..)
+  , trivial, unreachable, (***), QED(..)
 
   -- * Proof certificate constructors
   , (?)
@@ -48,6 +48,10 @@ type Proof = ()
 
 trivial :: Proof
 trivial =  ()
+
+-- {-@ unreachable :: {v : Proof | False } @-}
+unreachable :: Proof
+unreachable =  ()
 
 -- All proof terms are deleted at runtime.
 {- RULE "proofs are irrelevant" forall (p :: Proof). p = () #-}

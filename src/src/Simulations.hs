@@ -72,7 +72,7 @@ simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
   ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
   *** QED 
 
-simulations' PgHole _ = undefined -- TODO: remove this. XXX
+simulations' PgHole _ | ς PgHole == False = unreachable
 
 {-@ simulationsHoles'' :: p : {Program | ς p} -> {l : Label | not (canFlowTo (pLabel p) l)} -> {v:Proof | evalEraseProgram (ε l p) l = Pair 0 PgHole} @-}
 simulationsHoles'' :: Program -> Label -> Proof
@@ -85,7 +85,7 @@ simulationsHoles'' p@(Pg _ _ _ _) l =
     ==. Pair 0 PgHole
     *** QED
 
-simulationsHoles'' PgHole _ = trivial -- undefined -- TODO: Remove this XXX
+simulationsHoles'' PgHole _ | ς PgHole == False = unreachable
 
 -- Simulations case when there are holes (current label exceeds output label).
 {-@ simulationsHoles' 
@@ -151,6 +151,11 @@ simulationsHoles' p@(Pg lc cc m (TUnlabel (TLabeledTCB ll t))) l | (lc `join` ll
     ==! mapSnd (ε l) (Pair 0 (Pg (lc `join` ll) cc m t))
     ==! mapSnd (ε l) (evalProgram p)
     *** QED
+
+-- simulationsHoles' p@(Pg lc cc m (TToLabeled (TVLabel ll) t)) l | lc `canFlowTo` ll && ll `canFlowTo` cc = 
+--         evalEraseProgram (ε l p) l
+--     ==! mapSnd (ε l) (evalProgram p)
+--     *** QED
 
 simulationsHoles' p@(Pg lc cc m TException) l = 
         evalEraseProgram (ε l p) l

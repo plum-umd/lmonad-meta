@@ -99,7 +99,7 @@ evalProgramStar (Pair n p) =
     let (Pair n' p') = evalProgramStar (evalProgram p) in
     Pair (n + n') p'
 
-
 {-@ reflect mapSnd @-}
 mapSnd :: (b -> c) -> Pair a b -> Pair a c 
 mapSnd f (Pair x y) = Pair x (f y)
+
