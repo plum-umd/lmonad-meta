@@ -27,5 +27,5 @@ addons:
     - ghc-8.0.2
 
 script:
-  - stack build 
+  - stack build --flag llio:testing
   - stack --skip-ghc-check test --flag llio:testing llio
