@@ -27,4 +27,4 @@ addons:
 
 script:
   - stack build 
-  - stack --skip-ghc-check test llio
+  - stack --skip-ghc-check test --flag llio:testing llio

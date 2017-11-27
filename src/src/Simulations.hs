@@ -146,14 +146,24 @@ simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel _ll) _)) l
 
 simulationsHoles' p@(Pg lc cc m (TUnlabel (TLabeledTCB ll t))) l | (lc `join` ll) `canFlowTo` cc = 
         evalEraseProgram (ε l p) l
-    ==: Pair 0 PgHole ? simulationsHoles'' p l
-    ==: Pair 0 (ε l (Pg (lc `join` ll) cc m t)) ? joinLeftNotFlowTo l lc ll
-    ==! mapSnd (ε l) (Pair 0 (Pg (lc `join` ll) cc m t))
-    ==! mapSnd (ε l) (evalProgram p)
+    ==. Pair 0 PgHole ? simulationsHoles'' p l
+    ==. Pair 0 (ε l (Pg (lc `join` ll) cc m t)) ? joinLeftNotFlowTo l lc ll
+    ==. mapSnd (ε l) (Pair 0 (Pg (lc `join` ll) cc m t))
+    ==. mapSnd (ε l) (evalProgram p)
     *** QED
 
 -- simulationsHoles' p@(Pg lc cc m (TToLabeled (TVLabel ll) t)) l | lc `canFlowTo` ll && ll `canFlowTo` cc = 
+--     undefined
+--     --     evalEraseProgram (ε l p) l
+--     -- ==: Pair 0 PgHole ? simulationsHoles'' p l
+--     -- ==! mapSnd (ε l) (evalProgram p)
+--     -- *** QED
+-- 
+-- simulationsHoles' p@(Pg lc cc m (TToLabeled (TVLabel _ll) _t)) l = 
 --         evalEraseProgram (ε l p) l
+--     ==: Pair 0 PgHole ? simulationsHoles'' p l
+--     ==! Pair 0 (ε l (Pg lc cc m TException))
+--     ==! mapSnd (ε l) (Pair 0 (Pg lc cc m TException))
 --     ==! mapSnd (ε l) (evalProgram p)
 --     *** QED
 
