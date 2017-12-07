@@ -185,7 +185,11 @@ simulationsHoles' p@(Pg lc cc m t) l =
     ==. mapSnd (ε l) (evalProgram p)
     *** QED
 
-simulationsHoles' PgHole l = undefined
+simulationsHoles' PgHole l =
+        evalEraseProgram (ε l PgHole) l
+    ==. Pair 0 PgHole ? simulationsHoles'' PgHole l
+    ==. mapSnd (ε l) (evalProgram PgHole)
+    *** QED
 
 -- joinLeftNotFlowTo l lc ll = 
 --         canFlowTo (join lc ll) l
