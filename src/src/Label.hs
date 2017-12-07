@@ -63,10 +63,20 @@ bottom = LabelAMeetB
 {-@
 joinLeftNotFlowTo 
  :: l : Label
- -> lc : {Label | canFlowTo lc l = False} 
+ -> lc : {Label | canFlowTo lc l == False} 
  -> ll : Label
- -> v : {canFlowTo (join lc ll) l = False}
+ -> v : {canFlowTo (join lc ll) l == False}
 @-}
 joinLeftNotFlowTo :: Label -> Label -> Label -> ()
 joinLeftNotFlowTo _ _ _ = ()
+
+{-@ automatic-instances greaterLabelNotFlowTo @-}
+{-@ greaterLabelNotFlowTo
+ :: lc : Label
+ -> l' : {Label | canFlowTo lc l'}
+ -> l : {Label | canFlowTo lc l == False}
+ -> v : {canFlowTo l' l == False}
+ @-}
+greaterLabelNotFlowTo :: Label -> Label -> Label -> ()
+greaterLabelNotFlowTo _ _ _ = ()
 

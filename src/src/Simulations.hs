@@ -10,6 +10,14 @@ import MetaFunctions
 
 import ProofCombinators
 
+{-@ unsafeAssumeIndexEqual 
+ :: n : Index 
+ -> m : Index 
+ -> {v : Proof | n == m}
+ @-}
+unsafeAssumeIndexEqual :: Index -> Index -> Proof
+unsafeAssumeIndexEqual n m = undefined
+
 {-@ simulationsCorollary 
   :: p:{Program | ς p} -> p':Program -> n:Index -> l:Label
   -> {v:Proof | evalProgram p == Pair n p'}
@@ -87,6 +95,19 @@ simulationsHoles'' p@(Pg _ _ _ _) l =
 
 simulationsHoles'' PgHole _ | ς PgHole == False = unreachable
 
+
+{-@ monotonicLabelEvalProgramStar
+ :: n : Index
+ -> n' : Index
+ -> p : Program
+ -> {p' : Program | evalProgramStar (Pair n p) == (Pair n' p')}
+ -> {v : Proof | canFlowTo (pLabel p) (pLabel p')}
+ @-}
+monotonicLabelEvalProgramStar :: Index -> Index -> Program -> Program -> Proof
+monotonicLabelEvalProgramStar n n' p p' =
+    undefined
+    -- TODO: Unimplemented XXX
+
 -- Simulations case when there are holes (current label exceeds output label).
 {-@ simulationsHoles' 
   :: {p : Program | ς p}
@@ -94,7 +115,25 @@ simulationsHoles'' PgHole _ | ς PgHole == False = unreachable
   -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
 
 simulationsHoles' :: Program -> Label -> Proof
-simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l = undefined
+simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l = 
+    let p1 = Pg lc cc m t1 in
+    case evalProgramStar (Pair 0 p1) of
+        (Pair n ps@(Pg l' c' m' t')) -> 
+                evalEraseProgram (ε l p) l
+            ==: Pair 0 PgHole ? simulationsHoles'' p l
+            ==: Pair n PgHole ? unsafeAssumeIndexEqual 0 n
+            ==: Pair n (ε l (Pg l' c' m' (TApp t2 t'))) ? (monotonicLabelEvalProgramStar 0 n p1 ps &&& greaterLabelNotFlowTo lc l' l)
+            ==! mapSnd (ε l) (Pair n (Pg l' c' m' (TApp t2 t')))
+            ==! mapSnd (ε l) (evalProgram p)
+            *** QED
+        (Pair n PgHole) ->
+                evalEraseProgram (ε l p) l
+            ==: Pair 0 PgHole ? simulationsHoles'' p l
+            ==: Pair n PgHole ? unsafeAssumeIndexEqual 0 n
+            ==! Pair n (ε l PgHole)
+            ==! mapSnd (ε l) (Pair n PgHole)
+            ==! mapSnd (ε l) (evalProgram p)
+            *** QED
 
 simulationsHoles' p@(Pg lc cc m TGetLabel) l =
         evalEraseProgram (ε l p) l
