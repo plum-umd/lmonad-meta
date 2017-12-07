@@ -94,7 +94,7 @@ simulationsHoles'' PgHole _ | ς PgHole == False = unreachable
   -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
 
 simulationsHoles' :: Program -> Label -> Proof
--- simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l = undefined
+simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l = undefined
 
 simulationsHoles' p@(Pg lc cc m TGetLabel) l =
         evalEraseProgram (ε l p) l
@@ -175,16 +175,17 @@ simulationsHoles' p@(Pg lc cc m (TToLabeled (TVLabel _ll) _t)) l =
     ==! mapSnd (ε l) (evalProgram p)
     *** QED
 
-simulationsHoles' p@(Pg lc cc m TException) l = 
+simulationsHoles' p@(Pg lc cc m t) l = 
+    let t' = eval t in
         evalEraseProgram (ε l p) l
     ==. Pair 0 PgHole ? simulationsHoles'' p l
-    ==. Pair 0 (ε l (Pg lc cc m TException))
-    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m TException))
-    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m (eval TException)))
+    ==. Pair 0 (ε l (Pg lc cc m t'))
+    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m t'))
+    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m (eval t)))
     ==. mapSnd (ε l) (evalProgram p)
     *** QED
 
-simulationsHoles' _ _ = undefined
+simulationsHoles' PgHole l = undefined
 
 -- joinLeftNotFlowTo l lc ll = 
 --         canFlowTo (join lc ll) l
