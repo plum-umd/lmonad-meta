@@ -13,7 +13,7 @@ import MetaFunctions
 import ProofCombinators
 
 
-{-@ automatic-instances monotonicLabelEvalProgram @-}
+-- {-@ automatic-instances monotonicLabelEvalProgram @-}
 {-@ monotonicLabelEvalProgram
  :: n' : Index
  -> p : Program
@@ -21,6 +21,5 @@ import ProofCombinators
  -> {v : Proof | canFlowTo (pLabel p) (pLabel p')}
  @-}
 monotonicLabelEvalProgram :: Index -> Program -> Program -> Proof
-monotonicLabelEvalProgram n' p p' = ()
-
+monotonicLabelEvalProgram n' p p' = undefined
 

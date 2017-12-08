@@ -37,24 +37,6 @@ simulations p p' n l evalProp
   ==. mapSnd (ε l) (Pair n p') ? evalProp
   ==. Pair n (ε l p')
   *** QED
--- =======
---   -- use ==: when provide explicit proof argument 
---   ==: mapSnd (ε l) (Pair n p')  ? tmp p p' n l
---   -- use ==? when you cannot actually prove the step
---   ==? Pair n (ε l p') -- ? tmp' l n p'
---   -- ==. mapSnd (ε l) (evalProgram p) ? tmp p l -- simulations' p l
---   -- ==. mapSnd (ε l) (Pair n p')     ? evalProp
---   -- ==. Pair n (ε l p') 
--- >>>>>>> c8e5a1fd41194d9302d48e363301a43c477468eb
-
-{-   
-simulations p p' n l evalProp 
-  =   evalEraseProgram (ε l p) l 
-  ==. mapSnd (ε l) (evalProgram p) ? simulations' p l 
-  ==. mapSnd (ε l) (Pair n p')     ? evalProp
-  ==. Pair n (ε l p')
-  *** QED 
--}
 
 -- {-@ evalTHole :: {v : Proof | eval THole = THole} @-}
 -- evalTHole :: Proof
