@@ -92,7 +92,7 @@ simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l =
                 evalEraseProgram (ε l p) l
             ==: Pair 0 PgHole ? simulationsHoles'' p l
             ==: Pair n PgHole ? unsafeAssumeIndexEqual 0 n
-            ==: Pair n (ε l (Pg l' c' m' (TApp t2 t'))) ? (monotonicLabelEvalProgramStar 0 p1 n ps &&& greaterLabelNotFlowTo lc l' l)
+            ==: Pair n (ε l (Pg l' c' m' (TApp t2 t'))) ? (monotonicLabelEvalProgramStar 0 p1 &&& greaterLabelNotFlowTo lc l' l)
             ==! mapSnd (ε l) (Pair n (Pg l' c' m' (TApp t2 t')))
             ==! mapSnd (ε l) (evalProgram p)
             *** QED
