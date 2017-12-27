@@ -15,7 +15,7 @@ import ProofCombinators
 {-@ safeProgramBindsToSafeProgram 
  :: {p : Program | ς p}
  -> {t1 : Term | t1 = tBind1 (pTerm p)}
- -> {v:Proof | ς (Program (pLabel p) (pClearance p) (pMemory p) t1)}
+ -> {v:Proof | ς (Pg (pLabel p) (pClearance p) (pMemory p) t1)}
  @-}
 safeProgramBindsToSafeProgram :: Program -> Term -> Proof
 safeProgramBindsToSafeProgram p t = undefined
