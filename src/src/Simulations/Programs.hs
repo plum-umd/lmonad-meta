@@ -14,11 +14,20 @@ import ProofCombinators
 
 {-@ safeProgramBindsToSafeProgram 
  :: {p : Program | ς p}
- -> {t1 : Term | t1 = tBind1 (pTerm p)}
+ -> t1 : Term
+ -> {t2 : Term | (TBind t1 t2) = pTerm p}
  -> {v:Proof | ς (Pg (pLabel p) (pClearance p) (pMemory p) t1)}
  @-}
-safeProgramBindsToSafeProgram :: Program -> Term -> Proof
-safeProgramBindsToSafeProgram p t = undefined
+safeProgramBindsToSafeProgram :: Program -> Term -> Term -> Proof
+safeProgramBindsToSafeProgram p t1 t2 = undefined
+
+{-@ safeProgramEvalsToSafeProgram
+ :: {p : Program | ς p}
+ -> {v : Proof | ς (pSnd (evalProgram p))}
+ @-}
+safeProgramEvalsToSafeProgram :: Program -> Proof
+safeProgramEvalsToSafeProgram _ = undefined
+
 
 -- {-@ automatic-instances monotonicLabelEvalProgram @-}
 {-@ monotonicLabelEvalProgram
@@ -26,13 +35,14 @@ safeProgramBindsToSafeProgram p t = undefined
  -> {v : Proof | canFlowTo (pLabel p) (pLabel (pSnd (evalProgram p)))}
  @-}
 monotonicLabelEvalProgram :: Program -> Proof
--- monotonicLabelEvalProgram PgHole n' p' = unreachable
-monotonicLabelEvalProgram PgHole = undefined
 monotonicLabelEvalProgram p@(Pg l c m (TBind t1 t2)) = case evalProgram p of
-    (Pair n PgHole) ->
-        undefined
+    (Pair n p'@PgHole) ->
+        safeProgramEvalsToSafeProgram p
     (Pair n (Pg l' c' m' t)) ->
-        undefined
+        let pInter = Pg l c m t1 in
+            canFlowTo l l'
+        ==. True ? safeProgramBindsToSafeProgram p t1 t2 &&& monotonicLabelEvalProgramStar 0 pInter
+        *** QED
 
 monotonicLabelEvalProgram p@(Pg l c m TGetLabel) = -- 0 (Pg l' c' m' (TVLabel l'')) = 
     let (Pair 0 (Pg l' c' m' (TVLabel l''))) = evalProgram p in
@@ -82,8 +92,6 @@ monotonicLabelEvalProgram p@(Pg l c m t) =
     ==. True
     *** QED
 
--- monotonicLabelEvalProgram p n' p' = undefined
-
 {-@ monotonicLabelEvalProgramStar
  :: n : Index
  -> {p : Program | ς p}
@@ -103,6 +111,5 @@ monotonicLabelEvalProgramStar n p =
 --  @-}
 -- monotonicLabelEvalProgramStar :: Index -> Program -> Index -> Program -> Proof
 -- monotonicLabelEvalProgramStar n p n' p' =
---     undefined
 --     -- TODO: Unimplemented XXX
 -- 

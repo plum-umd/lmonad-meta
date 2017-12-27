@@ -63,8 +63,6 @@ simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
   ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
   *** QED 
 
-simulations' PgHole _ | ς PgHole == False = unreachable
-
 {-@ simulationsHoles'' :: p : {Program | ς p} -> {l : Label | not (canFlowTo (pLabel p) l)} -> {v:Proof | evalEraseProgram (ε l p) l = Pair 0 PgHole} @-}
 simulationsHoles'' :: Program -> Label -> Proof
 simulationsHoles'' p@(Pg _ _ _ _) l =
@@ -75,8 +73,6 @@ simulationsHoles'' p@(Pg _ _ _ _) l =
     ==. Pair 0 (ε l PgHole)
     ==. Pair 0 PgHole
     *** QED
-
-simulationsHoles'' PgHole _ | ς PgHole == False = unreachable
 
 -- Simulations case when there are holes (current label exceeds output label).
 {-@ simulationsHoles' 
@@ -92,7 +88,7 @@ simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l =
                 evalEraseProgram (ε l p) l
             ==: Pair 0 PgHole ? simulationsHoles'' p l
             ==: Pair n PgHole ? unsafeAssumeIndexEqual 0 n
-            ==: Pair n (ε l (Pg l' c' m' (TApp t2 t'))) ? (monotonicLabelEvalProgramStar 0 p1 &&& greaterLabelNotFlowTo lc l' l)
+            ==: Pair n (ε l (Pg l' c' m' (TApp t2 t'))) ? (safeProgramBindsToSafeProgram p t1 t2 &&& monotonicLabelEvalProgramStar 0 p1 &&& greaterLabelNotFlowTo lc l' l)
             ==! mapSnd (ε l) (Pair n (Pg l' c' m' (TApp t2 t')))
             ==! mapSnd (ε l) (evalProgram p)
             *** QED

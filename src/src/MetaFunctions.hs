@@ -102,7 +102,7 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 
 ςTerm TException = True -- JP: Is this right?
 
-{-@ reflect ς @-}
+{-@ measure ς @-}
 ς :: Program -> Bool 
 ς (Pg _ _ _ t) = ςTerm t 
 ς PgHole = False
