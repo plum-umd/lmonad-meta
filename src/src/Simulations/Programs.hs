@@ -19,13 +19,21 @@ import ProofCombinators
  -> {v:Proof | ς (Pg (pLabel p) (pClearance p) (pMemory p) t1)}
  @-}
 safeProgramBindsToSafeProgram :: Program -> Term -> Term -> Proof
-safeProgramBindsToSafeProgram p t1 t2 = undefined
+safeProgramBindsToSafeProgram p@(Pg l c m tb@(TBind t1 t2)) t1' t2' | t1 == t1' && t2 == t2' = 
+    let p' = Pg l c m t1 in
+        ς p'
+    ==. ςTerm t1
+    ==. ςTerm tb
+    ==. True
+    *** QED
 
+-- {-@ automatic-instances safeProgramEvalsToSafeProgram @-}
 {-@ safeProgramEvalsToSafeProgram
  :: {p : Program | ς p}
  -> {v : Proof | ς (pSnd (evalProgram p))}
  @-}
 safeProgramEvalsToSafeProgram :: Program -> Proof
+-- safeProgramEvalsToSafeProgram PgHole = trivial
 safeProgramEvalsToSafeProgram _ = undefined
 
 
