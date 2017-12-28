@@ -82,12 +82,12 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 ςTerm (TFix t)       = ςTerm t 
 ςTerm (TIf t1 t2 t3) = ςTerm t1 && ςTerm t2 && ςTerm t3
 
-ςTerm (TVLabel _)       = True 
-ςTerm (TJoin _ _)      = True 
-ςTerm (TMeet _ _)      = True 
-ςTerm (TCanFlowTo _ _) = True 
+ςTerm (TVLabel _)        = True 
+ςTerm (TJoin t1 t2)      = ςTerm t1 && ςTerm t2
+ςTerm (TMeet t1 t2)      = ςTerm t1 && ςTerm t2
+ςTerm (TCanFlowTo t1 t2) = ςTerm t1 && ςTerm t2
 
-ςTerm (TBind _ _) = True 
+ςTerm (TBind t1 t2) = ςTerm t1 && ςTerm t2
 
 ςTerm TGetLabel      = True 
 ςTerm TGetClearance  = True 
