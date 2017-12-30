@@ -85,6 +85,9 @@ evalProgram (Pg l c m (TToLabeled (TVLabel _) _)) = Pair 0 (Pg l c m TException)
 
 evalProgram (Pg l c m t) = Pair 0 (Pg l c m (eval t))
 
+
+-- JP: Can we drop evalProgramStar and evaluate with small steps?
+
 {-@ lazy evalProgramStar @-}
 
 {-@ reflect evalProgramStar @-}

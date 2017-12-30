@@ -70,7 +70,7 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 -- | Safety -------------------------------------------------------------------
 -------------------------------------------------------------------------------
 
-{-@ reflect ςTerm @-}
+{-@ measure ςTerm @-}
 ςTerm :: Term -> Bool  
 ςTerm THole          = True
 ςTerm TTrue          = True
@@ -106,4 +106,15 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 ς :: Program -> Bool 
 ς (Pg _ _ _ t) = ςTerm t 
 ς PgHole = False
+
+{-@ measure isNotHole @-}
+isNotHole :: Program -> Bool
+isNotHole PgHole = False
+isNotHole _ = True
+-- isNotHole p = not (isHole p)
+-- isNotHole = not . isHole
+-- {-@ measure isHole @-}
+-- isHole :: Program -> Bool
+-- isHole PgHole = True
+-- isHole _ = False
 
