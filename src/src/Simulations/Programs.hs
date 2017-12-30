@@ -27,81 +27,86 @@ safeProgramBindsToSafeProgram p@(Pg l c m tb@(TBind t1 t2)) t1' t2' | t1 == t1' 
     ==. True
     *** QED
 
-{-@ safeProgramStarEvalsToNoneHole
+{-@ safeProgramStarEvalsToNonHole
  :: n : Index
  -> {p : Program | ς p}
- -> {v : Proof | isNotHole (pSnd (evalProgramStar (Pair n p)))}
+ -> {p' : Program | p' = pSnd (evalProgramStar (Pair n p))}
+ -> {v : Proof | isNotHole p'}
  @-}
-safeProgramStarEvalsToNoneHole :: Index -> Program -> Proof
-safeProgramStarEvalsToNoneHole _ _ = undefined
+safeProgramStarEvalsToNonHole :: Index -> Program -> Program -> Proof
+safeProgramStarEvalsToNonHole _ _ _ = undefined
 
--- {-@ automatic-instances safeProgramEvalsToNoneHole @-}
-{-@ safeProgramEvalsToNoneHole
+-- {-@ automatic-instances safeProgramEvalsToNonHole @-}
+{-@ safeProgramEvalsToNonHole
  :: {p : Program | ς p}
  -> {v : Proof | isNotHole (pSnd (evalProgram p))}
  @-}
-safeProgramEvalsToNoneHole :: Program -> Proof
-safeProgramEvalsToNoneHole PgHole = unreachable
-safeProgramEvalsToNoneHole p@(Pg _ _ _ t@(TLabeledTCB _ _)) = unreachable
-safeProgramEvalsToNoneHole p@(Pg _ _ _ (TBind _ _)) = case evalProgram p of
+safeProgramEvalsToNonHole :: Program -> Proof
+safeProgramEvalsToNonHole PgHole = unreachable
+safeProgramEvalsToNonHole p@(Pg _ _ _ t@(TLabeledTCB _ _)) = unreachable
+safeProgramEvalsToNonHole p@(Pg l c m (TBind t1 _)) = case evalProgram p of
     (Pair _ p'@PgHole) ->
             isNotHole p'
-        -- ==. isNotHole 
-        ==. True ? safeProgramStarEvalsToNoneHole 0 p
+        ==! isNotHole (pSnd (evalProgram p))
+        ==! isNotHole (pSnd (evalProgramStar (Pair 0 (Pg l c m t1))))
+        ==: True ? safeProgramStarEvalsToNonHole 0 p p'
+        -- -- ==. isNotHole 
+        -- ==: True ? safeProgramStarEvalsToNonHole 0 p
         *** QED
+        
     (Pair _ p'@(Pg _ _ _ _)) -> 
             isNotHole p'
         ==. True
         *** QED
 
 
-safeProgramEvalsToNoneHole p@(Pg _ _ _ _) = 
+safeProgramEvalsToNonHole p@(Pg _ _ _ _) = 
     let (Pair _ p'@(Pg _ _ _ _)) = evalProgram p in
         isNotHole p'
     ==. True
     *** QED
 
 
--- safeProgramEvalsToNoneHole p@(Pg _ _ _ (TBind _ _)) = undefined
--- safeProgramEvalsToNoneHole p@(Pg _ _ _ TGetLabel) = 
+-- safeProgramEvalsToNonHole p@(Pg _ _ _ (TBind _ _)) = undefined
+-- safeProgramEvalsToNonHole p@(Pg _ _ _ TGetLabel) = 
 --     let (Pair 0 p'@(Pg _ _ _ (TVLabel l))) = evalProgram p in
 --         isNotHole p'
 --     ==. True
 --     *** QED
 -- 
--- safeProgramEvalsToNoneHole p@(Pg _ _ _ TGetClearance) = 
+-- safeProgramEvalsToNonHole p@(Pg _ _ _ TGetClearance) = 
 --     let (Pair 0 p'@(Pg _ _ _ (TVLabel l))) = evalProgram p in
 --         isNotHole p'
 --     ==. True
 --     *** QED
 -- 
--- safeProgramEvalsToNoneHole p@(Pg l c _ (TLowerClearance (TVLabel c'))) | l `canFlowTo` c' && c' `canFlowTo` c =
+-- safeProgramEvalsToNonHole p@(Pg l c _ (TLowerClearance (TVLabel c'))) | l `canFlowTo` c' && c' `canFlowTo` c =
 --     let (Pair 0 p'@(Pg _ _ _ TUnit)) = evalProgram p in
 --         isNotHole p'
 --     ==. True
 --     *** QED
 -- 
--- safeProgramEvalsToNoneHole p@(Pg _ _ _ (TLowerClearance (TVLabel _))) =
+-- safeProgramEvalsToNonHole p@(Pg _ _ _ (TLowerClearance (TVLabel _))) =
 --     let (Pair 0 p'@(Pg _ _ _ TException)) = evalProgram p in
 --         isNotHole p'
 --     ==. True
 --     *** QED
 -- 
--- safeProgramEvalsToNoneHole p@(Pg l c _ (TLabel (TVLabel ll) _)) | l `canFlowTo` ll && ll `canFlowTo` c =
+-- safeProgramEvalsToNonHole p@(Pg l c _ (TLabel (TVLabel ll) _)) | l `canFlowTo` ll && ll `canFlowTo` c =
 --     let (Pair 0 p'@(Pg _ _ _ (TLabeledTCB a b))) = evalProgram p in
 --         isNotHole p'
 --     ==. True
 --     *** QED
 -- 
--- safeProgramEvalsToNoneHole p@(Pg _ _ _ (TLabel _ _)) =
+-- safeProgramEvalsToNonHole p@(Pg _ _ _ (TLabel _ _)) =
 --     let (Pair 0 p'@(Pg _ _ _ _)) = evalProgram p in
 --         isNotHole p'
 --     ==. True
 --     *** QED
 -- 
--- safeProgramEvalsToNoneHole p@(Pg _ _ _ (TUnlabel _)) = undefined
--- safeProgramEvalsToNoneHole p@(Pg _ _ _ (TToLabeled _ _)) = undefined
--- safeProgramEvalsToNoneHole p@(Pg _ _ _ t) = undefined
+-- safeProgramEvalsToNonHole p@(Pg _ _ _ (TUnlabel _)) = undefined
+-- safeProgramEvalsToNonHole p@(Pg _ _ _ (TToLabeled _ _)) = undefined
+-- safeProgramEvalsToNonHole p@(Pg _ _ _ t) = undefined
 
     
 
@@ -114,7 +119,7 @@ safeProgramEvalsToNoneHole p@(Pg _ _ _ _) =
 monotonicLabelEvalProgram :: Program -> Proof
 monotonicLabelEvalProgram p@(Pg l c m (TBind t1 t2)) = case evalProgram p of
     (Pair n p'@PgHole) ->
-        safeProgramEvalsToNoneHole p
+        safeProgramEvalsToNonHole p
     (Pair n (Pg l' c' m' t)) ->
         let pInter = Pg l c m t1 in
             canFlowTo l l'
