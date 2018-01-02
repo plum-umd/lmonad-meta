@@ -99,6 +99,8 @@ isValue (TVLabel _) = True
 isValue TException  = True
 isValue _           = False 
 
+-- JP: TLabeledTCB _ t if isValue t ?
+
 
 -------------------------------------------------------------------------------
 -- | Types --------------------------------------------------------------------

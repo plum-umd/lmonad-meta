@@ -33,7 +33,22 @@ safeProgramBindsToSafeProgram p@(Pg l c m tb@(TBind t1 t2)) t1' t2' | t1 == t1' 
  -> {v : Proof | isNotHole (pSnd (evalProgramStar (Pair n p)))}
  @-}
 safeProgramStarEvalsToNonHole :: Index -> Program -> Proof
-safeProgramStarEvalsToNonHole _ _ = undefined
+safeProgramStarEvalsToNonHole n p = case evalProgramStar (Pair n p) of
+    (Pair n' p'@(Pg _ _ _ t)) | isValue t ->
+            isNotHole (pSnd (evalProgramStar (Pair n p)))
+        ==. isNotHole (pSnd (Pair n' p'))
+        ==. isNotHole p'
+        ==. True
+        *** QED
+
+    _ ->
+        let (Pair n' p') = evalProgramStar (evalProgram p) in
+            isNotHole (pSnd (evalProgramStar (Pair n p)))
+        ==! isNotHole (pSnd (Pair (n + n') p'))
+        ==! isNotHole p'
+        -- ==! isNotHole (pSnd (evalProgramStar (Pair n' p')))
+        ==: True ? safeProgramStarEvalsToNonHole n' p'
+        *** QED
 
 -- {-@ automatic-instances safeProgramEvalsToNonHole @-}
 {-@ safeProgramEvalsToNonHole
@@ -52,8 +67,6 @@ safeProgramEvalsToNonHole p@(Pg l c m (TBind t1 _)) = case evalProgram p of
         ==! isNotHole (pSnd (evalProgram p))
         ==! isNotHole (pSnd (evalProgramStar (Pair 0 p1)))
         ==: True ? safeProgramStarEvalsToNonHole 0 p1
-        -- -- ==. isNotHole 
-        -- ==: True ? safeProgramStarEvalsToNonHole 0 p
         *** QED
         
     (Pair _ p'@(Pg _ _ _ _)) -> 
