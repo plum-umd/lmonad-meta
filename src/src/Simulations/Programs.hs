@@ -30,11 +30,10 @@ safeProgramBindsToSafeProgram p@(Pg l c m tb@(TBind t1 t2)) t1' t2' | t1 == t1' 
 {-@ safeProgramStarEvalsToNonHole
  :: n : Index
  -> {p : Program | ς p}
- -> {p' : Program | p' = pSnd (evalProgramStar (Pair n p))}
- -> {v : Proof | isNotHole p'}
+ -> {v : Proof | isNotHole (pSnd (evalProgramStar (Pair n p)))}
  @-}
-safeProgramStarEvalsToNonHole :: Index -> Program -> Program -> Proof
-safeProgramStarEvalsToNonHole _ _ _ = undefined
+safeProgramStarEvalsToNonHole :: Index -> Program -> Proof
+safeProgramStarEvalsToNonHole _ _ = undefined
 
 -- {-@ automatic-instances safeProgramEvalsToNonHole @-}
 {-@ safeProgramEvalsToNonHole
@@ -46,10 +45,13 @@ safeProgramEvalsToNonHole PgHole = unreachable
 safeProgramEvalsToNonHole p@(Pg _ _ _ t@(TLabeledTCB _ _)) = unreachable
 safeProgramEvalsToNonHole p@(Pg l c m (TBind t1 _)) = case evalProgram p of
     (Pair _ p'@PgHole) ->
-            isNotHole p'
+        let p1 = Pg l c m t1 in
+            False
+        ==! isNotHole PgHole
+        ==! isNotHole p'
         ==! isNotHole (pSnd (evalProgram p))
-        ==! isNotHole (pSnd (evalProgramStar (Pair 0 (Pg l c m t1))))
-        ==: True ? safeProgramStarEvalsToNonHole 0 p p'
+        ==! isNotHole (pSnd (evalProgramStar (Pair 0 p1)))
+        ==: True ? safeProgramStarEvalsToNonHole 0 p1
         -- -- ==. isNotHole 
         -- ==: True ? safeProgramStarEvalsToNonHole 0 p
         *** QED
