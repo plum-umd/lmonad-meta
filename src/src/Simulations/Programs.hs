@@ -42,13 +42,18 @@ safeProgramStarEvalsToNonHole n p = case evalProgramStar (Pair n p) of
         *** QED
 
     _ ->
-        let (Pair n' p') = evalProgramStar (evalProgram p) in
-            isNotHole (pSnd (evalProgramStar (Pair n p)))
-        ==! isNotHole (pSnd (Pair (n + n') p'))
-        ==! isNotHole p'
-        -- ==! isNotHole (pSnd (evalProgramStar (Pair n' p')))
-        ==: True ? safeProgramStarEvalsToNonHole n' p'
-        *** QED
+        undefined
+        -- unreachable
+-- 
+--         let (Pair n' p') = evalProgram p in
+--         let (Pair n'' p'') = evalProgramStar (evalProgram p) in
+--             isNotHole (pSnd (evalProgramStar (Pair n p)))
+--         ==! isNotHole (pSnd (Pair (n + n') p''))
+--         -- ==! isNotHole (pSnd (Pair (n + n') p'))
+--         ==! isNotHole p'
+--         -- ==! isNotHole (pSnd (evalProgramStar (Pair n' p')))
+--         ==: True ? safeProgramStarEvalsToNonHole n' p'
+--         *** QED
 
 -- {-@ automatic-instances safeProgramEvalsToNonHole @-}
 {-@ safeProgramEvalsToNonHole
