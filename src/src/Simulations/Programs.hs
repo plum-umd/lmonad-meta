@@ -134,6 +134,7 @@ safeProgramEvalsToNonHole p@(Pg _ _ _ _) =
 {-@ monotonicLabelEvalProgram
  :: {p : Program | ς p}
  -> {v : Proof | canFlowTo (pLabel p) (pLabel (pSnd (evalProgram p)))}
+ / [size (pTerm p)]
  @-}
 monotonicLabelEvalProgram :: Program -> Proof
 monotonicLabelEvalProgram p@(Pg l c m (TBind t1 t2)) = case evalProgram p of
@@ -197,11 +198,42 @@ monotonicLabelEvalProgram p@(Pg l c m t) =
  :: n : Index
  -> {p : Program | ς p}
  -> {v : Proof | canFlowTo (pLabel p) (pLabel (pSnd (evalProgramStar (Pair n p))))}
+ / [size (pTerm p)]
  @-}
 monotonicLabelEvalProgramStar :: Index -> Program -> Proof
 monotonicLabelEvalProgramStar n PgHole = unreachable
-monotonicLabelEvalProgramStar n p =
-    undefined
+monotonicLabelEvalProgramStar n p@(Pg l c m t) = case evalProgramStar (Pair n p) of
+    (Pair _ PgHole) ->
+        unreachable
+    (Pair _ (Pg l'' c'' m'' t'')) -> case evalProgram p of
+        (Pair _ PgHole) ->
+            safeProgramEvalsToNonHole p &&& unreachable
+
+        (Pair n' p'@(Pg l' c' m' t)) -> 
+            undefined
+            -- monotonicLabelEvalProgram p &&& monotonicLabelEvalProgramStar n' p' &&& transitiveLabel l l' l''
+
+
+        -- monotonicLabelEvalProgram p
+
+        --     canFlowTo l l''
+        -- ==! canFlowTo l l'
+        -- ==? True -- ? monotonicLabelEvalProgram p
+        -- *** QED
+        -- ==? canFlowTo l l'
+        -- ==: True ? monotonicLabelEvalProgram p
+        -- *** QED
+        -- undefined
+
+    -- where
+    --     lToL' = 
+    --         canFlowTo l l'
+    --         ==. True ? monotonicLabelEvalProgram p
+    --         *** QED
+
+
+    --     canFlowTo l (pLabel (pSnd (evalProgramStar (Pair n p))))
+    -- undefined
     -- TODO: Unimplemented XXX
 
 -- {-@ monotonicLabelEvalProgramStar
