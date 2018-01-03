@@ -72,7 +72,7 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 
 {-@ measure ςTerm @-}
 ςTerm :: Term -> Bool  
-ςTerm THole          = True
+ςTerm THole          = False
 ςTerm TTrue          = True
 ςTerm TFalse         = True
 ςTerm TUnit          = True
