@@ -78,8 +78,8 @@ evalProgram (Pg l c m (TToLabeled (TVLabel ll) t)) | l `canFlowTo` ll && ll `can
                 Pair (n+1) (Pg l c m' (TLabeledTCB ll TException))
 
         -- JP: Does this make sense? What do we do for labels + memory?
-        (Pair n PgHole) ->
-            Pair (n+1) (Pg l c m (TLabeledTCB ll THole))
+        -- (Pair n PgHole) ->
+        --     Pair (n+1) (Pg l c m (TLabeledTCB ll THole))
             
 evalProgram (Pg l c m (TToLabeled (TVLabel _) _)) = Pair 0 (Pg l c m TException)
 

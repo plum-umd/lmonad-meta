@@ -169,12 +169,23 @@ simulationsHoles' p@(Pg lc cc m (TUnlabel (TLabeledTCB ll t))) l =
     *** QED
 
 simulationsHoles' p@(Pg lc cc m (TToLabeled (TVLabel ll) t)) l | lc `canFlowTo` ll && ll `canFlowTo` cc = case evalProgramStar (Pair 0 (Pg lc cc m t)) of
-    (Pair _ (Pg _ _ _ _)) ->
-        admitted
-        --     evalEraseProgram (ε l p) l
-        -- ==. Pair 0 PgHole ? simulationsHoles'' p l
-        -- ==! mapSnd (ε l) (evalProgram p)
-        -- *** QED
+    (Pair n' (Pg l' _ m' t')) | l' `canFlowTo` ll ->
+        -- if l' `canFlowTo` ll then
+            evalEraseProgram (ε l p) l
+        ==: Pair 0 PgHole ? simulationsHoles'' p l
+        ==: Pair (n'+1) (ε l (Pg lc cc m' (TLabeledTCB ll t'))) ? unsafeAssumeIndexEqual 0 (n'+1)
+        ==! mapSnd (ε l) (Pair (n'+1) (Pg lc cc m' (TLabeledTCB ll t')))
+        ==! mapSnd (ε l) (evalProgram p)
+        *** QED
+        -- else
+
+    (Pair n' (Pg l' _ m' t')) ->
+            evalEraseProgram (ε l p) l
+        ==: Pair 0 PgHole ? simulationsHoles'' p l
+        ==: Pair (n'+1) (ε l (Pg lc cc m' (TLabeledTCB ll TException))) ? unsafeAssumeIndexEqual 0 (n'+1)
+        ==! mapSnd (ε l) (Pair (n'+1) (Pg lc cc m' (TLabeledTCB ll TException)))
+        ==! mapSnd (ε l) (evalProgram p)
+        *** QED
 
     (Pair _ PgHole) ->
         unreachable
