@@ -4,7 +4,7 @@
 
 module Label where
 
-import ProofCombinators
+-- import ProofCombinators
 
 -- type Label = Integer -- JP: Do we need a different type for a partial order?
 
@@ -86,7 +86,7 @@ greaterLabelNotFlowTo _ _ _ = ()
  :: l1 : Label 
  -> {l2 : Label | canFlowTo l1 l2}
  -> {l3 : Label | canFlowTo l2 l3}
- -> {v : Proof | canFlowTo l1 l3}
+ -> {v : () | canFlowTo l1 l3}
  @-}
-transitiveLabel :: Label -> Label -> Label -> Proof
-transitiveLabel _ _ _ = trivial
+transitiveLabel :: Label -> Label -> Label -> () -- Proof -- JP: Can't import ProofCombinator for some reason.
+transitiveLabel _ _ _ = () -- trivial

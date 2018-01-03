@@ -30,14 +30,14 @@ safeProgramBindsToSafeProgram p@(Pg l c m tb@(TBind t1 t2)) t1' t2' | t1 == t1' 
 {-@ safeProgramStarEvalsToNonHole
  :: n : Index
  -> {p : Program | ς p}
- -> {v : Proof | isNotHole (pSnd (evalProgramStar (Pair n p)))}
+ -> {v : Proof | isPg (pSnd (evalProgramStar (Pair n p)))}
  @-}
 safeProgramStarEvalsToNonHole :: Index -> Program -> Proof
 safeProgramStarEvalsToNonHole n p = case evalProgramStar (Pair n p) of
     (Pair n' p'@(Pg _ _ _ t)) -> -- | isValue t ->
-            isNotHole (pSnd (evalProgramStar (Pair n p)))
-        ==. isNotHole (pSnd (Pair n' p'))
-        ==. isNotHole p'
+            isPg (pSnd (evalProgramStar (Pair n p)))
+        ==. isPg (pSnd (Pair n' p'))
+        ==. isPg p'
         ==. True
         *** QED
 
@@ -46,18 +46,18 @@ safeProgramStarEvalsToNonHole n p = case evalProgramStar (Pair n p) of
 -- 
 --         let (Pair n' p') = evalProgram p in
 --         let (Pair n'' p'') = evalProgramStar (evalProgram p) in
---             isNotHole (pSnd (evalProgramStar (Pair n p)))
---         ==! isNotHole (pSnd (Pair (n + n') p''))
---         -- ==! isNotHole (pSnd (Pair (n + n') p'))
---         ==! isNotHole p'
---         -- ==! isNotHole (pSnd (evalProgramStar (Pair n' p')))
+--             isPg (pSnd (evalProgramStar (Pair n p)))
+--         ==! isPg (pSnd (Pair (n + n') p''))
+--         -- ==! isPg (pSnd (Pair (n + n') p'))
+--         ==! isPg p'
+--         -- ==! isPg (pSnd (evalProgramStar (Pair n' p')))
 --         ==: True ? safeProgramStarEvalsToNonHole n' p'
 --         *** QED
 
 -- {-@ automatic-instances safeProgramEvalsToNonHole @-}
 {-@ safeProgramEvalsToNonHole
  :: {p : Program | ς p}
- -> {v : Proof | isNotHole (pSnd (evalProgram p))}
+ -> {v : Proof | isPg (pSnd (evalProgram p))}
  @-}
 safeProgramEvalsToNonHole :: Program -> Proof
 safeProgramEvalsToNonHole PgHole = unreachable
@@ -66,22 +66,22 @@ safeProgramEvalsToNonHole p@(Pg l c m (TBind t1 _)) = case evalProgram p of
     (Pair _ p'@PgHole) ->
         let p1 = Pg l c m t1 in
             False
-        ==! isNotHole PgHole
-        ==! isNotHole p'
-        ==! isNotHole (pSnd (evalProgram p))
-        ==! isNotHole (pSnd (evalProgramStar (Pair 0 p1)))
+        ==! isPg PgHole
+        ==! isPg p'
+        ==! isPg (pSnd (evalProgram p))
+        ==! isPg (pSnd (evalProgramStar (Pair 0 p1)))
         ==: True ? safeProgramStarEvalsToNonHole 0 p1
         *** QED
         
     (Pair _ p'@(Pg _ _ _ _)) -> 
-            isNotHole p'
+            isPg p'
         ==. True
         *** QED
 
 
 safeProgramEvalsToNonHole p@(Pg _ _ _ _) = 
     let (Pair _ p'@(Pg _ _ _ _)) = evalProgram p in
-        isNotHole p'
+        isPg p'
     ==. True
     *** QED
 
@@ -89,37 +89,37 @@ safeProgramEvalsToNonHole p@(Pg _ _ _ _) =
 -- safeProgramEvalsToNonHole p@(Pg _ _ _ (TBind _ _)) = undefined
 -- safeProgramEvalsToNonHole p@(Pg _ _ _ TGetLabel) = 
 --     let (Pair 0 p'@(Pg _ _ _ (TVLabel l))) = evalProgram p in
---         isNotHole p'
+--         isPg p'
 --     ==. True
 --     *** QED
 -- 
 -- safeProgramEvalsToNonHole p@(Pg _ _ _ TGetClearance) = 
 --     let (Pair 0 p'@(Pg _ _ _ (TVLabel l))) = evalProgram p in
---         isNotHole p'
+--         isPg p'
 --     ==. True
 --     *** QED
 -- 
 -- safeProgramEvalsToNonHole p@(Pg l c _ (TLowerClearance (TVLabel c'))) | l `canFlowTo` c' && c' `canFlowTo` c =
 --     let (Pair 0 p'@(Pg _ _ _ TUnit)) = evalProgram p in
---         isNotHole p'
+--         isPg p'
 --     ==. True
 --     *** QED
 -- 
 -- safeProgramEvalsToNonHole p@(Pg _ _ _ (TLowerClearance (TVLabel _))) =
 --     let (Pair 0 p'@(Pg _ _ _ TException)) = evalProgram p in
---         isNotHole p'
+--         isPg p'
 --     ==. True
 --     *** QED
 -- 
 -- safeProgramEvalsToNonHole p@(Pg l c _ (TLabel (TVLabel ll) _)) | l `canFlowTo` ll && ll `canFlowTo` c =
 --     let (Pair 0 p'@(Pg _ _ _ (TLabeledTCB a b))) = evalProgram p in
---         isNotHole p'
+--         isPg p'
 --     ==. True
 --     *** QED
 -- 
 -- safeProgramEvalsToNonHole p@(Pg _ _ _ (TLabel _ _)) =
 --     let (Pair 0 p'@(Pg _ _ _ _)) = evalProgram p in
---         isNotHole p'
+--         isPg p'
 --     ==. True
 --     *** QED
 -- 

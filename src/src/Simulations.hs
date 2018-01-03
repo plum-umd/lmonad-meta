@@ -63,7 +63,10 @@ simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
   ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
   *** QED 
 
-{-@ simulationsHoles'' :: p : {Program | ς p} -> {l : Label | not (canFlowTo (pLabel p) l)} -> {v:Proof | evalEraseProgram (ε l p) l = Pair 0 PgHole} @-}
+{-@ simulationsHoles'' 
+ :: p : {Program | ς p} 
+ -> {l : Label | not (canFlowTo (pLabel p) l)} 
+ -> {v:Proof | evalEraseProgram (ε l p) l = Pair 0 PgHole} @-}
 simulationsHoles'' :: Program -> Label -> Proof
 simulationsHoles'' p@(Pg _ _ _ _) l =
         evalEraseProgram (ε l p) l
@@ -167,15 +170,14 @@ simulationsHoles' p@(Pg lc cc m (TUnlabel (TLabeledTCB ll t))) l =
 
 simulationsHoles' p@(Pg lc cc m (TToLabeled (TVLabel ll) t)) l | lc `canFlowTo` ll && ll `canFlowTo` cc = case evalProgramStar (Pair 0 (Pg lc cc m t)) of
     (Pair _ (Pg _ _ _ _)) ->
-        undefined
+        admitted
+        --     evalEraseProgram (ε l p) l
+        -- ==. Pair 0 PgHole ? simulationsHoles'' p l
+        -- ==! mapSnd (ε l) (evalProgram p)
+        -- *** QED
+
     (Pair _ PgHole) ->
         unreachable
-
-    -- -- undefined
-    --     evalEraseProgram (ε l p) l
-    -- ==: Pair 0 PgHole ? simulationsHoles'' p l
-    -- ==! mapSnd (ε l) (evalProgram p)
-    -- *** QED
 
 simulationsHoles' p@(Pg lc cc m (TToLabeled (TVLabel _ll) _t)) l = 
         evalEraseProgram (ε l p) l
