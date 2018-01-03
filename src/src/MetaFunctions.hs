@@ -8,7 +8,7 @@ module MetaFunctions where
 import Label
 import Language 
 import Programs 
--- import ProofCombinators ()
+import ProofCombinators
 
 {-@ reflect evalEraseProgram @-}
 evalEraseProgram :: Program -> Label -> Pair Index Program 
@@ -43,12 +43,14 @@ evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
 εTerm l (TLowerClearance t) = TLowerClearance (εTerm l t)
 
 εTerm l (TLabeledTCB l' t) | l' `canFlowTo` l = TLabeledTCB l' (εTerm l t)
-εTerm _ (TLabeledTCB _ _) = THole
+εTerm _ (TLabeledTCB l' _) = TLabeledTCB l' THole
+-- εTerm _ (TLabeledTCB _ _) = THole
 
 εTerm l (TLabelOf t) = TLabelOf (εTerm l t)
 
 εTerm l (TLabel (TVLabel l') t2) | l' `canFlowTo` l = TLabel (TVLabel l') (εTerm l t2)
-εTerm _ (TLabel (TVLabel _) _) = THole -- JP: This erasure might not be required.
+εTerm _ (TLabel (TVLabel l') _) = TLabel (TVLabel l') THole -- JP: This erasure might not be required.
+-- εTerm _ (TLabel (TVLabel _) _) = THole -- JP: This erasure might not be required.
 εTerm l (TLabel t1 t2) = TLabel (εTerm l t1) (εTerm l t2)
 
 εTerm l (TUnlabel t) = TUnlabel (εTerm l t)
