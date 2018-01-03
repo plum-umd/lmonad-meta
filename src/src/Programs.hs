@@ -109,6 +109,7 @@ evalProgramStar (Pair n p) =
 mapSnd :: (b -> c) -> Pair a b -> Pair a c 
 mapSnd f (Pair x y) = Pair x (f y)
 
+-- JP: TODO What about THOLE??? XXX
 {-@ measure isNotHole @-}
 isNotHole :: Program -> Bool
 isNotHole PgHole = False

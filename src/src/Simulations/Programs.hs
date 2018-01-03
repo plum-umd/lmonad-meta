@@ -202,16 +202,27 @@ monotonicLabelEvalProgram p@(Pg l c m t) =
  @-}
 monotonicLabelEvalProgramStar :: Index -> Program -> Proof
 monotonicLabelEvalProgramStar n PgHole = unreachable
-monotonicLabelEvalProgramStar n p@(Pg l c m t) = case evalProgramStar (Pair n p) of
+monotonicLabelEvalProgramStar n p@(Pg l c m t) = case evalProgram p of
     (Pair _ PgHole) ->
-        unreachable
-    (Pair _ (Pg l'' c'' m'' t'')) -> case evalProgram p of
-        (Pair _ PgHole) ->
-            safeProgramEvalsToNonHole p &&& unreachable
+        safeProgramEvalsToNonHole p &&& unreachable
 
-        (Pair n' p'@(Pg l' c' m' t)) -> 
-            undefined
+    (Pair n' p'@(Pg l' c' m' t')) -> case evalProgramStar (Pair n' p') of
+        (Pair _ PgHole) ->
+            unreachable
+        (Pair n'' p''@(Pg l'' c'' m'' t'')) ->
             -- monotonicLabelEvalProgram p &&& monotonicLabelEvalProgramStar n' p' &&& transitiveLabel l l' l''
+            admitted
+
+-- monotonicLabelEvalProgramStar n p@(Pg l c m t) = case evalProgramStar (Pair n p) of
+--     (Pair _ PgHole) ->
+--         unreachable
+--     (Pair _ (Pg l'' c'' m'' t'')) -> case evalProgram p of
+--         (Pair _ PgHole) ->
+--             safeProgramEvalsToNonHole p &&& unreachable
+-- 
+--         (Pair n' p'@(Pg l' c' m' t)) -> 
+--             -- undefined
+--             monotonicLabelEvalProgram p &&& monotonicLabelEvalProgramStar n' p' &&& transitiveLabel l l' l''
 
 
         -- monotonicLabelEvalProgram p

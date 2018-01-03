@@ -24,6 +24,7 @@ module ProofCombinators (
   -- Uncheck operator used only for proof debugging
   
   , (==?) -- x ==? y always succeds 
+  , admitted -- always succeds 
 
   -- * The below operator does not check intermediate equalities
   --   but takes optional proof argument.
@@ -52,6 +53,10 @@ trivial =  ()
 -- {-@ unreachable :: {v : Proof | False } @-}
 unreachable :: Proof
 unreachable =  ()
+
+{-@ assume admitted :: {v : Proof | False} @-}
+admitted :: Proof
+admitted = ()
 
 -- All proof terms are deleted at runtime.
 {- RULE "proofs are irrelevant" forall (p :: Proof). p = () #-}

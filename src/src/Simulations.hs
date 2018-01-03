@@ -165,8 +165,13 @@ simulationsHoles' p@(Pg lc cc m (TUnlabel (TLabeledTCB ll t))) l =
     ==. mapSnd (ε l) (evalProgram p)
     *** QED
 
-simulationsHoles' p@(Pg lc cc m (TToLabeled (TVLabel ll) t)) l | lc `canFlowTo` ll && ll `canFlowTo` cc = 
-    undefined
+simulationsHoles' p@(Pg lc cc m (TToLabeled (TVLabel ll) t)) l | lc `canFlowTo` ll && ll `canFlowTo` cc = case evalProgramStar (Pair 0 (Pg lc cc m t)) of
+    (Pair _ (Pg _ _ _ _)) ->
+        undefined
+    (Pair _ PgHole) ->
+        unreachable
+
+    -- -- undefined
     --     evalEraseProgram (ε l p) l
     -- ==: Pair 0 PgHole ? simulationsHoles'' p l
     -- ==! mapSnd (ε l) (evalProgram p)
