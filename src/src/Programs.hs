@@ -93,7 +93,10 @@ evalProgram (Pg l c m t) = Pair 0 (Pg l c m (eval t))
 {-@ reflect evalProgramStar @-}
 -- TODO: 
 -- {-@ evalProgramStar :: Pair Index Program -> Pair Index (Program <{\v -> isValue v}>) @-}
-{-@ evalProgramStar :: Pair Index Program -> Pair Index Program @-}
+{-@ evalProgramStar 
+ :: Pair Index Program 
+ -> {p' : Pair Index Program | isNotHole (pSnd p') && isValue (pTerm (pSnd p'))} 
+@-}
 evalProgramStar :: Pair Index Program -> Pair Index Program
 evalProgramStar (Pair n (Pg l c m t))
   | isValue t 
@@ -106,3 +109,12 @@ evalProgramStar (Pair n p) =
 mapSnd :: (b -> c) -> Pair a b -> Pair a c 
 mapSnd f (Pair x y) = Pair x (f y)
 
+{-@ measure isNotHole @-}
+isNotHole :: Program -> Bool
+isNotHole PgHole = False
+isNotHole _ = True
+-- isNotHole p = not (isHole p)
+-- isNotHole = not . isHole
+-- {-@ measure isHole @-}
+-- isHole :: Program -> Bool
+-- isHole PgHole = True

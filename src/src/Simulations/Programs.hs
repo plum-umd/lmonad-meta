@@ -34,16 +34,15 @@ safeProgramBindsToSafeProgram p@(Pg l c m tb@(TBind t1 t2)) t1' t2' | t1 == t1' 
  @-}
 safeProgramStarEvalsToNonHole :: Index -> Program -> Proof
 safeProgramStarEvalsToNonHole n p = case evalProgramStar (Pair n p) of
-    (Pair n' p'@(Pg _ _ _ t)) | isValue t ->
+    (Pair n' p'@(Pg _ _ _ t)) -> -- | isValue t ->
             isNotHole (pSnd (evalProgramStar (Pair n p)))
         ==. isNotHole (pSnd (Pair n' p'))
         ==. isNotHole p'
         ==. True
         *** QED
 
-    _ ->
-        undefined
-        -- unreachable
+    (Pair n' PgHole) ->
+        unreachable
 -- 
 --         let (Pair n' p') = evalProgram p in
 --         let (Pair n'' p'') = evalProgramStar (evalProgram p) in
@@ -200,6 +199,7 @@ monotonicLabelEvalProgram p@(Pg l c m t) =
  -> {v : Proof | canFlowTo (pLabel p) (pLabel (pSnd (evalProgramStar (Pair n p))))}
  @-}
 monotonicLabelEvalProgramStar :: Index -> Program -> Proof
+monotonicLabelEvalProgramStar n PgHole = unreachable
 monotonicLabelEvalProgramStar n p =
     undefined
     -- TODO: Unimplemented XXX
