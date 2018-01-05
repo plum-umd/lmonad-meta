@@ -50,18 +50,57 @@ simulations' :: Program -> Label -> Proof
 simulations' (Pg lcurr c m t) l | not (lcurr `canFlowTo` l) -- l < lcurr
     = simulationsHoles' (Pg lcurr c m t) l
 
-simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
-  =   evalEraseProgram (ε l (Pg lcurr c m t)) l 
-  ==! mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m t)))
-  ==! mapSnd (ε l) (evalProgram (Pg lcurr c m (εTerm l t)))
-  ==! mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval (εTerm l t))))
-  ==! Pair 0 (ε l (Pg lcurr c m (eval (εTerm l t))))
-  ==! Pair 1 (Pg lcurr c m (εTerm l (eval (εTerm l t))))
-  ==: Pair 0 (Pg lcurr c m (εTerm l (eval t))) ? eraseTermIdentity l t 
-  ==! Pair 0 (ε l (Pg lcurr c m (eval t)))
-  ==! mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval t)))
-  ==! mapSnd (ε l) (evalProgram (Pg lcurr c m t))
-  *** QED 
+simulations' p l {- | lcurr <= l -}
+  = simulations'' p l
+
+-- simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
+--   =   evalEraseProgram (ε l (Pg lcurr c m t)) l 
+--   ==! mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m t)))
+--   ==! mapSnd (ε l) (evalProgram (Pg lcurr c m (εTerm l t)))
+--   ==! mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval (εTerm l t))))
+--   ==! Pair 0 (ε l (Pg lcurr c m (eval (εTerm l t))))
+--   ==! Pair 1 (Pg lcurr c m (εTerm l (eval (εTerm l t))))
+--   ==: Pair 0 (Pg lcurr c m (εTerm l (eval t))) ? eraseTermIdentity l t 
+--   ==! Pair 0 (ε l (Pg lcurr c m (eval t)))
+--   ==! mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval t)))
+--   ==! mapSnd (ε l) (evalProgram (Pg lcurr c m t))
+--   *** QED 
+
+{-@ simulations'' 
+ :: {p : Program | ς p} 
+ -> {l : Label | canFlowTo (pLabel p) l}
+ -> {v : Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)}
+ @-}
+simulations'' :: Program -> Label -> Proof
+-- simulations'' p@(Pg lc c m t@(TJoin t1 t2)) l = 
+--     let (Pair εN εP) = evalProgram (Pg lc c m (TJoin (εTerm l t1) (εTerm l t2))) in
+--         evalEraseProgram (ε l p) l
+--     ==! mapSnd (ε l) (evalProgram (ε l p))
+--     ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l t)))
+--     ==! mapSnd (ε l) (evalProgram (Pg lc c m (TJoin (εTerm l t1) (εTerm l t2))))
+--     ==? mapSnd (ε l) (evalProgram p)
+--     *** QED
+
+simulations'' p@(Pg lc c m t@(TLam v t1)) l =
+    -- let (Pair eN' eP') = evalProgram (ε l p) in
+    -- let (Pair n' p') = evalProgram p in
+        evalEraseProgram (ε l p) l
+    ==! mapSnd (ε l) (evalProgram (ε l p))
+    ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l t)))
+    ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l (TLam v t1))))
+    ==! mapSnd (ε l) (evalProgram (Pg lc c m (TLam v (εTerm l t1))))
+    ==! Pair 0 (ε l (Pg lc c m (eval (TLam v (εTerm l t1)))))
+    ==! Pair 0 (ε l (Pg lc c m (TLam v (εTerm l t1))))
+    ==? mapSnd (ε l) (evalProgram p)
+    *** QED
+
+simulations'' p@(Pg lc c m t@TGetLabel) l = 
+        evalEraseProgram (ε l p) l
+    ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l t)))
+    ==! mapSnd (ε l) (evalProgram (ε l (Pg lc c m t)))
+    *** QED
+
+simulations'' _ _ = undefined
 
 {-@ simulationsHoles'' 
  :: p : {Program | ς p} 
