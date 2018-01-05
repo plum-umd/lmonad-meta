@@ -52,15 +52,15 @@ simulations' (Pg lcurr c m t) l | not (lcurr `canFlowTo` l) -- l < lcurr
 
 simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
   =   evalEraseProgram (ε l (Pg lcurr c m t)) l 
-  ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m t)))
-  ==. mapSnd (ε l) (evalProgram (Pg lcurr c m (εTerm l t)))
-  ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval (εTerm l t))))
-  ==. Pair 0 (ε l (Pg lcurr c m (eval (εTerm l t))))
-  ==. Pair 0 (Pg lcurr c m (εTerm l (eval (εTerm l t))))
-  ==. Pair 0 (Pg lcurr c m (εTerm l (eval t))) ? eraseTermIdentity l t 
-  ==. Pair 0 (ε l (Pg lcurr c m (eval t)))
-  ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval t)))
-  ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
+  ==! mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m t)))
+  ==! mapSnd (ε l) (evalProgram (Pg lcurr c m (εTerm l t)))
+  ==! mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval (εTerm l t))))
+  ==! Pair 0 (ε l (Pg lcurr c m (eval (εTerm l t))))
+  ==! Pair 1 (Pg lcurr c m (εTerm l (eval (εTerm l t))))
+  ==: Pair 0 (Pg lcurr c m (εTerm l (eval t))) ? eraseTermIdentity l t 
+  ==! Pair 0 (ε l (Pg lcurr c m (eval t)))
+  ==! mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval t)))
+  ==! mapSnd (ε l) (evalProgram (Pg lcurr c m t))
   *** QED 
 
 {-@ simulationsHoles'' 
