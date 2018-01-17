@@ -194,6 +194,7 @@ monotonicLabelEvalProgram p@(Pg l c m t) =
     ==. True
     *** QED
 
+{- lazy monotonicLabelEvalProgramStar @-}
 {-@ monotonicLabelEvalProgramStar
  :: n : Index
  -> {p : Program | ς p}
@@ -210,8 +211,8 @@ monotonicLabelEvalProgramStar n p@(Pg l c m t) = case evalProgram p of
         (Pair _ PgHole) ->
             unreachable
         (Pair n'' p''@(Pg l'' c'' m'' t'')) ->
-            -- monotonicLabelEvalProgram p &&& monotonicLabelEvalProgramStar n' p' &&& transitiveLabel l l' l''
-            admitted
+            monotonicLabelEvalProgram p &&& monotonicLabelEvalProgramStar n' p' &&& transitiveLabel l l' l''
+            -- admitted
 
 -- monotonicLabelEvalProgramStar n p@(Pg l c m t) = case evalProgramStar (Pair n p) of
 --     (Pair _ PgHole) ->

@@ -1,15 +1,16 @@
-resolver: nightly-2017-10-06
+# resolver: nightly-2017-10-06
+resolver: lts-10.0
 
 packages:
 - 'src'
 
 - location:
     git: https://github.com/ucsd-progsys/liquid-fixpoint.git
-    commit: 6550be2226ff3a87cade9a64c215142dfefd1f3f
+    commit: 58ee31c14e3928743d0fb5953f3d4a95022f1fb9s
 
 - location:
     git: https://github.com/ucsd-progsys/liquidhaskell.git
-    commit: c607f625849f90cb6ef472f198e8fc96d6e9b69b
+    commit: f657b811c050ed6cabc0fa9c6ed2ec285012f4a4
 
 
 extra-deps:
@@ -18,9 +19,7 @@ extra-deps:
 - fgl-visualize-0.1.0.1
 - intern-0.9.1.4
 - located-base-0.1.1.1
-
-flags:
-  liquidhaskell:
-    devel: true
+- liquidhaskell-0.8.2.2
+- liquid-fixpoint-0.7.0.6
 
 extra-package-dbs: []

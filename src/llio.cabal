@@ -23,12 +23,13 @@ library
                        Determinacy
                        MetaFunctions
                        Simulations
+                       Simulations.Programs
   build-depends:       base >=4.9 && <5, liquidhaskell
   hs-source-dirs:      src
   if flag(testing)
     ghc-options:       -W -Werror -Wno-incomplete-patterns
   else
-    ghc-options:         -W -Werror
+    ghc-options:      
   default-language:    Haskell98
 
 executable lmonad-meta-exe
