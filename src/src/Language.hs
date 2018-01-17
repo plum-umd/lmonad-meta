@@ -87,7 +87,7 @@ size (TUnlabel t) = 1 + size t
 
 size (TToLabeled t1 t2) = 1 + size t1 + size t2
 
-size TException     = 0
+size TException     = 1
 
 isValue :: Term -> Bool 
 {-@ reflect isValue @-}
@@ -172,7 +172,7 @@ eval t@TException                         = t
 -- eval v | isValue v         = v 
 -- eval v                     = v 
 
-{-@ reflect propagateException @-}
+{-@ measure propagateException @-}
 propagateException :: Term -> Bool 
 
 propagateException TException          = True

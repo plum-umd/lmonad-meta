@@ -33,6 +33,9 @@ module ProofCombinators (
   -- * Combining Proofs 
   , (&&&)
 
+  , assert
+  , assertEqual
+  , assertNotEqual
 ) where
 
 -------------------------------------------------------------------------------
@@ -165,3 +168,27 @@ instance (a~b) => OptEq a b where
 
 (&&&) :: Proof -> Proof -> Proof
 x &&& _ = x 
+
+{-@ assertEqual
+ :: x : a
+ -> {y : a | x == y}
+ -> {v : Proof | x == y}
+ @-}
+assertEqual :: a -> a -> Proof
+assertEqual _ _ = ()
+
+{-@ assertNotEqual
+ :: x : a
+ -> {y : a | x /= y}
+ -> {v : Proof | x /= y}
+ @-}
+assertNotEqual :: a -> a -> Proof
+assertNotEqual _ _ = ()
+
+{-@ assert
+ :: {x : Bool | x}
+ -> {v : Proof | x}
+ @-}
+assert :: Bool -> Proof
+assert _ = ()
+

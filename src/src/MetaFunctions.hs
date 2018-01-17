@@ -1,8 +1,8 @@
 {-@ LIQUID "--exactdc"                                  @-}
 {-@ LIQUID "--higherorder"                              @-}
 {-@ LIQUID "--trustinternals"                           @-}
-
 {-@ LIQUID "--automatic-instances=liquidinstanceslocal" @-}
+
 module MetaFunctions where
 
 import Label
