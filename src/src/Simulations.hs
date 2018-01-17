@@ -7,6 +7,8 @@ import Label
 import Language
 import Programs 
 import MetaFunctions 
+import Simulations.Language
+import Simulations.MetaFunctions
 import Simulations.Programs
 
 import ProofCombinators
@@ -81,18 +83,47 @@ simulations'' :: Program -> Label -> Proof
 --     ==? mapSnd (ε l) (evalProgram p)
 --     *** QED
 
-simulations'' p@(Pg lc c m t@(TLam v t1)) l =
-    -- let (Pair eN' eP') = evalProgram (ε l p) in
-    -- let (Pair n' p') = evalProgram p in
-        evalEraseProgram (ε l p) l
-    ==! mapSnd (ε l) (evalProgram (ε l p))
-    ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l t)))
-    ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l (TLam v t1))))
-    ==! mapSnd (ε l) (evalProgram (Pg lc c m (TLam v (εTerm l t1))))
-    ==! Pair 0 (ε l (Pg lc c m (eval (TLam v (εTerm l t1)))))
-    ==! Pair 0 (ε l (Pg lc c m (TLam v (εTerm l t1))))
-    ==? mapSnd (ε l) (evalProgram p)
-    *** QED
+simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
+    True -> 
+            evalEraseProgram (ε l p) l
+        ==! mapSnd (ε l) (evalProgram (ε l p))
+        ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l (TLam v t1))))
+        -- ==! mapSnd (ε l) (evalProgram (Pg lc c m TException))
+        ==! Pair 0 (ε l (Pg lc c m (eval (εTerm l (TLam v t1)))))
+        ==: Pair 0 (ε l (Pg lc c m TException)) ? assertEqual (eval (TLam v t1)) TException &&& erasePropagateExceptionTrueEvalsToException l (TLam v t1)
+        -- ==? mapSnd (ε l) (evalProgram p)
+        ==! mapSnd (ε l) (Pair 0 (Pg lc c m TException))
+        ==! mapSnd (ε l) (Pair 0 (Pg lc c m (eval (TLam v t1)))) -- ? propagateExceptionFalseEvalsToNonexception t
+        ==! mapSnd (ε l) (evalProgram p)
+        *** QED
+        -- undefined
+    False ->
+            evalEraseProgram (ε l p) l
+        ==! mapSnd (ε l) (evalProgram (ε l p))
+        ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l (TLam v t1))))
+        ==! mapSnd (ε l) (evalProgram (Pg lc c m (TLam v (εTerm l t1))))
+        ==! Pair 0 (ε l (Pg lc c m (eval (TLam v (εTerm l t1)))))
+        ==: Pair 0 (ε l (Pg lc c m (TLam v (εTerm l t1)))) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalseEvalsToNonexception l t
+        ==! Pair 0 (Pg lc c m (εTerm l (TLam v (εTerm l t1))))
+        ==! Pair 0 (Pg lc c m (TLam v (εTerm l (εTerm l t1))))
+        ==: Pair 0 (Pg lc c m (TLam v (εTerm l t1))) ? εTermIdempotent l t1
+        ==! Pair 0 (Pg lc c m (εTerm l (TLam v t1)))
+        ==! Pair 0 (ε l (Pg lc c m (TLam v t1)))
+        ==! mapSnd (ε l) (Pair 0 (Pg lc c m (TLam v t1)))
+        ==: mapSnd (ε l) (Pair 0 (Pg lc c m (eval (TLam v t1)))) ? propagateExceptionFalseEvalsToNonexception t
+        ==! mapSnd (ε l) (evalProgram p)
+        *** QED
+
+simulations'' p@(Pg lc c m t@(TApp t1 t2)) l = undefined
+--         evalEraseProgram (ε l p) l
+--         ==! mapSnd (ε l) (evalProgram (ε l p))
+--         ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l t)))
+--     ==! mapSnd (ε l) (evalProgram (ε l p))
+--     ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l t)))
+--     ==! mapSnd (ε l) (Pair 0 (Pg lc c m (eval (εTerm l t))))
+--     ==! mapSnd (ε l) (Pair 0 (Pg lc c m (TApp (εTerm l t1) (εTerm l t2))))
+--     ==! mapSnd (ε l) (evalProgram p)
+--     *** QED
 
 simulations'' p@(Pg lc c m t@TGetLabel) l = 
         evalEraseProgram (ε l p) l
