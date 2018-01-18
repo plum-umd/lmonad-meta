@@ -24,67 +24,125 @@ import ProofCombinators
 -- -- propagateExceptionFalseNotException (TIf a b c) = trivial -- assertNotEqual (TIf a b c) TException -- trivial -- undefined -- assertNotEqual t TException
 -- propagateExceptionFalseNotException _ = trivial
 
-{-@ automatic-instances propagateExceptionFalseEvalsToNonexception @-}
+{- automatic-instances propagateExceptionFalseEvalsToNonexception @-}
 {-@ propagateExceptionFalseEvalsToNonexception 
  :: {t : Term | not (propagateException t)}
  -> v : {not (eval t == TException)}
  @-}
 propagateExceptionFalseEvalsToNonexception :: Term -> Proof
-propagateExceptionFalseEvalsToNonexception t | propagateException t 
-  = unreachable --  assertEqual (propagateException t) False
-propagateExceptionFalseEvalsToNonexception TException 
-  = unreachable
-propagateExceptionFalseEvalsToNonexception (TFix (TLam _ _)) 
-  = trivial 
-propagateExceptionFalseEvalsToNonexception (TFix _) 
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TIf TTrue _ _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TIf TFalse _ _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TIf _ _ _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TApp (TLam _ _) _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TApp _ _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TJoin (TVLabel _) (TVLabel _))
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TJoin (TVLabel _) _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TJoin _ _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TMeet (TVLabel _) (TVLabel _))
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TMeet (TVLabel _) _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TMeet _ _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TCanFlowTo (TVLabel _) (TVLabel _))
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TCanFlowTo (TVLabel _) _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TCanFlowTo _ _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TLowerClearance _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TUnlabel _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TLabel (TVLabel _) _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TLabel _ _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TLabelOf (TLabeledTCB _ _ ))
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TLabelOf _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TToLabeled (TVLabel _) _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception (TToLabeled _ _)
-  = trivial
-propagateExceptionFalseEvalsToNonexception _
-  = trivial
+propagateExceptionFalseEvalsToNonexception t | propagateException t = unreachable --  assertEqual (propagateException t) False
+propagateExceptionFalseEvalsToNonexception TException = unreachable
+propagateExceptionFalseEvalsToNonexception t@(TFix (TLam x t1)) = 
+        eval t
+    ==! subst (Sub x (TFix (TLam x t1))) t1
+    *** QED
+propagateExceptionFalseEvalsToNonexception t@(TFix t1) = 
+        eval t
+    ==! TFix (eval t1)
+    *** QED
+propagateExceptionFalseEvalsToNonexception t@(TIf TTrue t2 _) = 
+        eval t
+    ==! t2
+    *** QED
+propagateExceptionFalseEvalsToNonexception t@(TIf TFalse _ t3) = 
+        eval t
+    ==! t3
+    *** QED
+propagateExceptionFalseEvalsToNonexception t@(TIf t1 t2 t3) = 
+        eval t
+    ==! TIf (eval t1) t2 t3
+    *** QED
 
+propagateExceptionFalseEvalsToNonexception t@(TApp (TLam x t1) t2) = 
+        eval t
+    ==! subst (Sub x t2) t1
+    *** QED
+propagateExceptionFalseEvalsToNonexception t@(TApp t1 t2) = 
+        eval t
+    ==! TApp (eval t1) t2
+    *** QED
+
+propagateExceptionFalseEvalsToNonexception t@(TJoin (TVLabel l1) (TVLabel l2)) = 
+        eval t
+    ==! TVLabel (join l1 l2)
+    *** QED
+propagateExceptionFalseEvalsToNonexception t@(TJoin (TVLabel l1) t2) = 
+        eval t
+    ==! TJoin (TVLabel l1) (eval t2)
+    *** QED
+propagateExceptionFalseEvalsToNonexception t@(TJoin t1 t2) = 
+        eval t
+    ==! TJoin (eval t1) t2
+    *** QED
+
+propagateExceptionFalseEvalsToNonexception t@(TMeet (TVLabel l1) (TVLabel l2)) = 
+        eval t
+    ==! TVLabel (meet l1 l2)
+    *** QED
+propagateExceptionFalseEvalsToNonexception t@(TMeet (TVLabel l1) t2) = 
+        eval t
+    ==! TMeet (TVLabel l1) (eval t2)
+    *** QED
+propagateExceptionFalseEvalsToNonexception t@(TMeet t1 t2) = 
+        eval t
+    ==! TMeet (eval t1) t2
+    *** QED
+
+propagateExceptionFalseEvalsToNonexception t@(TCanFlowTo (TVLabel l1) (TVLabel l2)) = 
+        eval t
+    ==! boolToTerm (canFlowTo l1 l2)
+    *** QED
+propagateExceptionFalseEvalsToNonexception t@(TCanFlowTo (TVLabel l1) t2) = 
+        eval t
+    ==! TCanFlowTo (TVLabel l1) (eval t2)
+    *** QED
+propagateExceptionFalseEvalsToNonexception t@(TCanFlowTo t1 t2) = 
+        eval t
+    ==! TCanFlowTo (eval t1) t2
+    *** QED
+
+propagateExceptionFalseEvalsToNonexception t@(TLowerClearance t1) = 
+        eval t
+    ==! TLowerClearance (eval t1)
+    *** QED
+
+propagateExceptionFalseEvalsToNonexception t@(TUnlabel t1) = 
+        eval t
+    ==! TUnlabel (eval t1)
+    *** QED
+
+propagateExceptionFalseEvalsToNonexception t@(TLabel l@(TVLabel _) t2) = 
+        eval t
+    ==! TLabel l (eval t2)
+    *** QED
+
+propagateExceptionFalseEvalsToNonexception t@(TLabel t1 t2) = 
+        eval t
+    ==! TLabel (eval t1) t2
+    *** QED
+
+propagateExceptionFalseEvalsToNonexception t@(TLabelOf (TLabeledTCB l _ )) = 
+        eval t
+    ==! TVLabel l
+    *** QED
+propagateExceptionFalseEvalsToNonexception t@(TLabelOf t1) = 
+        eval t
+    ==! TLabelOf (eval t1)
+    *** QED
+
+propagateExceptionFalseEvalsToNonexception t@(TToLabeled l@(TVLabel _) t2) = 
+        eval t
+    ==! TToLabeled l (eval t2)
+    *** QED
+propagateExceptionFalseEvalsToNonexception t@(TToLabeled t1 t2) = 
+        eval t
+    ==! TToLabeled (eval t1) t2
+    *** QED
+
+propagateExceptionFalseEvalsToNonexception t = -- @(TLam _ _) = 
+        eval t
+    ==! t
+    *** QED
 
 -- propagateExceptionFalseEvalsToNonexception t@(TBind _ _) = 
 --         eval t

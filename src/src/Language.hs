@@ -260,3 +260,12 @@ subst su (TToLabeled t1 t2)        = TToLabeled (subst su t1) (subst su t2)
 subst _ TException           = TException
 -- subst _  x             = x 
 
+
+-------------------------------------------------------------------------------
+-- Predicates ----------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+{-@ measure isTLam @-}
+isTLam :: Term -> Bool 
+isTLam (TLam _ _) = True 
+isTLam _          = False 
