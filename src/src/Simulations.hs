@@ -39,7 +39,7 @@ simulations p p' l evalProp
 simulations' :: Program -> Label -> Proof
 {-@ simulations' 
   :: {p:Program | ς p} -> l:Label
-  -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
+  -> {v:Proof | evalEraseProgram (ε l p) l = ε l (evalProgram p)} @-}
 
 simulations' (Pg lcurr c m t) l | not (lcurr `canFlowTo` l) -- l < lcurr
     = simulationsHoles' (Pg lcurr c m t) l
@@ -63,7 +63,7 @@ simulations' p l {- | lcurr <= l -}
 {-@ simulations'' 
  :: {p : Program | ς p} 
  -> {l : Label | canFlowTo (pLabel p) l}
- -> {v : Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)}
+ -> {v : Proof | evalEraseProgram (ε l p) l = ε l (evalProgram p)}
  @-}
 simulations'' :: Program -> Label -> Proof
 -- simulations'' p@(Pg lc c m t@(TJoin t1 t2)) l = 
@@ -141,7 +141,7 @@ simulationsHoles'' p@(Pg _ _ _ _) l =
 {-@ simulationsHoles' 
   :: {p : Program | ς p}
   -> {l : Label | not (canFlowTo (pLabel p) l)}
-  -> {v:Proof | evalEraseProgram (ε l p) l = mapSnd (ε l) (evalProgram p)} @-}
+  -> {v:Proof | evalEraseProgram (ε l p) l = ε l (evalProgram p)} @-}
 
 simulationsHoles' :: Program -> Label -> Proof
 simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l = 

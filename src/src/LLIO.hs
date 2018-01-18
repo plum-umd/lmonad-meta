@@ -29,12 +29,12 @@ _hackImport = THole
 -- NV QUESTION: Is this enought or should I set up existentials properly?
 {-@ 
 nonInterference
-   :: l:Label -> n1:Index -> n2:Index 
+   :: l:Label  
    -> k1:{Program  | ς k1 } 
    -> k2:{Program  | ς k2 } 
    -> {v:Proof     | εEquiv l k1 k2}
-   -> k1':{Program | evalProgram k1 == Pair n1 k1' } 
-   -> k2':{Program | evalProgram k2 == Pair n2 k2' } 
+   -> k1':{Program | evalProgram k1 == k1' } 
+   -> k2':{Program | evalProgram k2 == k2' } 
    -> {v:Proof     | εEquiv l k1' k2'}  
  @-}
 
