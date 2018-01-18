@@ -55,7 +55,7 @@ safeProgramStarEvalsToNonHole p = case evalProgramStar p of
 -- {-@ automatic-instances safeProgramEvalsToNonHole @-}
 {-@ safeProgramEvalsToNonHole
  :: {p : Program | ς p}
- -> {v : Proof | isPg (pSnd (evalProgram p))}
+ -> {v : Proof | isPg (evalProgram p)}
  @-}
 safeProgramEvalsToNonHole :: Program -> Proof
 safeProgramEvalsToNonHole PgHole = unreachable
@@ -131,7 +131,7 @@ safeProgramEvalsToNonHole p@(Pg _ _ _ _) =
 -- {-@ automatic-instances monotonicLabelEvalProgram @-}
 {-@ monotonicLabelEvalProgram
  :: p:{Program | ς p && terminates p }
- -> {canFlowTo (pLabel p) (pLabel (pSnd (evalProgram p)))}
+ -> {canFlowTo (pLabel p) (pLabel (evalProgram p))}
  / [evalSteps p, 0]
  @-}
 monotonicLabelEvalProgram :: Program -> Proof
@@ -197,7 +197,7 @@ monotonicLabelEvalProgram p@(Pg l c m t) =
 {-@ automatic-instances monotonicLabelEvalProgramStar @-}
 {-@ monotonicLabelEvalProgramStar
  :: {p : Program | ς p && terminates p }
- -> {canFlowTo (pLabel p) (pLabel (pSnd (evalProgramStar p)))}
+ -> {canFlowTo (pLabel p) (pLabel (evalProgramStar p))}
  / [evalSteps p, 1] 
  @-}
 monotonicLabelEvalProgramStar :: Program -> Proof
@@ -222,7 +222,7 @@ monotonicLabelEvalProgramStar p@(Pg l c m t) = case evalProgram p of
 {-@ measure evalSteps  :: Program -> Int  @-}
 
 {-@ assume terminationTheorem :: {p:Program | terminates p} 
-                       -> { 0 <= evalSteps p && 0 <= evalSteps (pSnd (evalProgram p)) &&  evalSteps (pSnd (evalProgram p)) < evalSteps p && terminates (pSnd (evalProgram p))} @-}
+                       -> { 0 <= evalSteps p && 0 <= evalSteps (evalProgram p) &&  evalSteps (evalProgram p) < evalSteps p && terminates (evalProgram p)} @-}
 terminationTheorem :: Program -> Proof 
 terminationTheorem _ = ()
 

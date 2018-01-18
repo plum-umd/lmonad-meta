@@ -19,9 +19,9 @@ orderedSrcFiles = [
   , "Label.hs"
   , "Language.hs"
   , "Programs.hs"
-{- 
   , "MetaFunctions.hs"
   , "Simulations/Language.hs"
+{- 
   , "Simulations/MetaFunctions.hs"
   , "Simulations/Programs.hs"
   , "Simulations.hs"
