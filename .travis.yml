@@ -25,8 +25,7 @@ addons:
   apt:
     sources:
     - hvr-ghc
-    packages:
-    - ghc-8.0.2
+
 
 script:
   - stack build 

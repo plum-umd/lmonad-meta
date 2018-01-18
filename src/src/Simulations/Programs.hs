@@ -66,11 +66,11 @@ safeProgramEvalsToNonHole p@(Pg l c m (TBind t1 _)) = case evalProgram p of
     (Pair _ p'@PgHole) ->
         let p1 = Pg l c m t1 in
             False
-        ==! isPg PgHole
-        ==! isPg p'
-        ==! isPg (pSnd (evalProgram p))
-        ==! isPg (pSnd (evalProgramStar (Pair 0 p1)))
-        ==: True ? safeProgramStarEvalsToNonHole 0 p1
+        ==. isPg PgHole
+        ==. isPg p'
+        ==. isPg (pSnd (evalProgram p))
+        ==. isPg (pSnd (evalProgramStar (Pair 0 p1)))
+        ==. True ? safeProgramStarEvalsToNonHole 0 p1
         *** QED
         
     (Pair _ p'@(Pg _ _ _ _)) -> 
@@ -132,8 +132,9 @@ safeProgramEvalsToNonHole p@(Pg _ _ _ _) =
 
 -- {-@ automatic-instances monotonicLabelEvalProgram @-}
 {-@ monotonicLabelEvalProgram
- :: {p : Program | ς p}
+ :: p:{Program | ς p && terminates p }
  -> {canFlowTo (pLabel p) (pLabel (pSnd (evalProgram p)))}
+ / [evalSteps p, 0]
  @-}
 monotonicLabelEvalProgram :: Program -> Proof
 monotonicLabelEvalProgram p@(Pg l c m (TBind t1 t2)) = case evalProgram p of
@@ -142,9 +143,12 @@ monotonicLabelEvalProgram p@(Pg l c m (TBind t1 t2)) = case evalProgram p of
     (Pair n (Pg l' c' m' t)) ->
         let pInter = Pg l c m t1 in
             canFlowTo l l'
-        ==. True ? safeProgramBindsToSafeProgram p t1 t2 &&& monotonicLabelEvalProgramStar 0 pInter
+        ==. True ? safeProgramBindsToSafeProgram p t1 t2 &&& 
+                   monotonicLabelEvalProgramStar 0 pInter &&& 
+                   monotonicLabelEvalProgramStar 0 p
         *** QED
 
+{- 
 monotonicLabelEvalProgram p@(Pg l c m TGetLabel) = -- 0 (Pg l' c' m' (TVLabel l'')) = 
     let (Pair 0 (Pg l' c' m' (TVLabel l''))) = evalProgram p in
         canFlowTo l l'
@@ -186,7 +190,7 @@ monotonicLabelEvalProgram p@(Pg l c m (TToLabeled (TVLabel _) _)) =
         canFlowTo l l'
     ==. True
     *** QED
-
+-}
 monotonicLabelEvalProgram p@(Pg l c m t) = 
     let (Pair 0 (Pg l' c' m' t)) = evalProgram p in
         canFlowTo l l'
@@ -196,8 +200,9 @@ monotonicLabelEvalProgram p@(Pg l c m t) =
 {-@ automatic-instances monotonicLabelEvalProgramStar @-}
 {-@ monotonicLabelEvalProgramStar
  :: n : Index
- -> {p : Program | ς p}
+ -> {p : Program | ς p && terminates p }
  -> {canFlowTo (pLabel p) (pLabel (pSnd (evalProgramStar (Pair n p))))}
+ / [evalSteps p, 1] 
  @-}
 monotonicLabelEvalProgramStar :: Index -> Program -> Proof
 monotonicLabelEvalProgramStar n PgHole = unreachable
@@ -210,10 +215,26 @@ monotonicLabelEvalProgramStar n p@(Pg l c m t) = case evalProgram p of
             unreachable
         (Pair n'' p''@(Pg l'' c'' m'' t'')) ->
           if ς p' then 
-            monotonicLabelEvalProgram p &&& 
+            terminationTheorem p                &&& 
+            monotonicLabelEvalProgram p         &&& 
             monotonicLabelEvalProgramStar n' p' &&& 
             transitiveLabel l l' l''
             else admitted
+
+
+{-@ measure terminates :: Program -> Bool @-}
+{-@ measure evalSteps  :: Program -> Int  @-}
+
+{-@ assume terminationTheorem :: {p:Program | terminates p} 
+                       -> { 0 <= evalSteps p && 0 <= evalSteps (pSnd (evalProgram p)) &&  evalSteps (pSnd (evalProgram p)) < evalSteps p && terminates (pSnd (evalProgram p))} @-}
+terminationTheorem :: Program -> Proof 
+terminationTheorem _ = ()
+
+
+{- stepsBind :: l:Label -> c:Label -> m:Memory
+              -> t1:Term -> t2:Term
+             -> {evalSteps (Pg l c m t1) < evalSteps (Pg l c m (TBind t1 t2))} @-}
+
 
 -- monotonicLabelEvalProgramStar n p@(Pg l c m t) = case evalProgramStar (Pair n p) of
 --     (Pair _ PgHole) ->
