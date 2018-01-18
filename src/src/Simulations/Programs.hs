@@ -133,8 +133,7 @@ safeProgramEvalsToNonHole p@(Pg _ _ _ _) =
 -- {-@ automatic-instances monotonicLabelEvalProgram @-}
 {-@ monotonicLabelEvalProgram
  :: {p : Program | ς p}
- -> {v : Proof | canFlowTo (pLabel p) (pLabel (pSnd (evalProgram p)))}
- / [size (pTerm p)]
+ -> {canFlowTo (pLabel p) (pLabel (pSnd (evalProgram p)))}
  @-}
 monotonicLabelEvalProgram :: Program -> Proof
 monotonicLabelEvalProgram p@(Pg l c m (TBind t1 t2)) = case evalProgram p of
@@ -194,12 +193,11 @@ monotonicLabelEvalProgram p@(Pg l c m t) =
     ==. True
     *** QED
 
-{- lazy monotonicLabelEvalProgramStar @-}
+{-@ automatic-instances monotonicLabelEvalProgramStar @-}
 {-@ monotonicLabelEvalProgramStar
  :: n : Index
  -> {p : Program | ς p}
- -> {v : Proof | canFlowTo (pLabel p) (pLabel (pSnd (evalProgramStar (Pair n p))))}
- / [size (pTerm p)]
+ -> {canFlowTo (pLabel p) (pLabel (pSnd (evalProgramStar (Pair n p))))}
  @-}
 monotonicLabelEvalProgramStar :: Index -> Program -> Proof
 monotonicLabelEvalProgramStar n PgHole = unreachable
@@ -211,8 +209,11 @@ monotonicLabelEvalProgramStar n p@(Pg l c m t) = case evalProgram p of
         (Pair _ PgHole) ->
             unreachable
         (Pair n'' p''@(Pg l'' c'' m'' t'')) ->
-            monotonicLabelEvalProgram p &&& monotonicLabelEvalProgramStar n' p' &&& transitiveLabel l l' l''
-            -- admitted
+          if ς p' then 
+            monotonicLabelEvalProgram p &&& 
+            monotonicLabelEvalProgramStar n' p' &&& 
+            transitiveLabel l l' l''
+            else admitted
 
 -- monotonicLabelEvalProgramStar n p@(Pg l c m t) = case evalProgramStar (Pair n p) of
 --     (Pair _ PgHole) ->
