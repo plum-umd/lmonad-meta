@@ -25,7 +25,7 @@ orderedSrcFiles = [
   , "Simulations/MetaFunctions.hs"
   , "Simulations/Helpers.hs"
   , "Simulations/Programs.hs"
-  , "Simulations.hs"
+--   , "Simulations.hs"
   , "Determinacy.hs"
   , "LLIO.hs"
   ]
