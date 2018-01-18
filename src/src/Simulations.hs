@@ -13,31 +13,22 @@ import Simulations.Programs
 
 import ProofCombinators
 
-{-@ unsafeAssumeIndexEqual 
- :: n : Index 
- -> m : Index 
- -> {v : Proof | n == m}
- @-}
-unsafeAssumeIndexEqual :: Index -> Index -> Proof
-unsafeAssumeIndexEqual n m = undefined
-
 {-@ simulationsCorollary 
-  :: p:{Program | ς p} -> p':Program -> n:Index -> l:Label
-  -> {v:Proof | evalProgram p == Pair n p'}
-  -> (n'::Index, {v:Proof | n' <= n && evalEraseProgram (ε l p) l = Pair n' (ε l p')}) @-}
-simulationsCorollary :: Program -> Program -> Index -> Label -> Proof -> (Index, Proof)
-simulationsCorollary p p' n l evalProp = (n, simulations p p' n l evalProp)
+  :: p:{Program | ς p} -> p':Program -> l:Label
+  -> {v:Proof | evalProgram p == p'}
+  -> {evalEraseProgram (ε l p) l = ε l p'} @-}
+simulationsCorollary :: Program -> Program -> Label -> Proof -> Proof
+simulationsCorollary p p' l evalProp = simulations p p' l evalProp
 
-simulations :: Program -> Program -> Index -> Label -> Proof -> Proof
+simulations :: Program -> Program -> Label -> Proof -> Proof
 {-@ simulations 
-  :: {p:Program | ς p} -> p':Program -> n:Index -> l:Label
-  -> {v:Proof | evalProgram p == Pair n p'}
-  -> {v:Proof | evalEraseProgram (ε l p) l = Pair n (ε l p')} @-}
-simulations p p' n l evalProp 
+  :: {p:Program | ς p} -> p':Program -> l:Label
+  -> {v:Proof | evalProgram p == p'}
+  -> {v:Proof | evalEraseProgram (ε l p) l = ε l p'} @-}
+simulations p p' l evalProp 
   =   evalEraseProgram (ε l p) l
-  ==. mapSnd (ε l) (evalProgram p) ? simulations' p l
-  ==. mapSnd (ε l) (Pair n p') ? evalProp
-  ==. Pair n (ε l p')
+  ==. ε l (evalProgram p) ? simulations' p l
+  ==. ε l p' ? evalProp
   *** QED
 
 -- {-@ evalTHole :: {v : Proof | eval THole = THole} @-}
@@ -86,32 +77,31 @@ simulations'' :: Program -> Label -> Proof
 simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
     True -> 
             evalEraseProgram (ε l p) l
-        ==! mapSnd (ε l) (evalProgram (ε l p))
-        ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l (TLam v t1))))
+        ==! ε l (evalProgram (ε l p))
+        ==! ε l (evalProgram (Pg lc c m (εTerm l (TLam v t1))))
         -- ==! mapSnd (ε l) (evalProgram (Pg lc c m TException))
-        ==! Pair 0 (ε l (Pg lc c m (eval (εTerm l (TLam v t1)))))
-        ==: Pair 0 (ε l (Pg lc c m TException)) ? assertEqual (eval (TLam v t1)) TException &&& erasePropagateExceptionTrueEvalsToException l (TLam v t1)
+        ==! ε l (Pg lc c m (eval (εTerm l (TLam v t1))))
+        ==: ε l (Pg lc c m TException) ? assertEqual (eval (TLam v t1)) TException &&& erasePropagateExceptionTrueEvalsToException l (TLam v t1)
         -- ==? mapSnd (ε l) (evalProgram p)
-        ==! mapSnd (ε l) (Pair 0 (Pg lc c m TException))
-        ==! mapSnd (ε l) (Pair 0 (Pg lc c m (eval (TLam v t1)))) -- ? propagateExceptionFalseEvalsToNonexception t
-        ==! mapSnd (ε l) (evalProgram p)
+        ==! ε l (Pg lc c m TException)
+        ==! ε l (Pg lc c m (eval (TLam v t1))) -- ? propagateExceptionFalseEvalsToNonexception t
+        ==! ε l (evalProgram p)
         *** QED
         -- undefined
     False ->
             evalEraseProgram (ε l p) l
-        ==! mapSnd (ε l) (evalProgram (ε l p))
-        ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l (TLam v t1))))
-        ==! mapSnd (ε l) (evalProgram (Pg lc c m (TLam v (εTerm l t1))))
-        ==! Pair 0 (ε l (Pg lc c m (eval (TLam v (εTerm l t1)))))
-        ==: Pair 0 (ε l (Pg lc c m (TLam v (εTerm l t1)))) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalseEvalsToNonexception l t
-        ==! Pair 0 (Pg lc c m (εTerm l (TLam v (εTerm l t1))))
-        ==! Pair 0 (Pg lc c m (TLam v (εTerm l (εTerm l t1))))
-        ==: Pair 0 (Pg lc c m (TLam v (εTerm l t1))) ? εTermIdempotent l t1
-        ==! Pair 0 (Pg lc c m (εTerm l (TLam v t1)))
-        ==! Pair 0 (ε l (Pg lc c m (TLam v t1)))
-        ==! mapSnd (ε l) (Pair 0 (Pg lc c m (TLam v t1)))
-        ==: mapSnd (ε l) (Pair 0 (Pg lc c m (eval (TLam v t1)))) ? propagateExceptionFalseEvalsToNonexception t
-        ==! mapSnd (ε l) (evalProgram p)
+        ==! ε l (evalProgram (ε l p))
+        ==! ε l (evalProgram (Pg lc c m (εTerm l (TLam v t1))))
+        ==! ε l (evalProgram (Pg lc c m (TLam v (εTerm l t1))))
+        ==! ε l (Pg lc c m (eval (TLam v (εTerm l t1))))
+        ==: ε l (Pg lc c m (TLam v (εTerm l t1))) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalseEvalsToNonexception l t
+        ==! Pg lc c m (εTerm l (TLam v (εTerm l t1)))
+        ==! Pg lc c m (TLam v (εTerm l (εTerm l t1)))
+        ==: Pg lc c m (TLam v (εTerm l t1)) ? εTermIdempotent l t1
+        ==! Pg lc c m (εTerm l (TLam v t1))
+        ==! ε l (Pg lc c m (TLam v t1))
+        ==: ε l (Pg lc c m (eval (TLam v t1))) ? propagateExceptionFalseEvalsToNonexception t
+        ==! ε l (evalProgram p)
         *** QED
 
 simulations'' p@(Pg lc c m t@(TApp t1 t2)) l = undefined
@@ -127,8 +117,8 @@ simulations'' p@(Pg lc c m t@(TApp t1 t2)) l = undefined
 
 simulations'' p@(Pg lc c m t@TGetLabel) l = 
         evalEraseProgram (ε l p) l
-    ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l t)))
-    ==! mapSnd (ε l) (evalProgram (ε l (Pg lc c m t)))
+    ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==! ε l (evalProgram (ε l (Pg lc c m t)))
     *** QED
 
 simulations'' _ _ = undefined
@@ -141,10 +131,9 @@ simulationsHoles'' :: Program -> Label -> Proof
 simulationsHoles'' p@(Pg _ _ _ _) l =
         evalEraseProgram (ε l p) l
     ==. evalEraseProgram PgHole l
-    ==. mapSnd (ε l) (evalProgram PgHole)
-    ==. mapSnd (ε l) (Pair 0 PgHole)
-    ==. Pair 0 (ε l PgHole)
-    ==. Pair 0 PgHole
+    ==. ε l (evalProgram PgHole)
+    ==. ε l PgHole
+    ==. PgHole
     *** QED
 
 -- Simulations case when there are holes (current label exceeds output label).
@@ -156,132 +145,126 @@ simulationsHoles'' p@(Pg _ _ _ _) l =
 simulationsHoles' :: Program -> Label -> Proof
 simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l = 
     let p1 = Pg lc cc m t1 in
-    case evalProgramStar (Pair 0 p1) of
-        (Pair n ps@(Pg l' c' m' t')) -> 
+    case evalProgramStar p1 of
+        ps@(Pg l' c' m' t') -> 
                 evalEraseProgram (ε l p) l
-            ==: Pair 0 PgHole ? simulationsHoles'' p l
-            ==: Pair n PgHole ? unsafeAssumeIndexEqual 0 n
-            ==: Pair n (ε l (Pg l' c' m' (TApp t2 t'))) ? (safeProgramBindsToSafeProgram p t1 t2 &&& monotonicLabelEvalProgramStar 0 p1 &&& greaterLabelNotFlowTo lc l' l)
-            ==! mapSnd (ε l) (Pair n (Pg l' c' m' (TApp t2 t')))
-            ==! mapSnd (ε l) (evalProgram p)
+            ==: PgHole ? simulationsHoles'' p l
+            ==: ε l (Pg l' c' m' (TApp t2 t')) ? (safeProgramBindsToSafeProgram p t1 t2 &&& monotonicLabelEvalProgramStar p1 &&& greaterLabelNotFlowTo lc l' l)
+            ==! ε l (Pg l' c' m' (TApp t2 t'))
+            ==! ε l (evalProgram p)
             *** QED
-        (Pair n PgHole) ->
+        PgHole ->
                 evalEraseProgram (ε l p) l
-            ==: Pair 0 PgHole ? simulationsHoles'' p l
-            ==: Pair n PgHole ? unsafeAssumeIndexEqual 0 n
-            ==! Pair n (ε l PgHole)
-            ==! mapSnd (ε l) (Pair n PgHole)
-            ==! mapSnd (ε l) (evalProgram p)
+            ==: PgHole ? simulationsHoles'' p l
+            ==! ε l PgHole
+            ==! ε l (evalProgram p)
             *** QED
 
 simulationsHoles' p@(Pg lc cc m TGetLabel) l =
         evalEraseProgram (ε l p) l
-    ==. Pair 0 PgHole ? simulationsHoles'' p l
-    ==. Pair 0 (ε l (Pg lc cc m (TVLabel lc)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m (TVLabel lc)))
-    ==. mapSnd (ε l) (evalProgram p)
+    ==. PgHole ? simulationsHoles'' p l
+    ==. ε l (Pg lc cc m (TVLabel lc))
+    ==. ε l (Pg lc cc m (TVLabel lc))
+    ==. ε l (evalProgram p)
     *** QED
 
 simulationsHoles' p@(Pg lc cc m TGetClearance) l =
         evalEraseProgram (ε l p) l
-    ==. Pair 0 PgHole ? simulationsHoles'' p l
-    ==. Pair 0 (ε l (Pg lc cc m (TVLabel cc)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m (TVLabel cc)))
-    ==. mapSnd (ε l) (evalProgram p)
+    ==. PgHole ? simulationsHoles'' p l
+    ==. ε l (Pg lc cc m (TVLabel cc))
+    ==. ε l (Pg lc cc m (TVLabel cc))
+    ==. ε l (evalProgram p)
     *** QED
 
 simulationsHoles' p@(Pg lc cc m (TLowerClearance (TVLabel c'))) l | lc `canFlowTo` c' && c' `canFlowTo` cc = 
         evalEraseProgram (ε l p) l
-    ==. Pair 0 PgHole ? simulationsHoles'' p l
-    ==. Pair 0 (ε l (Pg lc c' m TUnit))
-    ==. mapSnd (ε l) (Pair 0 (Pg lc c' m TUnit))
-    ==. mapSnd (ε l) (evalProgram p)
+    ==. PgHole ? simulationsHoles'' p l
+    ==. ε l (Pg lc c' m TUnit)
+    ==. ε l (evalProgram p)
     *** QED
 
 simulationsHoles' p@(Pg lc cc m (TLowerClearance (TVLabel _c'))) l = 
         evalEraseProgram (ε l p) l
-    ==. Pair 0 PgHole ? simulationsHoles'' p l
-    ==. Pair 0 (ε l (Pg lc cc m TException))
-    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m TException))
-    ==. mapSnd (ε l) (evalProgram p)
+    ==. PgHole ? simulationsHoles'' p l
+    ==. ε l (Pg lc cc m TException)
+    ==. ε l (Pg lc cc m TException)
+    ==. ε l (evalProgram p)
     *** QED
 
 simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel ll) t)) l | lc `canFlowTo` ll && ll `canFlowTo` cc =
         evalEraseProgram (ε l p) l
-    ==. Pair 0 PgHole ? simulationsHoles'' p l
-    ==. Pair 0 (ε l (Pg lc cc m (TLabeledTCB ll t)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m (TLabeledTCB ll t)))
-    ==. mapSnd (ε l) (evalProgram p)
+    ==. PgHole ? simulationsHoles'' p l
+    ==. ε l (Pg lc cc m (TLabeledTCB ll t))
+    ==. ε l (Pg lc cc m (TLabeledTCB ll t))
+    ==. ε l (evalProgram p)
     *** QED
 
 simulationsHoles' p@(Pg lc cc m (TLabel (TVLabel _ll) _)) l 
     =   evalEraseProgram (ε l p) l
-    ==. Pair 0 PgHole ? simulationsHoles'' p l
-    ==. Pair 0 (ε l (Pg lc cc m TException))
-    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m TException))
-    ==. mapSnd (ε l) (evalProgram p)
+    ==. PgHole ? simulationsHoles'' p l
+    ==. ε l (Pg lc cc m TException)
+    ==. ε l (Pg lc cc m TException)
+    ==. ε l (evalProgram p)
     *** QED
 
 simulationsHoles' p@(Pg lc cc m (TUnlabel (TLabeledTCB ll t))) l | (lc `join` ll) `canFlowTo` cc = 
         evalEraseProgram (ε l p) l
-    ==. Pair 0 PgHole ? simulationsHoles'' p l
-    ==. Pair 0 (ε l (Pg (lc `join` ll) cc m t)) ? joinLeftNotFlowTo l lc ll
-    ==. mapSnd (ε l) (Pair 0 (Pg (lc `join` ll) cc m t))
-    ==. mapSnd (ε l) (evalProgram p)
+    ==. PgHole ? simulationsHoles'' p l
+    ==. ε l (Pg (lc `join` ll) cc m t) ? joinLeftNotFlowTo l lc ll
+    ==. ε l (Pg (lc `join` ll) cc m t)
+    ==. ε l (evalProgram p)
     *** QED
 
 simulationsHoles' p@(Pg lc cc m (TUnlabel (TLabeledTCB ll t))) l =
         evalEraseProgram (ε l p) l
-    ==. Pair 0 PgHole ? simulationsHoles'' p l
-    ==. Pair 0 (ε l (Pg lc cc m TException))
-    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m TException))
-    ==. mapSnd (ε l) (evalProgram p)
+    ==. PgHole ? simulationsHoles'' p l
+    ==. (ε l (Pg lc cc m TException))
+    ==. ε l (Pg lc cc m TException)
+    ==. ε l (evalProgram p)
     *** QED
 
-simulationsHoles' p@(Pg lc cc m (TToLabeled (TVLabel ll) t)) l | lc `canFlowTo` ll && ll `canFlowTo` cc = case evalProgramStar (Pair 0 (Pg lc cc m t)) of
-    (Pair n' (Pg l' _ m' t')) | l' `canFlowTo` ll ->
+simulationsHoles' p@(Pg lc cc m (TToLabeled (TVLabel ll) t)) l | lc `canFlowTo` ll && ll `canFlowTo` cc = case evalProgramStar (Pg lc cc m t) of
+    (Pg l' _ m' t') | l' `canFlowTo` ll ->
         -- if l' `canFlowTo` ll then
             evalEraseProgram (ε l p) l
-        ==: Pair 0 PgHole ? simulationsHoles'' p l
-        ==: Pair (n'+1) (ε l (Pg lc cc m' (TLabeledTCB ll t'))) ? unsafeAssumeIndexEqual 0 (n'+1)
-        ==! mapSnd (ε l) (Pair (n'+1) (Pg lc cc m' (TLabeledTCB ll t')))
-        ==! mapSnd (ε l) (evalProgram p)
+        ==: PgHole ? simulationsHoles'' p l
+        ==! ε l ((Pg lc cc m' (TLabeledTCB ll t')))
+        ==! ε l (evalProgram p)
         *** QED
         -- else
 
-    (Pair n' (Pg l' _ m' t')) ->
+    (Pg l' _ m' t') ->
             evalEraseProgram (ε l p) l
-        ==: Pair 0 PgHole ? simulationsHoles'' p l
-        ==: Pair (n'+1) (ε l (Pg lc cc m' (TLabeledTCB ll TException))) ? unsafeAssumeIndexEqual 0 (n'+1)
-        ==! mapSnd (ε l) (Pair (n'+1) (Pg lc cc m' (TLabeledTCB ll TException)))
-        ==! mapSnd (ε l) (evalProgram p)
+        ==: PgHole ? simulationsHoles'' p l
+        ==! ε l ((Pg lc cc m' (TLabeledTCB ll TException)))
+        ==! ε l (evalProgram p)
         *** QED
 
-    (Pair _ PgHole) ->
+    PgHole ->
         unreachable
 
 simulationsHoles' p@(Pg lc cc m (TToLabeled (TVLabel _ll) _t)) l = 
         evalEraseProgram (ε l p) l
-    ==: Pair 0 PgHole ? simulationsHoles'' p l
-    ==! Pair 0 (ε l (Pg lc cc m TException))
-    ==! mapSnd (ε l) (Pair 0 (Pg lc cc m TException))
-    ==! mapSnd (ε l) (evalProgram p)
+    ==: PgHole ? simulationsHoles'' p l
+    ==! ε l (Pg lc cc m TException)
+    ==! ε l (Pg lc cc m TException)
+    ==! ε l (evalProgram p)
     *** QED
 
 simulationsHoles' p@(Pg lc cc m t) l = 
     let t' = eval t in
         evalEraseProgram (ε l p) l
-    ==. Pair 0 PgHole ? simulationsHoles'' p l
-    ==. Pair 0 (ε l (Pg lc cc m t'))
-    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m t'))
-    ==. mapSnd (ε l) (Pair 0 (Pg lc cc m (eval t)))
-    ==. mapSnd (ε l) (evalProgram p)
+    ==. PgHole ? simulationsHoles'' p l
+    ==. ε l (Pg lc cc m t')
+    ==. ε l (Pg lc cc m t')
+    ==. ε l (Pg lc cc m (eval t))
+    ==. ε l (evalProgram p)
     *** QED
 
 simulationsHoles' PgHole l =
         evalEraseProgram (ε l PgHole) l
-    ==. Pair 0 PgHole ? simulationsHoles'' PgHole l
-    ==. mapSnd (ε l) (evalProgram PgHole)
+    ==. PgHole ? simulationsHoles'' PgHole l
+    ==. ε l (evalProgram PgHole)
     *** QED
 
 -- joinLeftNotFlowTo l lc ll = 

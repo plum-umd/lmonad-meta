@@ -24,6 +24,8 @@ library
                        MetaFunctions
                        Simulations
                        Simulations.Programs
+                       Simulations.Language
+                       Simulations.MetaFunctions
   build-depends:       base >=4.9 && <5, liquidhaskell
   hs-source-dirs:      src
   if flag(testing)

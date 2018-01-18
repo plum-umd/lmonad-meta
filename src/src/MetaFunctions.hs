@@ -11,8 +11,8 @@ import Programs
 -- import ProofCombinators
 
 {-@ reflect evalEraseProgram @-}
-evalEraseProgram :: Program -> Label -> Pair Index Program 
-evalEraseProgram p l = mapSnd (ε l) (evalProgram p)
+evalEraseProgram :: Program -> Label -> Program 
+evalEraseProgram p l = ε l (evalProgram p)
 
 -------------------------------------------------------------------------------
 -- | Erasure ------------------------------------------------------------------

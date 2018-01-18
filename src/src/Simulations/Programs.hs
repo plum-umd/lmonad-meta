@@ -28,20 +28,18 @@ safeProgramBindsToSafeProgram p@(Pg l c m tb@(TBind t1 t2)) t1' t2' | t1 == t1' 
     *** QED
 
 {-@ safeProgramStarEvalsToNonHole
- :: n : Index
- -> {p : Program | ς p}
- -> {v : Proof | isPg (pSnd (evalProgramStar (Pair n p)))}
+ :: {p : Program | ς p}
+ -> {v : Proof | isPg (evalProgramStar p)}
  @-}
-safeProgramStarEvalsToNonHole :: Index -> Program -> Proof
-safeProgramStarEvalsToNonHole n p = case evalProgramStar (Pair n p) of
-    (Pair n' p'@(Pg _ _ _ t)) -> -- | isValue t ->
-            isPg (pSnd (evalProgramStar (Pair n p)))
-        ==. isPg (pSnd (Pair n' p'))
+safeProgramStarEvalsToNonHole :: Program -> Proof
+safeProgramStarEvalsToNonHole p = case evalProgramStar p of
+    p'@(Pg _ _ _ t) -> -- | isValue t ->
+            isPg (evalProgramStar p)
         ==. isPg p'
         ==. True
         *** QED
 
-    (Pair n' PgHole) ->
+    PgHole ->
         unreachable
 -- 
 --         let (Pair n' p') = evalProgram p in
@@ -63,24 +61,24 @@ safeProgramEvalsToNonHole :: Program -> Proof
 safeProgramEvalsToNonHole PgHole = unreachable
 safeProgramEvalsToNonHole p@(Pg _ _ _ t@(TLabeledTCB _ _)) = unreachable
 safeProgramEvalsToNonHole p@(Pg l c m (TBind t1 _)) = case evalProgram p of
-    (Pair _ p'@PgHole) ->
+    p'@PgHole ->
         let p1 = Pg l c m t1 in
             False
         ==. isPg PgHole
         ==. isPg p'
-        ==. isPg (pSnd (evalProgram p))
-        ==. isPg (pSnd (evalProgramStar (Pair 0 p1)))
-        ==. True ? safeProgramStarEvalsToNonHole 0 p1
+        ==. isPg (evalProgram p)
+        ==. isPg (evalProgramStar p1)
+        ==. True ? safeProgramStarEvalsToNonHole p1
         *** QED
         
-    (Pair _ p'@(Pg _ _ _ _)) -> 
+    p'@(Pg _ _ _ _) -> 
             isPg p'
         ==. True
         *** QED
 
 
 safeProgramEvalsToNonHole p@(Pg _ _ _ _) = 
-    let (Pair _ p'@(Pg _ _ _ _)) = evalProgram p in
+    let p'@(Pg _ _ _ _) = evalProgram p in
         isPg p'
     ==. True
     *** QED
@@ -138,14 +136,13 @@ safeProgramEvalsToNonHole p@(Pg _ _ _ _) =
  @-}
 monotonicLabelEvalProgram :: Program -> Proof
 monotonicLabelEvalProgram p@(Pg l c m (TBind t1 t2)) = case evalProgram p of
-    (Pair n p'@PgHole) ->
+    PgHole ->
         safeProgramEvalsToNonHole p
-    (Pair n (Pg l' c' m' t)) ->
+    (Pg l' c' m' t) ->
         let pInter = Pg l c m t1 in
             canFlowTo l l'
         ==. True ? safeProgramBindsToSafeProgram p t1 t2 &&& 
-                   monotonicLabelEvalProgramStar 0 pInter &&& 
-                   monotonicLabelEvalProgramStar 0 p
+                   monotonicLabelEvalProgramStar pInter 
         *** QED
 
 {- 
@@ -192,32 +189,31 @@ monotonicLabelEvalProgram p@(Pg l c m (TToLabeled (TVLabel _) _)) =
     *** QED
 -}
 monotonicLabelEvalProgram p@(Pg l c m t) = 
-    let (Pair 0 (Pg l' c' m' t)) = evalProgram p in
+    let (Pg l' c' m' t) = evalProgram p in
         canFlowTo l l'
     ==. True
     *** QED
 
 {-@ automatic-instances monotonicLabelEvalProgramStar @-}
 {-@ monotonicLabelEvalProgramStar
- :: n : Index
- -> {p : Program | ς p && terminates p }
- -> {canFlowTo (pLabel p) (pLabel (pSnd (evalProgramStar (Pair n p))))}
+ :: {p : Program | ς p && terminates p }
+ -> {canFlowTo (pLabel p) (pLabel (pSnd (evalProgramStar p)))}
  / [evalSteps p, 1] 
  @-}
-monotonicLabelEvalProgramStar :: Index -> Program -> Proof
-monotonicLabelEvalProgramStar n PgHole = unreachable
-monotonicLabelEvalProgramStar n p@(Pg l c m t) = case evalProgram p of
-    (Pair _ PgHole) ->
+monotonicLabelEvalProgramStar :: Program -> Proof
+monotonicLabelEvalProgramStar PgHole = unreachable
+monotonicLabelEvalProgramStar p@(Pg l c m t) = case evalProgram p of
+    PgHole ->
         safeProgramEvalsToNonHole p &&& unreachable
 
-    (Pair n' p'@(Pg l' c' m' t')) -> case evalProgramStar (Pair n' p') of
-        (Pair _ PgHole) ->
+    p'@(Pg l' c' m' t') -> case evalProgramStar p' of
+        PgHole ->
             unreachable
-        (Pair n'' p''@(Pg l'' c'' m'' t'')) ->
+        (p''@(Pg l'' c'' m'' t'')) ->
           if ς p' then 
             terminationTheorem p                &&& 
             monotonicLabelEvalProgram p         &&& 
-            monotonicLabelEvalProgramStar n' p' &&& 
+            monotonicLabelEvalProgramStar p' &&& 
             transitiveLabel l l' l''
             else admitted
 

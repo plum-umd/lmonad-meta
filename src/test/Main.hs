@@ -17,7 +17,7 @@ run n p = evalPrint p >>= run (n - 1)
 
 evalPrint p = do
     putStrLn $ show p
-    let (Pair _ p') = evalProgram p
+    let p' = evalProgram p
     return p'
 
 -- v <- getClearance

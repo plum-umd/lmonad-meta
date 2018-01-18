@@ -19,6 +19,7 @@ orderedSrcFiles = [
   , "Label.hs"
   , "Language.hs"
   , "Programs.hs"
+{- 
   , "MetaFunctions.hs"
   , "Simulations/Language.hs"
   , "Simulations/MetaFunctions.hs"
@@ -26,6 +27,7 @@ orderedSrcFiles = [
   , "Simulations.hs"
   , "Determinacy.hs"
   , "LLIO.hs"
+-}
   ]
 
 runLiquid :: String -> IO ExitCode
