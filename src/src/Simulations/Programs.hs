@@ -4,9 +4,6 @@
 
 {-@ LIQUID "--automatic-instances=liquidinstanceslocal" @-}
 
--- LH bug: why this is not given?
-{-@ assume pLabel :: p:Program -> {l:Label | pLabel p == l} @-}
-
 module Simulations.Programs where
 
 import Label

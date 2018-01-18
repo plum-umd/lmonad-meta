@@ -127,7 +127,7 @@ simulations'' _ _ = undefined
 {-@ simulationsHoles'' 
  :: p : {Program | ς p} 
  -> {l : Label | not (canFlowTo (pLabel p) l)} 
- -> {v:Proof | evalEraseProgram (ε l p) l = Pair 0 PgHole} @-}
+ -> {v:Proof | evalEraseProgram (ε l p) l = PgHole} @-}
 simulationsHoles'' :: Program -> Label -> Proof
 simulationsHoles'' p@(Pg _ _ _ _) l =
         evalEraseProgram (ε l p) l

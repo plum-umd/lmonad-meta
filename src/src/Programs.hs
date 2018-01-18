@@ -8,6 +8,8 @@ module Programs where
 import Label
 import Language 
 
+-- LH bug: why this is not given?
+{-@ assume pLabel :: p:Program -> {l:Label | pLabel p == l} @-}
 
 data Program =
       Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term}
