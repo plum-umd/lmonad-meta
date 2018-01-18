@@ -22,9 +22,11 @@ library
                        ProofCombinators
                        Determinacy
                        MetaFunctions
+                       Termination
                        Simulations
                        Simulations.Programs
                        Simulations.Language
+                       Simulations.Helpers
                        Simulations.MetaFunctions
   build-depends:       base >=4.9 && <5, liquidhaskell
   hs-source-dirs:      src     

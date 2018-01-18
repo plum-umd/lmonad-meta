@@ -53,7 +53,6 @@ type Proof = ()
 trivial :: Proof
 trivial =  ()
 
--- {-@ unreachable :: {v : Proof | False } @-}
 unreachable :: Proof
 unreachable =  ()
 

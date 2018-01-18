@@ -20,10 +20,12 @@ orderedSrcFiles = [
   , "Language.hs"
   , "Programs.hs"
   , "MetaFunctions.hs"
+  , "Termination.hs"
   , "Simulations/Language.hs"
-{- 
   , "Simulations/MetaFunctions.hs"
+  , "Simulations/Helpers.hs"
   , "Simulations/Programs.hs"
+{- 
   , "Simulations.hs"
   , "Determinacy.hs"
   , "LLIO.hs"

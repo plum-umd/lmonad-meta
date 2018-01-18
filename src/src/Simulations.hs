@@ -10,6 +10,7 @@ import MetaFunctions
 import Simulations.Language
 import Simulations.MetaFunctions
 import Simulations.Programs
+import Simulations.Helpers
 
 import ProofCombinators
 

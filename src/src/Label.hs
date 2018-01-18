@@ -30,6 +30,8 @@ canFlowTo LabelA LabelAMeetB = False
 canFlowTo LabelB LabelAMeetB = False
 -- canFlowTo x y | x == y = True
 
+
+
 {-@ reflect join @-}
 join :: Label -> Label -> Label
 join LabelAJoinB _ = LabelAJoinB
