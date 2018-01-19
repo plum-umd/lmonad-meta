@@ -83,6 +83,16 @@ joinLeftNotFlowTo _ _ _ = ()
 greaterLabelNotFlowTo :: Label -> Label -> Label -> ()
 greaterLabelNotFlowTo _ _ _ = ()
 
+{-@ automatic-instances canFlowToJoin @-}
+{-@ canFlowToJoin
+ :: a : Label
+ -> b : Label
+ -> {ab : Label | ab == join a b}
+ -> {canFlowTo a ab && canFlowTo b ab}
+ @-}
+canFlowToJoin :: Label -> Label -> Label -> ()
+canFlowToJoin _ _ _ = ()
+
 {-@ automatic-instances reflexiveLabel @-}
 reflexiveLabel :: Label -> ()
 {-@ reflexiveLabel :: l:Label -> {canFlowTo l l} @-}

@@ -17,10 +17,6 @@ import ProofCombinators
 safeTheorem :: Program -> Proof 
 safeTheorem _ = undefined 
 
-{-@ jamesDoThat :: l1:Label -> l2:Label -> { canFlowTo l1 l2 } @-} 
-jamesDoThat :: Label -> Label -> Proof 
-jamesDoThat _ _ = undefined 
-
 
 {-@ safeProgramBindsToSafeProgram 
  :: {p : Program | ς p}

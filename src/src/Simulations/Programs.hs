@@ -36,7 +36,7 @@ monotonicLabelEvalProgram p@(Pg l c m (TBind t1 t2))
 monotonicLabelEvalProgram p@(Pg lc cc m (TUnlabel (TLabeledTCB ll t)))
   = let l' = lc `join` ll in
     if l' `canFlowTo` cc 
-      then (canFlowTo lc l' *** QED) &&& jamesDoThat lc l'  
+      then (canFlowTo lc l' *** QED) &&& canFlowToJoin lc ll l'  
       else (canFlowTo lc lc *** QED) &&& reflexiveLabel lc 
 
   where
