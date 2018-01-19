@@ -217,8 +217,8 @@ propagateExceptionFalseEvalsToNonexception t = -- @(TLam _ _) =
 -- {-@ automatic-instances erasePropagateExceptionFalseEvalsToNonexception @-}
 {-@ erasePropagateExceptionFalseEvalsToNonexception
  :: l : Label
- -> {t : Term | eval t /= TException}
- -> {v : Proof | eval (εTerm l t) /= TException}
+ -> {t : Term | not (eval t == TException)}
+ -> {v : Proof | not (eval (εTerm l t) == TException)}
  @-}
 erasePropagateExceptionFalseEvalsToNonexception :: Label -> Term -> Proof
 erasePropagateExceptionFalseEvalsToNonexception _ _ = undefined

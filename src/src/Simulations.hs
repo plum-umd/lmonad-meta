@@ -11,11 +11,14 @@ import Simulations.Language
 import Simulations.MetaFunctions
 import Simulations.Programs
 import Simulations.Helpers
+import Termination
 
 import ProofCombinators
 
 {-@ simulationsCorollary 
-  :: p:{Program | ς p} -> p':Program -> l:Label
+  :: p:{Program | ς p && terminates p} 
+  -> p':Program 
+  -> l:Label
   -> {v:Proof | evalProgram p == p'}
   -> {evalEraseProgram (ε l p) l = ε l p'} @-}
 simulationsCorollary :: Program -> Program -> Label -> Proof -> Proof
@@ -23,7 +26,7 @@ simulationsCorollary p p' l evalProp = simulations p p' l evalProp
 
 simulations :: Program -> Program -> Label -> Proof -> Proof
 {-@ simulations 
-  :: {p:Program | ς p} -> p':Program -> l:Label
+  :: {p:Program | ς p && terminates p} -> p':Program -> l:Label
   -> {v:Proof | evalProgram p == p'}
   -> {v:Proof | evalEraseProgram (ε l p) l = ε l p'} @-}
 simulations p p' l evalProp 
@@ -38,7 +41,8 @@ simulations p p' l evalProp
 
 simulations' :: Program -> Label -> Proof
 {-@ simulations' 
-  :: {p:Program | ς p} -> l:Label
+  :: {p:Program | ς p && terminates p} 
+  -> l:Label
   -> {v:Proof | evalEraseProgram (ε l p) l = ε l (evalProgram p)} @-}
 
 simulations' (Pg lcurr c m t) l | not (lcurr `canFlowTo` l) -- l < lcurr
@@ -84,7 +88,7 @@ simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
         ==! ε l (Pg lc c m (eval (εTerm l (TLam v t1))))
         ==: ε l (Pg lc c m TException) ? assertEqual (eval (TLam v t1)) TException &&& erasePropagateExceptionTrueEvalsToException l (TLam v t1)
         -- ==? mapSnd (ε l) (evalProgram p)
-        ==! ε l (Pg lc c m TException)
+        -- ==! ε l (Pg lc c m TException)
         ==! ε l (Pg lc c m (eval (TLam v t1))) -- ? propagateExceptionFalseEvalsToNonexception t
         ==! ε l (evalProgram p)
         *** QED
@@ -139,7 +143,7 @@ simulationsHoles'' p@(Pg _ _ _ _) l =
 
 -- Simulations case when there are holes (current label exceeds output label).
 {-@ simulationsHoles' 
-  :: {p : Program | ς p}
+  :: {p : Program | ς p && terminates p}
   -> {l : Label | not (canFlowTo (pLabel p) l)}
   -> {v:Proof | evalEraseProgram (ε l p) l = ε l (evalProgram p)} @-}
 
@@ -150,7 +154,7 @@ simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l =
         ps@(Pg l' c' m' t') -> 
                 evalEraseProgram (ε l p) l
             ==: PgHole ? simulationsHoles'' p l
-            ==: ε l (Pg l' c' m' (TApp t2 t')) ? (safeProgramBindsToSafeProgram p t1 t2 &&& monotonicLabelEvalProgramStar p1 &&& greaterLabelNotFlowTo lc l' l)
+            ==: ε l (Pg l' c' m' (TApp t2 t')) ? (safeProgramBindsToSafeProgram p t1 t2 &&& terminationAxiomTBind lc cc m t1 t2 &&& monotonicLabelEvalProgramStar p1 &&& greaterLabelNotFlowTo lc l' l)
             ==! ε l (Pg l' c' m' (TApp t2 t'))
             ==! ε l (evalProgram p)
             *** QED
