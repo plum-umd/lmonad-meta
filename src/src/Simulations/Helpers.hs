@@ -13,9 +13,37 @@ import MetaFunctions
 import ProofCombinators
 
 
-{-@ safeTheorem :: {p:Program | ς p } -> {ς (evalProgram p) } @-}
-safeTheorem :: Program -> Proof 
-safeTheorem _ = undefined 
+{-@ pgTheorem :: {p:Program | isPg p } -> {isPg (evalProgram p) } @-}
+pgTheorem :: Program -> Proof 
+pgTheorem PgHole = unreachable
+pgTheorem p@(Pg l c m (TBind t1 t2)) = 
+    let p' = Pg l c m t1 in
+    let p''@(Pg l' c' m' t') = evalProgramStar p' in
+        isPg (evalProgram p)
+    ==! isPg (Pg l' c' m' (TApp t2 t'))
+    ==! True
+    *** QED
+
+pgTheorem p@(Pg l c m (TToLabeled (TVLabel ll) t)) | l `canFlowTo` ll && ll `canFlowTo` c = 
+    let p' = Pg l c m t in
+    let p''@(Pg l' c' m' t') = evalProgramStar p' in
+    if l' `canFlowTo` ll then
+            isPg (evalProgram p)
+        ==! isPg (Pg l c m' (TLabeledTCB ll t'))
+        ==! True
+        *** QED
+    else
+            isPg (evalProgram p)
+        ==! isPg (Pg l c m' (TLabeledTCB ll TException))
+        ==! True
+        *** QED
+    
+pgTheorem p =
+    let p'@(Pg l' c' m' t') = evalProgram p in
+        isPg (evalProgram p)
+    ==! isPg p'
+    ==! True
+    *** QED
 
 
 {-@ safeProgramBindsToSafeProgram 

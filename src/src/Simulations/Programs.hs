@@ -17,11 +17,12 @@ import ProofCombinators
 
 
 {-@ monotonicLabelEvalProgram
- :: p:{Program | ς p && terminates p }
+ :: p:{Program | isPg p && terminates p }
  -> { canFlowTo (pLabel p) (pLabel (evalProgram p)) }
  / [evalSteps p, 0] 
  @-}
 monotonicLabelEvalProgram :: Program -> Proof
+-- monotonicLabelEvalProgram _ = undefined 
 monotonicLabelEvalProgram PgHole 
   = unreachable 
 
@@ -29,15 +30,19 @@ monotonicLabelEvalProgram p@(Pg l c m (TBind t1 t2))
   = case evalProgramStar (Pg l c m t1) of 
       PgHole              -> ()
       p'@(Pg l' c' m' t') -> (evalProgram p == Pg l' c' m' (TApp t2 t') *** QED)
-                             &&& safeProgramBindsToSafeProgram p t1 t2 
+                             -- &&& safeProgramBindsToSafeProgram p t1 t2 
                              &&& terminationAxiomTBind l c m t1 t2 
                              &&& monotonicLabelEvalProgramStar (Pg l c m t1)
 
 monotonicLabelEvalProgram p@(Pg lc cc m (TUnlabel (TLabeledTCB ll t)))
   = let l' = lc `join` ll in
-    if l' `canFlowTo` cc 
-      then (canFlowTo lc l' *** QED) &&& canFlowToJoin lc ll l'  
-      else (canFlowTo lc lc *** QED) &&& reflexiveLabel lc 
+    if l' `canFlowTo` cc then 
+            assertEqual l' (pLabel p')
+        &&& assert (canFlowTo lc l') 
+        &&& canFlowToJoin lc ll l'  
+    else 
+            assert (canFlowTo lc lc) 
+        &&& reflexiveLabel lc 
 
   where
     p' = evalProgram p  
@@ -48,12 +53,11 @@ monotonicLabelEvalProgram p@(Pg l _ _ _)
 
    
 {-@ monotonicLabelEvalProgramStar
- :: p:{Program | ς p && terminates p }
+ :: p:{Program | isPg p && terminates p }
  -> { canFlowTo (pLabel p) (pLabel (evalProgramStar p)) }
  / [evalSteps p, 1] 
  @-}
 monotonicLabelEvalProgramStar :: Program  -> Proof
-
 monotonicLabelEvalProgramStar p@(Pg l c m t) | isValue t 
   =   canFlowTo (pLabel p) (pLabel (evalProgramStar p))
   ==. canFlowTo l l ? reflexiveLabel l  
@@ -62,7 +66,7 @@ monotonicLabelEvalProgramStar p
   =   (canFlowTo l l'' *** QED)
   &&& (evalProgramStar p == p'' *** QED)
   &&& terminationAxiom p
-  &&& safeTheorem p
+  &&& pgTheorem p
   &&& monotonicLabelEvalProgram p 
   &&& monotonicLabelEvalProgramStar p'
   &&& transitiveLabel l l' l'' 
@@ -73,6 +77,4 @@ monotonicLabelEvalProgramStar p
     l'' = pLabel (evalProgramStar p'')
     p'  = evalProgram p 
     p'' = evalProgramStar p'
-
-
 

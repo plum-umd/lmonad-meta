@@ -155,7 +155,6 @@ simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l =
                 evalEraseProgram (ε l p) l
             ==: PgHole ? simulationsHoles'' p l
             ==: ε l (Pg l' c' m' (TApp t2 t')) ? (safeProgramBindsToSafeProgram p t1 t2 &&& terminationAxiomTBind lc cc m t1 t2 &&& monotonicLabelEvalProgramStar p1 &&& greaterLabelNotFlowTo lc l' l)
-            ==! ε l (Pg l' c' m' (TApp t2 t'))
             ==! ε l (evalProgram p)
             *** QED
         PgHole ->

@@ -33,7 +33,6 @@ evalProgram PgHole =  PgHole
 evalProgram (Pg l c m (TBind t1 t2)) = 
     case evalProgramStar (Pg l c m t1) of
         (Pg l' c' m' t') -> Pg l' c' m' (TApp t2 t')
-        PgHole           -> PgHole
 
 evalProgram (Pg l c m TGetLabel)     = Pg l c m (TVLabel l)
 evalProgram (Pg l c m TGetClearance) = Pg l c m (TVLabel c)
