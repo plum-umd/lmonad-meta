@@ -37,13 +37,13 @@ monotonicLabelEvalProgram p@(Pg lc cc m (TUnlabel (TLabeledTCB ll t)))
   = let l' = lc `join` ll in
     if l' `canFlowTo` cc 
       then (canFlowTo lc l' *** QED) &&& jamesDoThat lc l'  
-      else (canFlowTo lc lc *** QED) &&& relfexiveLabel lc 
+      else (canFlowTo lc lc *** QED) &&& reflexiveLabel lc 
 
   where
     p' = evalProgram p  
 
 monotonicLabelEvalProgram p@(Pg l _ _ _) 
-  = canFlowTo (pLabel p) (pLabel (evalProgram p)) ==. True ? relfexiveLabel l 
+  = canFlowTo (pLabel p) (pLabel (evalProgram p)) ==. True ? reflexiveLabel l 
   *** QED  
 
    
@@ -56,7 +56,7 @@ monotonicLabelEvalProgramStar :: Program  -> Proof
 
 monotonicLabelEvalProgramStar p@(Pg l c m t) | isValue t 
   =   canFlowTo (pLabel p) (pLabel (evalProgramStar p))
-  ==. canFlowTo l l ? relfexiveLabel l  
+  ==. canFlowTo l l ? reflexiveLabel l  
   *** QED 
 monotonicLabelEvalProgramStar p 
   =   (canFlowTo l l'' *** QED)

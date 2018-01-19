@@ -22,14 +22,6 @@ jamesDoThat :: Label -> Label -> Proof
 jamesDoThat _ _ = undefined 
 
 
-relfexiveLabel :: Label -> Proof
-{-@ relfexiveLabel :: l:Label -> {canFlowTo l l} @-}
-relfexiveLabel LabelA      = canFlowTo LabelA LabelA *** QED 
-relfexiveLabel LabelB      = canFlowTo LabelB LabelB *** QED 
-relfexiveLabel LabelAJoinB = canFlowTo LabelAJoinB LabelAJoinB *** QED 
-relfexiveLabel LabelAMeetB = canFlowTo LabelAMeetB LabelAMeetB *** QED 
-
-
 {-@ safeProgramBindsToSafeProgram 
  :: {p : Program | ς p}
  -> t1 : Term
