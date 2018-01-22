@@ -32,6 +32,7 @@ import ProofCombinators
 propagateExceptionFalseEvalsToNonexception :: Term -> Proof
 propagateExceptionFalseEvalsToNonexception t | propagateException t = unreachable --  assertEqual (propagateException t) False
 propagateExceptionFalseEvalsToNonexception TException = unreachable
+-- propagateExceptionFalseEvalsToNonexception t = $wine eval t
 propagateExceptionFalseEvalsToNonexception t@(TFix (TLam x t1)) = 
         eval t
     ==! subst (Sub x (TFix (TLam x t1))) t1

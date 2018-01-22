@@ -35,10 +35,6 @@ simulations p p' l evalProp
   ==. ε l p' ? evalProp
   *** QED
 
--- {-@ evalTHole :: {v : Proof | eval THole = THole} @-}
--- evalTHole :: Proof
--- evalTHole = undefined
-
 simulations' :: Program -> Label -> Proof
 {-@ simulations' 
   :: {p:Program | ς p && terminates p} 
@@ -92,7 +88,6 @@ simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
         ==! ε l (Pg lc c m (eval (TLam v t1))) -- ? propagateExceptionFalseEvalsToNonexception t
         ==! ε l (evalProgram p)
         *** QED
-        -- undefined
     False ->
             evalEraseProgram (ε l p) l
         ==! ε l (evalProgram (ε l p))
@@ -271,16 +266,6 @@ simulationsHoles' PgHole l =
     ==. ε l (evalProgram PgHole)
     *** QED
 
--- joinLeftNotFlowTo l lc ll = 
---         canFlowTo (join lc ll) l
---     ==. 
---     ==. False
---     *** QED
-
---        not (canFlowTo (join lc ll) l)
---    ==. not (canFlowTo lc l) ? joinLeftCanFlowTo lc ll l
---    ==. True
-
 {-@ eraseJoinLeft 
  :: l:Label 
  -> lc:{Label | not (canFlowTo lc l)} 
@@ -295,91 +280,3 @@ eraseJoinLeft l lc ll cc m t =
         ε l (Pg (join lc ll) cc m t) ==. PgHole ? joinLeftNotFlowTo l lc ll
     *** QED
 
-{- 
--- simulationsHoles' (Pg lcurr c m TException) l = 
---         evalEraseProgram (ε l (Pg lcurr c m TException)) l
---     ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m TException)))
--- 
---     ==. mapSnd (ε l) (evalProgram (Pg lcurr c m TException))
---     *** QED
-
-simulationsHoles' (Pg lcurr c m TGetLabel) l = 
---         undefined
-        evalEraseProgram (ε l (Pg lcurr c m TGetLabel)) l
-    ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m TGetLabel)))
-    ==. mapSnd (ε l) (evalProgram (Pg lcurr c m THole))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m THole)) -- ? evalTHole
-    ==. Pair 0 (ε l (Pg lcurr c m THole))
-    ==. Pair 0 (Pg lcurr c m THole)
-    ==. Pair 0 (ε l (Pg lcurr c m (TVLabel lcurr)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (TVLabel lcurr)))
-    ==. mapSnd (ε l) (evalProgram (Pg lcurr c m TGetLabel))
-    *** QED 
-
-simulationsHoles' p@(Pg lcurr c m TGetClearance) l = 
---         undefined
-        evalEraseProgram (ε l (Pg lcurr c m TGetClearance)) l
-    ==. mapSnd (ε l) (evalProgram (ε l p))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m THole))
-    ==. Pair 0 (ε l (Pg lcurr c m THole))
-    ==. Pair 0 (Pg lcurr c m THole)
-    ==. Pair 0 (ε l (Pg lcurr c m (TVLabel c)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (TVLabel c)))
-    ==. mapSnd (ε l) (evalProgram p)
-    *** QED 
-
--- simulationsHoles' (Pg lcurr c m TGetLabel) l = undefined
-
-simulationsHoles' (Pg lcurr c m t) l =
-        evalEraseProgram (ε l (Pg lcurr c m t)) l
-    ==. mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m t)))
-    ==. mapSnd (ε l) (evalProgram (Pg lcurr c m THole))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval THole)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m THole))
-    ==. Pair 0 (ε l (Pg lcurr c m THole))
-    ==. Pair 0 (Pg lcurr c m THole)
-    ==. Pair 0 (ε l (Pg lcurr c m (eval t)))
-    ==. mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval t)))
-    ==. mapSnd (ε l) (evalProgram (Pg lcurr c m t))
-    *** QED 
-
--}
-
--- NV: the following holds just for now, when labels are added it will not hold
-{- automatic-instances eraseTermIdentity @-}
-{-@ eraseTermIdentity :: l:Label -> t:Term  -> { εTerm l t == t } / [size t] @-}
-eraseTermIdentity :: Label -> Term -> Proof
-eraseTermIdentity _ _ = undefined 
-{- 
-eraseTermIdentity _ THole          = trivial 
-eraseTermIdentity _ TTrue          = trivial 
-eraseTermIdentity _ TUnit          = trivial 
-eraseTermIdentity _ TFalse         = trivial 
-eraseTermIdentity _ (TVar _)       = trivial 
-eraseTermIdentity l (TLam _ t)     = eraseTermIdentity l t
-eraseTermIdentity l (TApp t1 t2)   = eraseTermIdentity l t1 &&& eraseTermIdentity l t2  
-eraseTermIdentity l (TFix t)       = eraseTermIdentity l t 
-eraseTermIdentity l (TIf t1 t2 t3) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2 &&& eraseTermIdentity l t3 
-
-eraseTermIdentity _ (TVLabel _)     = trivial
-eraseTermIdentity l (TMeet t1 t2)      = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
-eraseTermIdentity l (TJoin t1 t2)      = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
-eraseTermIdentity l (TCanFlowTo t1 t2) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
-
-eraseTermIdentity l (TBind t1 t2) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
-
-eraseTermIdentity _ TGetLabel      = trivial
-eraseTermIdentity _ TGetClearance  = trivial
-eraseTermIdentity l (TLowerClearance t) = eraseTermIdentity l t
-
-eraseTermIdentity l (TLabeledTCB _ t) = eraseTermIdentity l t
-eraseTermIdentity l (TLabelOf t) = eraseTermIdentity l t
-eraseTermIdentity l (TLabel t1 t2) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
-eraseTermIdentity l (TUnlabel t) = eraseTermIdentity l t
-
-eraseTermIdentity l (TToLabeled t1 t2) = eraseTermIdentity l t1 &&& eraseTermIdentity l t2
-
-eraseTermIdentity _ TException  = trivial
--}
