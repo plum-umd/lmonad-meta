@@ -228,7 +228,7 @@ erasePropagateExceptionFalseEvalsToNonexception l TException = unreachable
 erasePropagateExceptionFalseEvalsToNonexception l t@(TLam v t1) =
         eval (εTerm l t)
     ==! eval (TLam v (εTerm l t1))
-    ==: TLam v (εTerm l t1) ? assertEqual (propagateException t1) False &&& assertNotEqual t1 TException &&& propagateExceptionFalseEvalsToNonexception t1 &&& assertNotEqual (eval t1) TException &&& erasePropagateExceptionFalseEvalsToNonexception l t1 &&& assertNotEqual (TLam v (εTerm l t1)) TException &&& assertNotEqual (TLam v (εTerm l t1)) TException &&& assertNotEqual (eval (εTerm l t)) TException 
+    ==: TLam v (εTerm l t1) ? assertEqual (propagateException t1) False &&& assertNotEqual t1 TException &&& propagateExceptionFalseEvalsToNonexception t1 &&& assertNotEqual (eval t1) TException &&& erasePropagateExceptionFalseEvalsToNonexception l t1 &&& assertNotEqual (TLam v (εTerm l t1)) TException &&& assertNotEqual (TLam v (εTerm l t1)) TException &&& assertEqual (eval (TLam v (εTerm l t1))) (eval (εTerm l t)) &&& assertNotEqual (eval (εTerm l t)) TException 
     *** QED
     
 erasePropagateExceptionFalseEvalsToNonexception l t@THole = 
