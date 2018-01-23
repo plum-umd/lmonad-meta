@@ -178,8 +178,8 @@ assertEqual _ _ = ()
 
 {-@ assertNotEqual
  :: x : a
- -> {y : a | x /= y}
- -> {v : Proof | x /= y}
+ -> {y : a | not (x == y)}
+ -> {v : Proof | not (x == y)}
  @-}
 assertNotEqual :: a -> a -> Proof
 assertNotEqual _ _ = ()
