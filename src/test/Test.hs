@@ -5,13 +5,11 @@ module Main where
 import System.Exit
 import System.Process
 
-main :: IO ExitCode
-main = runAllLiquid
-
+main :: IO ()
+main = runAllLiquid >>= exitWith
 
 runAllLiquid :: IO ExitCode
 runAllLiquid = mconcat <$> mapM runLiquid orderedSrcFiles  
-
 
 orderedSrcFiles :: [String]
 orderedSrcFiles = [
