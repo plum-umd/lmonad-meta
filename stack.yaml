@@ -6,11 +6,11 @@ packages:
 
 - location:
     git: https://github.com/ucsd-progsys/liquid-fixpoint.git
-    commit: 58ee31c14e3928743d0fb5953f3d4a95022f1fb9s
+    commit: b46761cd00552da6dec3e7bd4dd3161cd15ef3d6
 
 - location:
     git: https://github.com/ucsd-progsys/liquidhaskell.git
-    commit: f657b811c050ed6cabc0fa9c6ed2ec285012f4a4
+    commit: 82f5baa2e8e9eb70171d9cd49bde4297e94c2029
 
 
 extra-deps:

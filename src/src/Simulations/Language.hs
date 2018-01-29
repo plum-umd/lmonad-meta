@@ -215,6 +215,14 @@ propagateExceptionFalseEvalsToNonexception t = -- @(TLam _ _) =
 -- -- propagateExceptionFalseEvalsToNonexception t2 -- assert (propagateException t2 == False)
 -- propagateExceptionFalseEvalsToNonexception _ = undefined
 
+{-@ erasePropagateExceptionFalse
+ :: l : Label
+ -> {t : Term | not (propagateException t)}
+ -> {not (propagateException (εTerm l t))}
+ @-}
+erasePropagateExceptionFalse :: Label -> Term -> Proof
+erasePropagateExceptionFalse _ _ = undefined
+
 -- {-@ automatic-instances erasePropagateExceptionFalseEvalsToNonexception @-}
 {-@ erasePropagateExceptionFalseEvalsToNonexception
  :: l : Label
@@ -226,10 +234,12 @@ erasePropagateExceptionFalseEvalsToNonexception :: Label -> Term -> Proof
 erasePropagateExceptionFalseEvalsToNonexception l t | propagateException t = assertEqual (eval t) TException
 erasePropagateExceptionFalseEvalsToNonexception l TException = unreachable
 erasePropagateExceptionFalseEvalsToNonexception l t@(TLam v t1) =
-        eval (εTerm l t)
-    ==! eval (TLam v (εTerm l t1))
-    ==: TLam v (εTerm l t1) ? assertEqual (propagateException t1) False &&& assertNotEqual t1 TException &&& propagateExceptionFalseEvalsToNonexception t1 &&& assertNotEqual (eval t1) TException &&& erasePropagateExceptionFalseEvalsToNonexception l t1 &&& assertNotEqual (TLam v (εTerm l t1)) TException &&& assertNotEqual (TLam v (εTerm l t1)) TException &&& assertEqual (eval (TLam v (εTerm l t1))) (eval (εTerm l t)) &&& assertNotEqual (eval (εTerm l t)) TException 
-    *** QED
+            eval (εTerm l t)
+        ==! eval (TLam v (εTerm l t1))
+        ==: TLam v (εTerm l t1) ?
+                erasePropagateExceptionFalse l t1
+            &&& propagateExceptionFalseEvalsToNonexception (TLam v (εTerm l t1))
+        *** QED
     
 erasePropagateExceptionFalseEvalsToNonexception l t@THole = 
     let t' = eval t in
