@@ -215,13 +215,87 @@ propagateExceptionFalseEvalsToNonexception t = -- @(TLam _ _) =
 -- -- propagateExceptionFalseEvalsToNonexception t2 -- assert (propagateException t2 == False)
 -- propagateExceptionFalseEvalsToNonexception _ = undefined
 
+-- {-@ automatic-instances erasePropagateExceptionFalse @-}
 {-@ erasePropagateExceptionFalse
  :: l : Label
  -> {t : Term | not (propagateException t)}
  -> {not (propagateException (εTerm l t))}
+ / [size t]
  @-}
 erasePropagateExceptionFalse :: Label -> Term -> Proof
-erasePropagateExceptionFalse _ _ = undefined
+erasePropagateExceptionFalse l t@(TLam v t1) = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TLam v (εTerm l t1))) ? erasePropagateExceptionFalse l t1
+    *** QED
+erasePropagateExceptionFalse l t@(TApp t1 t2) = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TApp (εTerm l t1) (εTerm l t2))) ? erasePropagateExceptionFalse l t1 &&& erasePropagateExceptionFalse l t2
+    *** QED
+erasePropagateExceptionFalse l t@(TFix t1) = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TFix (εTerm l t1))) ? erasePropagateExceptionFalse l t1
+    *** QED
+erasePropagateExceptionFalse l t@(TIf t1 t2 t3) = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TIf (εTerm l t1) (εTerm l t2) (εTerm l t3))) ? erasePropagateExceptionFalse l t1 &&& erasePropagateExceptionFalse l t2 &&& erasePropagateExceptionFalse l t3
+    *** QED
+erasePropagateExceptionFalse l t@(TJoin t1 t2) = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TJoin (εTerm l t1) (εTerm l t2))) ? erasePropagateExceptionFalse l t1 &&& erasePropagateExceptionFalse l t2
+    *** QED
+erasePropagateExceptionFalse l t@(TMeet t1 t2) = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TMeet (εTerm l t1) (εTerm l t2))) ? erasePropagateExceptionFalse l t1 &&& erasePropagateExceptionFalse l t2
+    *** QED
+erasePropagateExceptionFalse l t@(TCanFlowTo t1 t2) = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TCanFlowTo (εTerm l t1) (εTerm l t2))) ? erasePropagateExceptionFalse l t1 &&& erasePropagateExceptionFalse l t2
+    *** QED
+erasePropagateExceptionFalse l t@(TBind t1 t2) = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TBind (εTerm l t1) (εTerm l t2))) ? erasePropagateExceptionFalse l t1 &&& erasePropagateExceptionFalse l t2
+    *** QED
+erasePropagateExceptionFalse l t@(TLowerClearance t1) = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TLowerClearance (εTerm l t1))) ? erasePropagateExceptionFalse l t1
+    *** QED
+erasePropagateExceptionFalse l t@(TLabeledTCB l' t1) | l' `canFlowTo` l = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TLabeledTCB l' (εTerm l t1)))
+    *** QED
+erasePropagateExceptionFalse l t@(TLabeledTCB l' t1) = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TLabeledTCB l' THole))
+    *** QED
+erasePropagateExceptionFalse l t@(TLabelOf t1) = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TLabelOf (εTerm l t1))) ? erasePropagateExceptionFalse l t1
+    *** QED
+erasePropagateExceptionFalse l t@(TLabel (TVLabel l') t2) | l' `canFlowTo` l = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TLabel (TVLabel l') (εTerm l t2))) ? erasePropagateExceptionFalse l t2
+    *** QED
+erasePropagateExceptionFalse l t@(TLabel (TVLabel l') t2) =
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TLabel (TVLabel l') THole))
+    *** QED
+erasePropagateExceptionFalse l t@(TLabel t1 t2) =
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TLabel (εTerm l t1) (εTerm l t2))) ? erasePropagateExceptionFalse l t1 &&& erasePropagateExceptionFalse l t2
+    *** QED
+erasePropagateExceptionFalse l t@(TUnlabel t1) = 
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TUnlabel (εTerm l t1))) ? erasePropagateExceptionFalse l t1
+    *** QED
+erasePropagateExceptionFalse l t@(TToLabeled t1 t2) =
+        not (propagateException (εTerm l t))
+    ==: not (propagateException (TToLabeled (εTerm l t1) (εTerm l t2))) ? erasePropagateExceptionFalse l t1
+    *** QED
+erasePropagateExceptionFalse l t = 
+        not (propagateException (εTerm l t))
+    ==! not (propagateException t)
+    *** QED
+erasePropagateExceptionFalse l TException = unreachable
 
 -- {-@ automatic-instances erasePropagateExceptionFalseEvalsToNonexception @-}
 {-@ erasePropagateExceptionFalseEvalsToNonexception
