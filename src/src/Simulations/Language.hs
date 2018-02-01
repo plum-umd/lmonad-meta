@@ -315,7 +315,16 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TLam v t1) =
         &&& propagateExceptionFalseEvalsToNonexception (TLam v (εTerm l t1))
     *** QED
 
-erasePropagateExceptionFalseEvalsToNonexception l t@(TApp (TLam x t1) t2) = undefined
+erasePropagateExceptionFalseEvalsToNonexception l t@(TApp (TLam x t1) t2) =
+        eval (εTerm l t)
+    ==! eval (TApp (εTerm l (TLam x t1)) (εTerm l t2))
+    ==! eval (TApp (TLam x (εTerm l t1)) (εTerm l t2))
+    ==: subst (Sub x (εTerm l t2)) (εTerm l t1) ?
+            erasePropagateExceptionFalse l t1
+        &&& erasePropagateExceptionFalse l t2
+        &&& propagateExceptionFalseEvalsToNonexception (εTerm l t1)
+    *** QED
+
 erasePropagateExceptionFalseEvalsToNonexception l t@(TApp t1 t2) =
     let et1 = eval (εTerm l t1) in
     let et2 = εTerm l t2 in
@@ -327,7 +336,15 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TApp t1 t2) =
         &&& propagateExceptionFalseEvalsToNonexception (εTerm l t1)
     *** QED
 
-erasePropagateExceptionFalseEvalsToNonexception l t@(TFix (TLam x t1)) = undefined
+erasePropagateExceptionFalseEvalsToNonexception l t@(TFix (TLam x t1)) =
+        eval (εTerm l t)
+    ==! eval (TFix (εTerm l (TLam x t1)))
+    ==! eval (TFix (TLam x (εTerm l t1)))
+    ==: subst (Sub x (TFix (TLam x (εTerm l t1)))) (εTerm l t1) ?
+            erasePropagateExceptionFalse l t1
+        &&& propagateExceptionFalseEvalsToNonexception (εTerm l t1)
+    *** QED
+
 erasePropagateExceptionFalseEvalsToNonexception l t@(TFix t1) =
         eval (εTerm l t)
     ==! eval (TFix (εTerm l t1))
