@@ -327,6 +327,14 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TApp t1 t2) =
         &&& propagateExceptionFalseEvalsToNonexception (εTerm l t1)
     *** QED
 
+erasePropagateExceptionFalseEvalsToNonexception l t@(TFix (TLam x t1)) = undefined
+erasePropagateExceptionFalseEvalsToNonexception l t@(TFix t1) =
+        eval (εTerm l t)
+    ==! eval (TFix (εTerm l t1))
+    ==: TFix (eval (εTerm l t1)) ? 
+            erasePropagateExceptionFalse l t1
+        &&& propagateExceptionFalseEvalsToNonexception (εTerm l t1)
+    *** QED
     
 erasePropagateExceptionFalseEvalsToNonexception l t@THole = 
     let t' = eval t in
