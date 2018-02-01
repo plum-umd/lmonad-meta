@@ -316,15 +316,15 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TLam v t1) =
     *** QED
 
 erasePropagateExceptionFalseEvalsToNonexception l t@(TApp (TLam x t1) t2) = undefined
-erasePropagateExceptionFalseEvalsToNonexception l t@(TApp t1 t2) = 
+erasePropagateExceptionFalseEvalsToNonexception l t@(TApp t1 t2) =
     let et1 = eval (εTerm l t1) in
     let et2 = εTerm l t2 in
-        not (eval (εTerm l t) == TException)
-    ==! not (eval (TApp (εTerm l t1) (εTerm l t2)) == TException)
-    ==: not (TApp (eval (εTerm l t1)) (εTerm l t2) == TException) ? 
+        eval (εTerm l t)
+    ==! eval (TApp (εTerm l t1) (εTerm l t2))
+    ==: TApp (eval (εTerm l t1)) (εTerm l t2) ? 
             erasePropagateExceptionFalse l t1
+        &&& erasePropagateExceptionFalse l t2
         &&& propagateExceptionFalseEvalsToNonexception (εTerm l t1)
-    ==! not (TApp et1 et2 == TException)
     *** QED
 
     
