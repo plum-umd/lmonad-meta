@@ -308,12 +308,25 @@ erasePropagateExceptionFalseEvalsToNonexception :: Label -> Term -> Proof
 erasePropagateExceptionFalseEvalsToNonexception l t | propagateException t = assertEqual (eval t) TException
 erasePropagateExceptionFalseEvalsToNonexception l TException = unreachable
 erasePropagateExceptionFalseEvalsToNonexception l t@(TLam v t1) =
-            eval (εTerm l t)
-        ==! eval (TLam v (εTerm l t1))
-        ==: TLam v (εTerm l t1) ?
-                erasePropagateExceptionFalse l t1
-            &&& propagateExceptionFalseEvalsToNonexception (TLam v (εTerm l t1))
-        *** QED
+        eval (εTerm l t)
+    ==! eval (TLam v (εTerm l t1))
+    ==: TLam v (εTerm l t1) ?
+            erasePropagateExceptionFalse l t1
+        &&& propagateExceptionFalseEvalsToNonexception (TLam v (εTerm l t1))
+    *** QED
+
+erasePropagateExceptionFalseEvalsToNonexception l t@(TApp (TLam x t1) t2) = undefined
+erasePropagateExceptionFalseEvalsToNonexception l t@(TApp t1 t2) = 
+    let et1 = eval (εTerm l t1) in
+    let et2 = εTerm l t2 in
+        not (eval (εTerm l t) == TException)
+    ==! not (eval (TApp (εTerm l t1) (εTerm l t2)) == TException)
+    ==: not (TApp (eval (εTerm l t1)) (εTerm l t2) == TException) ? 
+            erasePropagateExceptionFalse l t1
+        &&& propagateExceptionFalseEvalsToNonexception (εTerm l t1)
+    ==! not (TApp et1 et2 == TException)
+    *** QED
+
     
 erasePropagateExceptionFalseEvalsToNonexception l t@THole = 
     let t' = eval t in
@@ -323,25 +336,25 @@ erasePropagateExceptionFalseEvalsToNonexception l t@THole =
     *** QED
 erasePropagateExceptionFalseEvalsToNonexception _ _ = undefined
 
-{-@ erasePropagateExceptionTrueEvalsToException
- :: l : Label
- -> {t : Term | eval t == TException}
- -> {v : Proof | eval (εTerm l t) == TException}
- / [size t]
- @-}
-erasePropagateExceptionTrueEvalsToException :: Label -> Term -> Proof
-erasePropagateExceptionTrueEvalsToException l t | propagateException t = undefined
---     let t' = εTerm l t in
---         eval (εTerm l t)
---     ==! eval t'
+-- {-@ erasePropagateExceptionTrueEvalsToException
+--  :: l : Label
+--  -> {t : Term | eval t == TException}
+--  -> {v : Proof | eval (εTerm l t) == TException}
+--  / [size t]
+--  @-}
+-- erasePropagateExceptionTrueEvalsToException :: Label -> Term -> Proof
+-- erasePropagateExceptionTrueEvalsToException l t | propagateException t = undefined
+-- --     let t' = εTerm l t in
+-- --         eval (εTerm l t)
+-- --     ==! eval t'
+-- --     ==! TException
+-- --     *** QED
+-- 
+-- erasePropagateExceptionTrueEvalsToException l TException = 
+--         eval (εTerm l TException)
+--     ==! eval TException
 --     ==! TException
 --     *** QED
-
-erasePropagateExceptionTrueEvalsToException l TException = 
-        eval (εTerm l TException)
-    ==! eval TException
-    ==! TException
-    *** QED
 
 -- erasePropagateExceptionTrueEvalsToException l t@THole = trivial
 erasePropagateExceptionTrueEvalsToException _ _ = undefined
