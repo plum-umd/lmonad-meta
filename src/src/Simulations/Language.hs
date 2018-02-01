@@ -325,14 +325,28 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TIf t1 t2 t3) =
         &&& erasePropagateExceptionFalse l t3
     *** QED
 
--- erasePropagateExceptionFalseEvalsToNonexception l t@(TJoin t1@(TVLabel l1) t2@(TVLabel l2)) =
---         eval (εTerm l t)
---     ==! eval (TJoin (εTerm l t1) (εTerm l t2))
---     ==! eval (TJoin t1 t2)
---     ==: TJoin t1 t2 ?
---             erasePropagateExceptionFalse l t1
---         &&& erasePropagateExceptionFalse l t2
---     *** QED
+erasePropagateExceptionFalseEvalsToNonexception l t@(TJoin t1@(TVLabel l1) t2@(TVLabel l2)) =
+        eval (εTerm l t)
+    ==! eval (TJoin (εTerm l t1) (εTerm l t2))
+    ==! eval (TJoin t1 t2)
+    ==! TVLabel (join l1 l2)
+    *** QED
+
+erasePropagateExceptionFalseEvalsToNonexception l t@(TJoin t1@(TVLabel l1) t2) =
+        eval (εTerm l t)
+    ==! eval (TJoin (εTerm l t1) (εTerm l t2))
+    ==! eval (TJoin t1 (εTerm l t2))
+    ==: TJoin t1 (eval (εTerm l t2)) ?
+            erasePropagateExceptionFalse l t2
+    *** QED
+
+erasePropagateExceptionFalseEvalsToNonexception l t@(TJoin t1 t2) =
+        eval (εTerm l t)
+    ==! eval (TJoin (εTerm l t1) (εTerm l t2))
+    ==: TJoin (eval (εTerm l t1)) (εTerm l t2) ?
+            erasePropagateExceptionFalse l t1
+        &&& erasePropagateExceptionFalse l t2
+    *** QED
 
 erasePropagateExceptionFalseEvalsToNonexception l t@THole = 
     let t' = eval t in
