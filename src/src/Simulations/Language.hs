@@ -425,7 +425,9 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TLabel t1@(TVLabel _) t2) =
 erasePropagateExceptionFalseEvalsToNonexception l t@(TLabel t1 t2) =
         eval (εTerm l t)
     ==! eval (TLabel (εTerm l t1) (εTerm l t2))
-    ==! TLabel (eval (εTerm l t1)) (εTerm l t1)
+    ==: TLabel (eval (εTerm l t1)) (εTerm l t2) ?
+            erasePropagateExceptionFalse l t1
+        &&& erasePropagateExceptionFalse l t2
     *** QED
     
 -- erasePropagateExceptionFalseEvalsToNonexception l t@(TLabelOf (TLabeledTCB l _)) =
