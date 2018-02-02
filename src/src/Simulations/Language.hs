@@ -430,14 +430,32 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TLabel t1 t2) =
         &&& erasePropagateExceptionFalse l t2
     *** QED
     
--- erasePropagateExceptionFalseEvalsToNonexception l t@(TLabelOf (TLabeledTCB l _)) =
--- 
--- erasePropagateExceptionFalseEvalsToNonexception l t@(TLabelOf t1) =
---         eval (εTerm l t)
---     ==! eval (TLabelOf (εTerm l t1))
---     ==: TLabelOf (eval (εTerm l t1)) ?
---             erasePropagateExceptionFalse l t1
---     *** QED
+erasePropagateExceptionFalseEvalsToNonexception l t@(TLabeledTCB l' t1) | l' `canFlowTo` l  = 
+        eval (εTerm l t)
+    ==! eval (TLabeledTCB l' (εTerm l t1))
+    ==: TLabeledTCB l' (εTerm l t1) ?
+            erasePropagateExceptionFalse l t1
+    *** QED
+
+erasePropagateExceptionFalseEvalsToNonexception l t@(TLabeledTCB l' t1) = 
+        eval (εTerm l t)
+    ==! eval (TLabeledTCB l' THole)
+    ==! TLabeledTCB l' THole
+    *** QED
+
+erasePropagateExceptionFalseEvalsToNonexception l t@(TLabelOf t'@(TLabeledTCB l' _)) = 
+        eval (εTerm l t)
+    ==! eval (TLabelOf (εTerm l t'))
+    ==: TVLabel l' ?
+            erasePropagateExceptionFalse l t'
+    *** QED
+
+erasePropagateExceptionFalseEvalsToNonexception l t@(TLabelOf t1) =
+        eval (εTerm l t)
+    ==! eval (TLabelOf (εTerm l t1))
+    ==: TLabelOf (eval (εTerm l t1)) ?
+            erasePropagateExceptionFalse l t1
+    *** QED
     
 erasePropagateExceptionFalseEvalsToNonexception l t@THole = 
     let t' = eval t in
