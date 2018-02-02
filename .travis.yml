@@ -27,4 +27,4 @@ addons:
 
 script:
   - stack build 
-  - stack --skip-ghc-check test --flag llio:testing llio
+  - travis_wait 30 stack --skip-ghc-check test --flag llio:testing llio
