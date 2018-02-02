@@ -411,14 +411,14 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TUnlabel t1) =
 erasePropagateExceptionFalseEvalsToNonexception l t@(TLabel t1@(TVLabel l') t2) | l' `canFlowTo` l =
         eval (εTerm l t)
     ==! eval (TLabel t1 (εTerm l t2))
-    ==: TLabel t1 (eval εTerm l t2) ?
+    ==: TLabel t1 (eval (εTerm l t2)) ?
             erasePropagateExceptionFalse l t2
     *** QED
 
 erasePropagateExceptionFalseEvalsToNonexception l t@(TLabel t1@(TVLabel _) t2) =
         eval (εTerm l t)
     ==! eval (TLabel t1 THole)
-    ==! TLabel t1 (eval THole))
+    ==! TLabel t1 (eval THole)
     ==! TLabel t1 THole
     *** QED
     
