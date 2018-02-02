@@ -371,6 +371,29 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TMeet t1 t2) =
         &&& erasePropagateExceptionFalse l t2
     *** QED
 
+erasePropagateExceptionFalseEvalsToNonexception l t@(TCanFlowTo t1@(TVLabel l1) t2@(TVLabel l2)) =
+        eval (εTerm l t)
+    ==! eval (TCanFlowTo (εTerm l t1) (εTerm l t2))
+    ==! eval (TCanFlowTo t1 t2)
+    ==! boolToTerm (canFlowTo l1 l2)
+    *** QED
+
+erasePropagateExceptionFalseEvalsToNonexception l t@(TCanFlowTo t1@(TVLabel l1) t2) =
+        eval (εTerm l t)
+    ==! eval (TCanFlowTo (εTerm l t1) (εTerm l t2))
+    ==! eval (TCanFlowTo t1 (εTerm l t2))
+    ==: TCanFlowTo t1 (eval (εTerm l t2)) ?
+            erasePropagateExceptionFalse l t2
+    *** QED
+
+erasePropagateExceptionFalseEvalsToNonexception l t@(TCanFlowTo t1 t2) =
+        eval (εTerm l t)
+    ==! eval (TCanFlowTo (εTerm l t1) (εTerm l t2))
+    ==: TCanFlowTo (eval (εTerm l t1)) (εTerm l t2) ?
+            erasePropagateExceptionFalse l t1
+        &&& erasePropagateExceptionFalse l t2
+    *** QED
+
 erasePropagateExceptionFalseEvalsToNonexception l t@THole = 
     let t' = eval t in
         eval (εTerm l t)
