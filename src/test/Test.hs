@@ -2,6 +2,7 @@
 
 module Main where
 
+import Control.Monad
 import System.Exit
 import System.Process
 
@@ -40,6 +41,8 @@ runCommand' str =
   do ps <- runCommand (str ++ "> log 2>&1")
      ec <- waitForProcess ps 
      putStrLn ("\nCommand `" ++ str ++ "` exited with " ++ show ec)
+     when (ec /= ExitSuccess) $ 
+        runCommand "cat log" >>= waitForProcess >> return ()
      return ec
 
 

@@ -401,6 +401,22 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TLowerClearance t1) =
             erasePropagateExceptionFalse l t1
     *** QED
     
+erasePropagateExceptionFalseEvalsToNonexception l t@(TUnlabel t1) =
+        eval (εTerm l t)
+    ==! eval (TUnlabel (εTerm l t1))
+    ==: TUnlabel (eval (εTerm l t1)) ?
+            erasePropagateExceptionFalse l t1
+    *** QED
+    
+-- erasePropagateExceptionFalseEvalsToNonexception l t@(TLabelOf (TLabeledTCB l _)) =
+-- 
+-- erasePropagateExceptionFalseEvalsToNonexception l t@(TLabelOf t1) =
+--         eval (εTerm l t)
+--     ==! eval (TLabelOf (εTerm l t1))
+--     ==: TLabelOf (eval (εTerm l t1)) ?
+--             erasePropagateExceptionFalse l t1
+--     *** QED
+    
 erasePropagateExceptionFalseEvalsToNonexception l t@THole = 
     let t' = eval t in
         eval (εTerm l t)
