@@ -394,6 +394,13 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TCanFlowTo t1 t2) =
         &&& erasePropagateExceptionFalse l t2
     *** QED
 
+erasePropagateExceptionFalseEvalsToNonexception l t@(TLowerClearance t1) =
+        eval (εTerm l t)
+    ==! eval (TLowerClearance (εTerm l t1))
+    ==: TLowerClearance (eval (εTerm l t1)) ?
+            erasePropagateExceptionFalse l t1
+    *** QED
+    
 erasePropagateExceptionFalseEvalsToNonexception l t@THole = 
     let t' = eval t in
         eval (εTerm l t)
