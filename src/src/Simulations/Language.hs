@@ -164,6 +164,7 @@ propagateExceptionFalseEvalsToNonexception t = -- @(TLam _ _) =
  / [size t]
  @-}
 erasePropagateExceptionFalse :: Label -> Term -> Proof
+erasePropagateExceptionFalse l TException = unreachable
 erasePropagateExceptionFalse l t@(TLam v t1) = 
         not (propagateException (εTerm l t))
     ==: not (propagateException (TLam v (εTerm l t1))) ? erasePropagateExceptionFalse l t1
@@ -236,7 +237,6 @@ erasePropagateExceptionFalse l t =
         not (propagateException (εTerm l t))
     ==! not (propagateException t)
     *** QED
-erasePropagateExceptionFalse l TException = unreachable
 
 -- {-@ automatic-instances erasePropagateExceptionFalseEvalsToNonexception @-}
 {-@ erasePropagateExceptionFalseEvalsToNonexception
