@@ -107,4 +107,35 @@ safeProgramEvalsToNonHole p@(Pg _ _ _ _) =
     ==. True
     *** QED
 
+-- JP: Move to Simulations.Language
+{-@ propagateEraseEvalErase 
+ :: l : Label
+ -> t : {Term | propagateException t}
+ -> {propagateException (εTerm l t)}
+ / [size t]
+ @-}
+propagateEraseEvalErase :: Label -> Term -> Proof
+propagateEraseEvalErase l t@TException = 
+        propagateException (εTerm l t)
+    ==! propagateException t
+    *** QED
+
+--         eval (εTerm l t)
+--     ==! eval t
+--     ==! TException
+--     *** QED
+
+propagateEraseEvalErase l t@(TLam v t1) = 
+        propagateException (εTerm l t)
+    ==! propagateException (TLam v (εTerm l t1))
+    ==: True ? propagateEraseEvalErase l t1
+    *** QED 
+
+propagateEraseEvalErase l t@(TLabeledTCB _ _) = unreachable
+
+-- (TVLabel l') t2) | l' `canFlowTo` l = 
+--         propagateException (εTerm l t)
+--     ==! propagateException (TLabel (TVLabel l') (εTerm l t2))
+propagateEraseEvalErase l t@THole = unreachable
+propagateEraseEvalErase l t = undefined
 

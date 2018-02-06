@@ -82,9 +82,18 @@ simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
         ==! ε l (evalProgram (Pg lc c m (εTerm l (TLam v t1))))
         -- ==! mapSnd (ε l) (evalProgram (Pg lc c m TException))
         ==! ε l (Pg lc c m (eval (εTerm l (TLam v t1))))
-        ==: ε l (Pg lc c m TException) ? admitted -- assertEqual (eval (TLam v t1)) TException &&& erasePropagateExceptionTrueEvalsToException l (TLam v t1)
+        -- ==! ε l (Pg lc c m (eval (TLam v (εTerm l t1))))
+        -- ==! ε l (Pg lc c m (TLam v (εTerm l t1)))
+        ==! Pg lc c m (εTerm l (eval (εTerm l (TLam v t1))))
+        -- ==! Pg lc c m (TLam v (εTerm l (εTerm l t1)))
+        -- ==! Pg lc c m (εTerm l (TLam v (εTerm l t1)))
+        ==? ε l (Pg lc c m TException) -- ? admitted -- assertEqual (eval (TLam v t1)) TException &&& erasePropagateExceptionTrueEvalsToException l (TLam v t1)
         -- ==? mapSnd (ε l) (evalProgram p)
         -- ==! ε l (Pg lc c m TException)
+        ==! Pg lc c m (εTerm l TException)
+        ==! Pg lc c m TException
+        ==! Pg lc c m (εTerm l TException)
+        ==! ε l (Pg lc c m TException)
         ==! ε l (Pg lc c m (eval (TLam v t1))) -- ? propagateExceptionFalseEvalsToNonexception t
         ==! ε l (evalProgram p)
         *** QED

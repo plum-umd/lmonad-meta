@@ -503,5 +503,5 @@ erasePropagateExceptionFalseEvalsToNonexception _ _ = undefined
 --     *** QED
 
 -- erasePropagateExceptionTrueEvalsToException l t@THole = trivial
-erasePropagateExceptionTrueEvalsToException _ _ = undefined
+-- erasePropagateExceptionTrueEvalsToException _ _ = undefined
 
