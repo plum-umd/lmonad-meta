@@ -25,7 +25,18 @@ data Program =
     | PgHole
  @-}
 
-data Memory  = Memory deriving (Eq, Show)
+data DBValue = DBValue Term
+    -- | Option types, bools, unit, 
+
+data DBLabelFunction = DBLabelFunction Term
+    -- | Function that takes columns from a row and returns that column's label.
+
+data DBTable = DBTable {
+      tableRows :: [Map String DBValue]
+    , tableLabelFunctions :: Map String DBLabelFunction
+    }
+
+data Memory  = Memory (Map String DBTable) deriving (Eq, Show)
 {-@ reflect evalProgram @-}
 evalProgram :: Program -> Program
 evalProgram PgHole =  PgHole
