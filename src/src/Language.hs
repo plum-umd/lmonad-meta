@@ -91,15 +91,18 @@ size TException     = 1
 
 isValue :: Term -> Bool 
 {-@ reflect isValue @-}
-isValue (TLam _ _)  = True  -- TLam :: _ -> _ -> {v:Term | isValue v}
-isValue TUnit       = True  -- TUnit :: {v:Term | isValue v}
-isValue TTrue       = True 
-isValue TFalse      = True 
-isValue (TVLabel _) = True 
-isValue TException  = True
-isValue _           = False 
+isValue (TLam _ _)        = True  -- TLam :: _ -> _ -> {v:Term | isValue v}
+isValue TUnit             = True  -- TUnit :: {v:Term | isValue v}
+isValue TTrue             = True 
+isValue TFalse            = True 
+isValue (TVLabel _)       = True 
+isValue TException        = True
+isValue THole             = True
+isValue (TLabeledTCB _ _) = True
+isValue _                 = False 
 
 -- JP: TLabeledTCB _ t if isValue t ?
+-- TVar? Shouldn't type check?
 
 
 -------------------------------------------------------------------------------

@@ -16,6 +16,28 @@ data Program =
     | PgHole
   deriving (Eq, Show)
 
+-- instance Show Program where
+--     show = showHelper 0
+--         where
+--             showTerm _ THole = "•"
+--             showTerm _ TTrue = "True"
+--             showTerm _ TFalse = "False"
+--             showTerm _ TUnit = "()"
+--             showTerm _ (TVar i) = "v" ++ show i
+--             showTerm i (TApp t1 t2) = "(" ++ showTerm 0 t1 ++ ") (" ++ showTerm 0 t2 ++ ")"
+-- 
+--             showTerm i (TBind t1 (TLam v t2)) = showTerm 0 (TVar v) ++ " <- " ++ show t1 ++ "\n" ++ showTerm i t2
+--             showTerm _ t@(TBind t1 t2) = show t
+-- 
+--             showTerm _ t = show t
+-- 
+--             showHelper i p = do
+--                    indents i
+--                 ++ showTerm i (pTerm p)
+--                 -- TODO: Show DB, label/clearance
+-- 
+--             indents i = replicate i ' '
+
 {-@ data Program <p :: Term -> Bool>
   = Pg { pLabel     :: Label
        , pClearance :: Label
