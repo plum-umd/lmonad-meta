@@ -120,11 +120,6 @@ propagateErasePropagates l t@TException =
     ==! propagateException t
     *** QED
 
---         eval (εTerm l t)
---     ==! eval t
---     ==! TException
---     *** QED
-
 propagateErasePropagates l t@(TLam v t1) = 
         propagateException (εTerm l t)
     ==! propagateException (TLam v (εTerm l t1))
@@ -147,7 +142,45 @@ propagateErasePropagates l t@(TIf t1 t2 t3) =
         propagateException (εTerm l t)
     ==! propagateException (TIf (εTerm l t2) (εTerm l t2) (εTerm l t3))
     ==: True ? propagateErasePropagates l t1 &&& propagateErasePropagates l t2 &&& propagateErasePropagates l t3
+    *** QED
+
+propagateErasePropagates l t@(TJoin t1 t2) = 
+        propagateException (εTerm l t)
+    ==! propagateException (TJoin (εTerm l t1) (εTerm l t2))
+    ==: True ? propagateErasePropagates l t1 &&& propagateErasePropagates l t2
+    *** QED
+
+propagateErasePropagates l t@(TMeet t1 t2) = 
+        propagateException (εTerm l t)
+    ==! propagateException (TMeet (εTerm l t1) (εTerm l t2))
+    ==: True ? propagateErasePropagates l t1 &&& propagateErasePropagates l t2
+    *** QED
+
+propagateErasePropagates l t@(TCanFlowTo t1 t2) = 
+        propagateException (εTerm l t)
+    ==! propagateException (TCanFlowTo (εTerm l t1) (εTerm l t2))
+    ==: True ? propagateErasePropagates l t1 &&& propagateErasePropagates l t2
+    *** QED
+
+propagateErasePropagates l t@(TBind t1 t2) = 
+        propagateException (εTerm l t)
+    ==! propagateException (TBind (εTerm l t1) (εTerm l t2))
+    ==: True ? propagateErasePropagates l t1 &&& propagateErasePropagates l t2
+    *** QED
+
+propagateErasePropagates l t@(TLowerClearance t1) = 
+        propagateException (εTerm l t)
+    ==! propagateException (TLowerClearance (εTerm l t1))
+    ==: True ? propagateErasePropagates l t1
+    *** QED 
+
 propagateErasePropagates l t@(TLabeledTCB _ _) = unreachable
+
+propagateErasePropagates l t@(TLabelOf t1) = 
+        propagateException (εTerm l t)
+    ==! propagateException (TLabelOf (εTerm l t1))
+    ==: True ? propagateErasePropagates l t1
+    *** QED 
 
 propagateErasePropagates l t@(TLabel (TVLabel l') t2) | l' `canFlowTo` l =
         propagateException (εTerm l t)
@@ -169,11 +202,20 @@ propagateErasePropagates l t@(TLabel t1 t2) =
     ==: True ? propagateErasePropagates l t1 &&& propagateErasePropagates l t2
     *** QED
 
---         propagateException (εTerm l t)
+propagateErasePropagates l t@(TUnlabel t1) =
+        propagateException (εTerm l t)
+    ==! propagateException (TUnlabel (εTerm l t1))
+    ==: True ? propagateErasePropagates l t1
+    *** QED
+
+propagateErasePropagates l t@(TToLabeled t1 t2) =
+        propagateException (εTerm l t)
+    ==! propagateException (TToLabeled (εTerm l t1) (εTerm l t2))
+    ==: True ? propagateErasePropagates l t1 &&& propagateErasePropagates l t2
+    *** QED
 
 -- (TVLabel l') t2) | l' `canFlowTo` l = 
 --         propagateException (εTerm l t)
 --     ==! propagateException (TLabel (TVLabel l') (εTerm l t2))
-propagateErasePropagates l t@THole = unreachable
-propagateErasePropagates l t = undefined
+propagateErasePropagates l t = unreachable
 
