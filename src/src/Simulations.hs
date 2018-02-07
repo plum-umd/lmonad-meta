@@ -87,7 +87,8 @@ simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
         ==! Pg lc c m (εTerm l (eval (εTerm l (TLam v t1))))
         -- ==! Pg lc c m (TLam v (εTerm l (εTerm l t1)))
         -- ==! Pg lc c m (εTerm l (TLam v (εTerm l t1)))
-        ==? ε l (Pg lc c m TException) -- ? admitted -- assertEqual (eval (TLam v t1)) TException &&& erasePropagateExceptionTrueEvalsToException l (TLam v t1)
+        ==: Pg lc c m (εTerm l (eval (TLam v t1))) ? propagateErasePropagates l t
+        ==! Pg lc c m (εTerm l TException)
         -- ==? mapSnd (ε l) (evalProgram p)
         -- ==! ε l (Pg lc c m TException)
         ==! Pg lc c m (εTerm l TException)
@@ -113,7 +114,20 @@ simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
         ==! ε l (evalProgram p)
         *** QED
 
-simulations'' p@(Pg lc c m t@(TApp t1 t2)) l = undefined
+simulations'' p@(Pg lc c m t@(TApp t1 t2)) l = case (propagateException t1, propagateException t2) of
+    (True, _) ->
+            evalEraseProgram (ε l p) l
+        ==! ε l (evalProgram (ε l p))
+        ==! ε l (evalProgram (Pg lc c m (εTerm l (TApp t1 t2))))
+        ==! ε l (evalProgram (Pg lc c m (TApp (εTerm l t1) (εTerm l t2))))
+        ==: ε l (evalProgram (Pg lc c m (TApp t1 (εTerm l t2)))) ? propagateErasePropagates l t1
+        ==! ε l (Pg lc c m (eval (TApp t1 (εTerm l t2))))
+        ==! ε l (Pg lc c m TException)
+        ==! ε l (Pg lc c m (eval t))
+        ==! ε l (evalProgram p)
+        *** QED
+    _ ->
+        undefined
 --         evalEraseProgram (ε l p) l
 --         ==! mapSnd (ε l) (evalProgram (ε l p))
 --         ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l t)))
