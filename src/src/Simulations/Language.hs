@@ -1,7 +1,7 @@
 {-@ LIQUID "--exactdc"                                  @-}
 {-@ LIQUID "--higherorder"                              @-}
 {-@ LIQUID "--automatic-instances=liquidinstanceslocal" @-}
-{-@ LIQUID "--no-case-expand" @-}
+-- {-@ LIQUID "--no-case-expand" @-}
 
 module Simulations.Language where
 
@@ -434,8 +434,7 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TLabel t1 t2) =
 erasePropagateExceptionFalseEvalsToNonexception l t@(TLabeledTCB l' t1) | l' `canFlowTo` l  = 
         eval (εTerm l t)
     ==. eval (TLabeledTCB l' (εTerm l t1))
-    ==. TLabeledTCB l' (εTerm l t1) ?
-            erasePropagateExceptionFalse l t1
+    ==. TLabeledTCB l' (εTerm l t1)
     *** QED
 
 erasePropagateExceptionFalseEvalsToNonexception l t@(TLabeledTCB l' t1) = 
