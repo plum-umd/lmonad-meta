@@ -11,27 +11,12 @@ import Programs
 import MetaFunctions 
 import ProofCombinators
 
-
-
--- -- {-@ automatic-instances propagateExceptionFalseNotException @-}
--- {-@ propagateExceptionFalseNotException 
---  :: {t : Term | propagateException t == False}
---  -> {v : Proof | not (t == TException)}
---  @-}
--- -- -> {v : Proof | not (t == TException)} -- JP: This version doesn't work.
--- propagateExceptionFalseNotException :: Term -> Proof
--- propagateExceptionFalseNotException t | propagateException t = unreachable
--- propagateExceptionFalseNotException TException = unreachable -- assert (propagateException TException)
--- -- propagateExceptionFalseNotException (TIf a b c) = trivial -- assertNotEqual (TIf a b c) TException -- trivial -- undefined -- assertNotEqual t TException
--- propagateExceptionFalseNotException _ = trivial
-
--- {- automatic-instances propagateExceptionFalseEvalsToNonexception @-}
 {-@ propagateExceptionFalseEvalsToNonexception 
  :: {t : Term | not (propagateException t)}
  -> v : {not (eval t == TException)}
  @-}
 propagateExceptionFalseEvalsToNonexception :: Term -> Proof
-propagateExceptionFalseEvalsToNonexception t | propagateException t = unreachable --  assertEqual (propagateException t) False
+propagateExceptionFalseEvalsToNonexception t | propagateException t = unreachable
 propagateExceptionFalseEvalsToNonexception TException = unreachable
 -- propagateExceptionFalseEvalsToNonexception t = $wine eval t
 propagateExceptionFalseEvalsToNonexception t@(TFix (TLam x t1)) = 
@@ -141,23 +126,12 @@ propagateExceptionFalseEvalsToNonexception t@(TToLabeled t1 t2) =
     ==. TToLabeled (eval t1) t2
     *** QED
 
-propagateExceptionFalseEvalsToNonexception t = -- @(TLam _ _) = 
+propagateExceptionFalseEvalsToNonexception t =
         eval t
     ==. t
     *** QED
 
 
-    --(
-    --        eval t
-    --    ==! t2
-    --    -- ==/ TException
-    --    *** QED
-    --) &&& propagateExceptionFalseNotException t2 
-    -- assertEqual (propagateException t2) False &&& propagateExceptionFalseEvalsToNonexception t2 -- &&&  assertNotEqual TException t2
--- -- propagateExceptionFalseEvalsToNonexception t2 -- assert (propagateException t2 == False)
--- propagateExceptionFalseEvalsToNonexception _ = undefined
-
--- {-@ automatic-instances erasePropagateExceptionFalse @-}
 {-@ erasePropagateExceptionFalse
  :: l : Label
  -> {t : Term | not (propagateException t)}
@@ -470,12 +444,19 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TToLabeled t1 t2) =
     ==. TToLabeled (eval (εTerm l t1)) (εTerm l t2) ?
             erasePropagateExceptionFalse l t1
     *** QED
+
+erasePropagateExceptionFalseEvalsToNonexception l t@(TBind t1 t2) =
+        eval (εTerm l (TBind t1 t2))
+    ==. eval (TBind (εTerm l t1) (εTerm l t2))
+    ==. TBind (εTerm l t1) (εTerm l t2) ?
+            erasePropagateExceptionFalse l t1
+        &&& erasePropagateExceptionFalse l t2
+    *** QED
     
-erasePropagateExceptionFalseEvalsToNonexception l t@THole = 
+erasePropagateExceptionFalseEvalsToNonexception l t = 
     let t' = eval t in
         eval (εTerm l t)
     ==. eval t
     ==. t'
     *** QED
 
-erasePropagateExceptionFalseEvalsToNonexception _ _ = undefined 
