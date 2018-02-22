@@ -114,20 +114,47 @@ simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
         ==! ε l (evalProgram p)
         *** QED
 
+simulations'' p@(Pg lc c m t@(TApp (TLam x t1) t2)) l = -- case (propagateException t1, propagateException t2) of
+    undefined
 simulations'' p@(Pg lc c m t@(TApp t1 t2)) l = case (propagateException t1, propagateException t2) of
     (True, _) ->
             evalEraseProgram (ε l p) l
         ==! ε l (evalProgram (ε l p))
         ==! ε l (evalProgram (Pg lc c m (εTerm l (TApp t1 t2))))
         ==! ε l (evalProgram (Pg lc c m (TApp (εTerm l t1) (εTerm l t2))))
-        ==: ε l (evalProgram (Pg lc c m (TApp t1 (εTerm l t2)))) ? propagateErasePropagates l t1
-        ==! ε l (Pg lc c m (eval (TApp t1 (εTerm l t2))))
-        ==! ε l (Pg lc c m TException)
+        ==! ε l (Pg lc c m (eval (TApp (εTerm l t1) (εTerm l t2))))
+        ==: ε l (Pg lc c m TException) ? propagateErasePropagates l t1
         ==! ε l (Pg lc c m (eval t))
         ==! ε l (evalProgram p)
         *** QED
-    _ ->
-        undefined
+    (False, True) ->
+            evalEraseProgram (ε l p) l
+        ==! ε l (evalProgram (ε l p))
+        ==! ε l (evalProgram (Pg lc c m (εTerm l (TApp t1 t2))))
+        ==! ε l (evalProgram (Pg lc c m (TApp (εTerm l t1) (εTerm l t2))))
+        ==! ε l (Pg lc c m (eval (TApp (εTerm l t1) (εTerm l t2))))
+        ==: ε l (Pg lc c m TException) ? propagateErasePropagates l t2
+        ==! ε l (Pg lc c m (eval t))
+        ==! ε l (evalProgram p)
+        *** QED
+    (False, False) ->
+            evalEraseProgram (ε l p) l
+        ==! ε l (evalProgram (ε l p))
+        ==! ε l (evalProgram (Pg lc c m (εTerm l (TApp t1 t2))))
+        ==! ε l (evalProgram (Pg lc c m (TApp (εTerm l t1) (εTerm l t2))))
+        ==! ε l (Pg lc c m (eval (TApp (εTerm l t1) (εTerm l t2))))
+        ==: ε l (Pg lc c m (TApp (εTerm l t1) (εTerm l t2))) ?  -- TODO
+                propagateExceptionFalseEvalsToNonexception t
+        ==! Pg lc c m (εTerm l (TApp (εTerm l t1) (εTerm l t2)))
+        ==! Pg lc c m (TApp (εTerm l (εTerm l t1)) (εTerm l (εTerm l t2)))
+        ==: Pg lc c m (TApp (εTerm l t1) (εTerm l t2)) ?
+                εTermIdempotent l t1
+            &&& εTermIdempotent l t2
+        ==! Pg lc c m (εTerm l t)
+        ==! Pg lc c m (εTerm l (eval t))
+        ==! ε l (Pg lc c m (eval t)) -- TODO
+        ==! ε l (evalProgram p)
+        *** QED
 --         evalEraseProgram (ε l p) l
 --         ==! mapSnd (ε l) (evalProgram (ε l p))
 --         ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l t)))
