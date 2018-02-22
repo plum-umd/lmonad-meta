@@ -461,8 +461,7 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TToLabeled t1@(TVLabel _) t
         eval (εTerm l t)
     ==. eval (TToLabeled (εTerm l t1) (εTerm l t2))
     ==. eval (TToLabeled t1 (εTerm l t2))
-    ==. TToLabeled t1 (eval (εTerm l t2)) ?
-            erasePropagateExceptionFalse l t2
+    ==. TToLabeled t1 (eval (εTerm l t2))
     *** QED
 
 erasePropagateExceptionFalseEvalsToNonexception l t@(TToLabeled t1 t2) =
@@ -470,7 +469,6 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TToLabeled t1 t2) =
     ==. eval (TToLabeled (εTerm l t1) (εTerm l t2))
     ==. TToLabeled (eval (εTerm l t1)) (εTerm l t2) ?
             erasePropagateExceptionFalse l t1
-        &&& erasePropagateExceptionFalse l t2
     *** QED
     
 erasePropagateExceptionFalseEvalsToNonexception l t@THole = 
