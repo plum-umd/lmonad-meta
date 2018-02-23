@@ -24,6 +24,7 @@ orderedSrcFiles = [
   , "Simulations/MetaFunctions.hs"
   , "Simulations/Helpers.hs"
   , "Simulations/Programs.hs"
+  , "Simulations/EraseEvalErase.hs"
   , "Simulations.hs"
   , "Determinacy.hs"
   , "LLIO.hs"
