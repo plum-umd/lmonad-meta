@@ -9,6 +9,8 @@ main = do
     run 5 p0
 
     run 4 p1
+
+    run 3 p2
     
     putStrLn "Done"
 
@@ -40,6 +42,16 @@ p1 =
 
     Pg LabelA LabelA Memory $ TBind ttl (TLam v (TUnlabel (TVar v)))
 
+-- v <- toLabeled LabelB TTrue (Should cause exception)
+-- y <- toLabeled LabelA TFalse
+-- return v
+p2 = 
+    let v = 63 in
+    let y = 64 in
+    let ttl = TToLabeled (TVLabel LabelB) TTrue in
+    let ttl' = TToLabeled (TVLabel LabelA) TFalse in
+
+    Pg LabelA LabelA Memory $ TBind ttl (TLam v (TBind ttl' (TLam y (TVar v))))
 
 -- 1: (\l . label l "x") LabelA
 -- 2: (\l . label l "y") LabelA
