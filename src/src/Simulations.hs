@@ -48,34 +48,12 @@ simulations' (Pg lcurr c m t) l | not (lcurr `canFlowTo` l) -- l < lcurr
 simulations' p l {- | lcurr <= l -}
   = simulations'' p l
 
--- simulations' (Pg lcurr c m t) l {- | lcurr <= l -}
---   =   evalEraseProgram (ε l (Pg lcurr c m t)) l 
---   ==! mapSnd (ε l) (evalProgram (ε l (Pg lcurr c m t)))
---   ==! mapSnd (ε l) (evalProgram (Pg lcurr c m (εTerm l t)))
---   ==! mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval (εTerm l t))))
---   ==! Pair 0 (ε l (Pg lcurr c m (eval (εTerm l t))))
---   ==! Pair 1 (Pg lcurr c m (εTerm l (eval (εTerm l t))))
---   ==: Pair 0 (Pg lcurr c m (εTerm l (eval t))) ? eraseTermIdentity l t 
---   ==! Pair 0 (ε l (Pg lcurr c m (eval t)))
---   ==! mapSnd (ε l) (Pair 0 (Pg lcurr c m (eval t)))
---   ==! mapSnd (ε l) (evalProgram (Pg lcurr c m t))
---   *** QED 
-
 {-@ simulations'' 
  :: {p : Program | ς p} 
  -> {l : Label | canFlowTo (pLabel p) l}
  -> {v : Proof | evalEraseProgram (ε l p) l = ε l (evalProgram p)}
  @-}
 simulations'' :: Program -> Label -> Proof
--- simulations'' p@(Pg lc c m t@(TJoin t1 t2)) l = 
---     let (Pair εN εP) = evalProgram (Pg lc c m (TJoin (εTerm l t1) (εTerm l t2))) in
---         evalEraseProgram (ε l p) l
---     ==! mapSnd (ε l) (evalProgram (ε l p))
---     ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l t)))
---     ==! mapSnd (ε l) (evalProgram (Pg lc c m (TJoin (εTerm l t1) (εTerm l t2))))
---     ==? mapSnd (ε l) (evalProgram p)
---     *** QED
-
 simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
     True -> 
             evalEraseProgram (ε l p) l
@@ -84,7 +62,6 @@ simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
         ==. ε l (Pg lc c m (eval (εTerm l (TLam v t1))))
         ==. Pg lc c m (εTerm l (eval (εTerm l (TLam v t1))))
         ==. Pg lc c m (εTerm l (eval (TLam v t1))) ? propagateErasePropagates l t
-        ==. Pg lc c m (εTerm l TException)
         ==. Pg lc c m (εTerm l TException)
         ==. Pg lc c m TException
         ==. Pg lc c m (εTerm l TException)
@@ -108,37 +85,90 @@ simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
         ==. ε l (evalProgram p)
         *** QED
 
--- simulations'' p@(Pg lc c m t@(TApp t1@(TLam x t1') t2)) l = case (propagateException t1', propagateException t2) of
---     (True, _) ->
---             evalEraseProgram (ε l p) l
---         ==. ε l (evalProgram (ε l p))
---         ==. ε l (evalProgram (Pg lc c m (εTerm l (TApp t1 t2))))
---         ==. ε l (evalProgram (Pg lc c m (TApp (εTerm l t1) (εTerm l t2))))
---         ==. ε l (Pg lc c m (eval (TApp (εTerm l t1) (εTerm l t2))))
---         ==. ε l (Pg lc c m TException) ? propagateErasePropagates l t1
---         ==. ε l (Pg lc c m (eval t))
---         ==. ε l (evalProgram p)
---         *** QED
---     (False, True) ->
---             evalEraseProgram (ε l p) l
---         ==. ε l (evalProgram (ε l p))
---         ==. ε l (evalProgram (Pg lc c m (εTerm l (TApp t1 t2))))
---         ==. ε l (evalProgram (Pg lc c m (TApp (εTerm l t1) (εTerm l t2))))
---         ==. ε l (Pg lc c m (eval (TApp (εTerm l t1) (εTerm l t2))))
---         ==. ε l (Pg lc c m TException) ? propagateErasePropagates l t2
---         ==. ε l (Pg lc c m (eval t))
---         ==. ε l (evalProgram p)
---         *** QED
---     (False, False) ->
---             evalEraseProgram (ε l p) l
---         ==! ε l (evalProgram (ε l p))
---         ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
---         ==! ε l (Pg lc c m (eval (εTerm l t)))
---         ==! Pg lc c m (εTerm l (eval (εTerm l t)))
---         ==: Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
---         ==! ε l (Pg lc c m (eval t))
---         ==! ε l (evalProgram p)
---         *** QED
+simulations'' p@(Pg lc c m t@(TIf t1 t2 t3)) l = case propagateException t of
+    True ->
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. ε l (Pg lc c m TException) ? propagateErasePropagates l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
+        *** QED
+    False -> 
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
+        *** QED
+
+simulations'' p@(Pg lc c m t@(TFix _)) l = case propagateException t of
+    True ->
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. ε l (Pg lc c m TException) ? propagateErasePropagates l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
+        *** QED
+    False -> 
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
+        *** QED
+
+simulations'' p@(Pg lc c m t@(TJoin _ _)) l = case propagateException t of
+    True ->
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. ε l (Pg lc c m TException) ? propagateErasePropagates l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
+        *** QED
+    False -> 
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
+        *** QED
+
+simulations'' p@(Pg lc c m t@(TMeet _ _)) l = case propagateException t of
+    True ->
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. ε l (Pg lc c m TException) ? propagateErasePropagates l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
+        *** QED
+    False -> 
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
+        *** QED
+
 simulations'' p@(Pg lc c m t@(TApp t1 t2)) l = case (propagateException t1, propagateException t2) of
     (True, _) ->
             evalEraseProgram (ε l p) l
@@ -162,49 +192,50 @@ simulations'' p@(Pg lc c m t@(TApp t1 t2)) l = case (propagateException t1, prop
         *** QED
     (False, False) ->
             evalEraseProgram (ε l p) l
-        ==! ε l (evalProgram (ε l p))
-        ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
-        ==! ε l (Pg lc c m (eval (εTerm l t)))
-        ==! Pg lc c m (εTerm l (eval (εTerm l t)))
-        ==: Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
-        ==! ε l (Pg lc c m (eval t))
-        ==! ε l (evalProgram p)
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
         *** QED
---             evalEraseProgram (ε l p) l
---         ==. ε l (evalProgram (ε l p))
---         ==. ε l (evalProgram (Pg lc c m (εTerm l (TApp t1 t2))))
---         ==. ε l (evalProgram (Pg lc c m (TApp (εTerm l t1) (εTerm l t2))))
---         ==. ε l (Pg lc c m (eval (TApp (εTerm l t1) (εTerm l t2))))
---         ==. ε l (Pg lc c m (TApp (eval (εTerm l t1)) (εTerm l t2))) ?
---                 propagateExceptionFalseEvalsToNonexception t
---             &&& erasePropagateExceptionFalseEvalsToNonexception l t
---         ==. Pg lc c m (εTerm l (TApp (eval (εTerm l t1)) (εTerm l t2)))
---         ==. Pg lc c m (TApp (εTerm l (eval (εTerm l t1))) (εTerm l (εTerm l t2)))
---         ==. Pg lc c m (TApp (εTerm l (eval t1)) (εTerm l t2)) ?
---                 eraseEvalEraseSimulation l t1
---             &&& εTermIdempotent l t2
---         ==. Pg lc c m (εTerm l (TApp (eval t1) t2))
---         ==. Pg lc c m (εTerm l (eval t))
---         ==. ε l (Pg lc c m (eval t))
---         ==. ε l (evalProgram p)
---         *** QED
---         evalEraseProgram (ε l p) l
---         ==! mapSnd (ε l) (evalProgram (ε l p))
---         ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l t)))
---     ==! mapSnd (ε l) (evalProgram (ε l p))
---     ==! mapSnd (ε l) (evalProgram (Pg lc c m (εTerm l t)))
---     ==! mapSnd (ε l) (Pair 0 (Pg lc c m (eval (εTerm l t))))
---     ==! mapSnd (ε l) (Pair 0 (Pg lc c m (TApp (εTerm l t1) (εTerm l t2))))
---     ==! mapSnd (ε l) (evalProgram p)
---     *** QED
 
-simulations'' p@(Pg lc c m t@TGetLabel) l = 
+simulations'' p@(Pg lc c m t@(TCanFlowTo _ _)) l = case propagateException t of
+    True ->
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. ε l (Pg lc c m TException) ? propagateErasePropagates l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
+        *** QED
+    False -> 
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
+        *** QED
+
+simulations'' p@(Pg lc c m t@(TBind _ _)) l = undefined
+
+simulations'' p@(Pg lc c m t@(TLowerClearance _)) l = undefined
+simulations'' p@(Pg lc c m t@(TUnlabel _)) l = undefined
+simulations'' p@(Pg lc c m t@(TLabel _ _)) l = undefined
+simulations'' p@(Pg lc c m t@(TLabeledTCB _ _)) l = undefined
+simulations'' p@(Pg lc c m t@(TLabelOf _)) l = undefined
+simulations'' p@(Pg lc c m t@(TToLabeled _ _)) l = undefined
+simulations'' p@(Pg lc c m t@TException) l = undefined
+simulations'' p@(Pg lc c m t) l = -- undefined
         evalEraseProgram (ε l p) l
     ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
     ==. ε l (evalProgram (ε l (Pg lc c m t)))
     *** QED
-
-simulations'' _ _ = undefined
 
 {-@ simulationsHoles'' 
  :: p : {Program | ς p} 
