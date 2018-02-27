@@ -155,10 +155,15 @@ instance (a~b) => OptEq a (Proof -> b) where
   (==.) x _ _ = x
 
 instance (a~b) => OptEq a b where
+-- y's precondition isn't checked due to a bug "feature"
 {-@ instance OptEq a b where
   ==. :: x:a -> y:{a| x == y} -> {v:b | v ~~ x && v ~~ y }
   @-}
   (==.) x _ = x
+
+-- ==. :: a -> a -> ()
+-- 
+-- toUnit :: [a] -> ()
 
 -------------------------------------------------------------------------------
 -- | * Combining Proof Certificates -------------------------------------------

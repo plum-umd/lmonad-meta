@@ -13,7 +13,7 @@ import ProofCombinators
 
 {-@ eraseEvalEraseSimulation
  :: l : Label 
- -> t : Term 
+ -> t : {Term | not (propagateException t)}
  -> {εTerm l (eval (εTerm l t)) == εTerm l (eval t)}
  / [size t]
  @-}
