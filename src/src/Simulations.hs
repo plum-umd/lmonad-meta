@@ -222,9 +222,59 @@ simulations'' p@(Pg lc c m t@(TCanFlowTo _ _)) l = case propagateException t of
         ==. ε l (evalProgram p)
         *** QED
 
-simulations'' p@(Pg lc c m t@(TBind _ _)) l = undefined
+simulations'' p@(Pg lc c m t@(TBind t1 t2)) l =
+    undefined
+    --     evalEraseProgram (ε l p) l
+    -- ==! ε l (evalProgram (ε l p))
+    -- ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
+    -- ==! ε l (evalProgram (Pg lc c m (TBind (εTerm l t1) (εTerm l t2))))
+    -- ==! ε l (Pg l'' c'' m'' (TApp (εTerm l t2) t''))
 
-simulations'' p@(Pg lc c m t@(TLowerClearance _)) l = undefined
+    -- -- ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+    -- -- ==. ε l (evalProgram (ε l (Pg lc c m t)))
+
+    -- ==! ε l (Pg l' c' m' (TApp t2 t'))
+    -- ==! ε l (evalProgram (Pg lc c m (TBind t1 t2)))
+    -- ==! ε l (evalProgram p)
+    -- *** QED
+
+    -- where
+    --     (Pg l' c' m' t') = evalProgramStar (Pg lc c m t1)
+    --     (Pg l'' c'' m'' t'') = evalProgramStar (Pg lc c m (εTerm l t1))
+
+simulations'' p@(Pg lc c m t@(TLowerClearance (TVLabel c'))) l =
+        evalEraseProgram (ε l p) l
+    ==! ε l (evalProgram (ε l p))
+    ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==! ε l (evalProgram (Pg lc c m (TLowerClearance (εTerm l (TVLabel c')))))
+    ==! ε l (evalProgram (Pg lc c m (TLowerClearance (TVLabel c'))))
+    ==! ε l (evalProgram p)
+    *** QED
+
+simulations'' p@(Pg lc c m t@(TLowerClearance t1)) l = case propagateException t of
+    True ->
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (evalProgram (Pg lc c m (TLowerClearance (εTerm l t1))))
+        ==. ε l (Pg lc c m (eval (TLowerClearance (εTerm l t1)))) ? eraseNotTVLabel l t1 -- assert (not (isTVLabel (εTerm l t1)))
+        ==. ε l (Pg lc c m TException) ? propagateErasePropagates l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
+        *** QED
+    False -> 
+            evalEraseProgram (ε l p) l
+        ==! ε l (evalProgram (ε l p))
+        ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==! ε l (evalProgram (Pg lc c m (TLowerClearance (εTerm l t1))))
+        ==: ε l (Pg lc c m (eval (TLowerClearance (εTerm l t1)))) ? eraseNotTVLabel l t1
+        ==! ε l (Pg lc c m (eval (εTerm l t)))
+        ==! Pg lc c m (εTerm l (eval (εTerm l t)))
+        ==: Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
+        ==! ε l (Pg lc c m (eval t))
+        ==! ε l (evalProgram p)
+        *** QED
+
 simulations'' p@(Pg lc c m t@(TUnlabel _)) l = undefined
 simulations'' p@(Pg lc c m t@(TLabel _ _)) l = undefined
 simulations'' p@(Pg lc c m t@(TLabeledTCB _ _)) l = undefined

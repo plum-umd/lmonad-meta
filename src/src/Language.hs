@@ -51,6 +51,7 @@ data Term
   | TException
   deriving (Eq, Show)
 
+
 -- JP: Join, Meet, CanFlowTo...
 
 {-@ data Term [size] @-}
@@ -272,3 +273,8 @@ subst _ TException           = TException
 isTLam :: Term -> Bool 
 isTLam (TLam _ _) = True 
 isTLam _          = False 
+
+{-@ measure isTVLabel @-}
+isTVLabel (TVLabel _) = True
+isTVLabel _           = False
+

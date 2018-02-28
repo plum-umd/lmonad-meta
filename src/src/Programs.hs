@@ -50,6 +50,7 @@ data Program =
 data Memory  = Memory deriving (Eq, Show)
 {-@ reflect evalProgram @-}
 evalProgram :: Program -> Program
+-- JP: Should we check to propagate exceptions here?
 evalProgram PgHole =  PgHole
 
 evalProgram (Pg l c m (TBind t1 t2)) = 
