@@ -313,21 +313,32 @@ simulations'' p@(Pg lc c m t@(TUnlabel t1)) l = case propagateException t of
         *** QED
     False ->
             evalEraseProgram (ε l p) l
-        ==! ε l (evalProgram (ε l p))
-        ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
-        ==! ε l (evalProgram (Pg lc c m (TUnlabel (εTerm l t1))))
-        ==! ε l (Pg lc c m (eval (TUnlabel (εTerm l t1))))
-        ==! ε l (Pg lc c m (eval (εTerm l t)))
-        ==! Pg lc c m (εTerm l (eval (εTerm l t)))
-        ==: Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
-        ==! ε l (evalProgram p)
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (evalProgram (Pg lc c m (TUnlabel (εTerm l t1))))
+        ==. ε l (Pg lc c m (eval (TUnlabel (εTerm l t1))))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
+        ==. ε l (evalProgram p)
         *** QED
 
-simulations'' p@(Pg lc c m t@(TLabel _ _)) l = undefined
-simulations'' p@(Pg lc c m t@(TLabeledTCB _ _)) l = undefined
-simulations'' p@(Pg lc c m t@(TLabelOf _)) l = undefined
+simulations'' p@(Pg lc c m t@(TLabel (TVLabel ll) t1)) l | lc `canFlowTo` ll && ll `canFlowTo` c =
+    admitted -- Also depends on the εTerm choice.
+    --     evalEraseProgram (ε l p) l
+    -- ==! ε l (evalProgram (ε l p))
+    -- ==! ε l (Pg lc c m (TLabeledTCB ll t1))
+    -- ==! ε l (evalProgram p)
+    -- *** QED
+simulations'' p@(Pg lc c m t@(TLabel _ _)) l = 
+    admitted
+
 simulations'' p@(Pg lc c m t@(TToLabeled _ _)) l = undefined
-simulations'' p@(Pg lc c m t@TException) l = undefined
+simulations'' p@(Pg lc c m t@TException) l =
+        evalEraseProgram (ε l p) l
+    ==. ε l (evalProgram (ε l p))
+    ==. ε l (evalProgram p)
+    *** QED
 simulations'' p@(Pg lc c m t) l =
         evalEraseProgram (ε l p) l
     ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
