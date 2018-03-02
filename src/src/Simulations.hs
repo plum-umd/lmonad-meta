@@ -275,7 +275,7 @@ simulations'' p@(Pg lc c m t@(TLowerClearance t1)) l = case propagateException t
         ==. ε l (evalProgram p)
         *** QED
 
-simulations'' p@(Pg lc c m t@(TUnlabel (TLabeledTCB ll t1))) l | ll `canFlowTo` l = case l' `canFlowTo` c of
+simulations'' p@(Pg lc c m t@(TUnlabel (TLabeledTCB ll t1))) l = case l' `canFlowTo` c of
     True ->
             evalEraseProgram (ε l p) l
         ==! ε l (evalProgram (ε l p))
@@ -299,13 +299,36 @@ simulations'' p@(Pg lc c m t@(TUnlabel (TLabeledTCB ll t1))) l | ll `canFlowTo` 
     where
         l' = lc `join` ll
 
-simulations'' p@(Pg lc c m t@(TUnlabel _)) l = undefined
+simulations'' p@(Pg lc c m t@(TUnlabel t1)) l = case propagateException t of
+    True ->
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (evalProgram (Pg lc c m (TUnlabel (εTerm l t1))))
+        ==. ε l (Pg lc c m (eval (TUnlabel (εTerm l t1))))
+        ==. ε l (Pg lc c m TException) ? propagateErasePropagates l t
+        ==. ε l (Pg lc c m (eval (TUnlabel t1)))
+        ==. ε l (evalProgram (Pg lc c m (TUnlabel (εTerm l t1))))
+        ==. ε l (evalProgram p)
+        *** QED
+    False ->
+            evalEraseProgram (ε l p) l
+        ==! ε l (evalProgram (ε l p))
+        ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==! ε l (evalProgram (Pg lc c m (TUnlabel (εTerm l t1))))
+        ==! ε l (Pg lc c m (eval (TUnlabel (εTerm l t1))))
+        ==! ε l (Pg lc c m (eval (εTerm l t)))
+        ==! Pg lc c m (εTerm l (eval (εTerm l t)))
+        ==: Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
+        ==! ε l (evalProgram p)
+        *** QED
+
 simulations'' p@(Pg lc c m t@(TLabel _ _)) l = undefined
 simulations'' p@(Pg lc c m t@(TLabeledTCB _ _)) l = undefined
 simulations'' p@(Pg lc c m t@(TLabelOf _)) l = undefined
 simulations'' p@(Pg lc c m t@(TToLabeled _ _)) l = undefined
 simulations'' p@(Pg lc c m t@TException) l = undefined
-simulations'' p@(Pg lc c m t) l = -- undefined
+simulations'' p@(Pg lc c m t) l =
         evalEraseProgram (ε l p) l
     ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
     ==. ε l (evalProgram (ε l (Pg lc c m t)))
