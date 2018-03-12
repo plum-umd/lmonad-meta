@@ -335,11 +335,10 @@ simulations'' p@(Pg lc c m t@(TLabel _ _)) l =
     admitted
 
 simulations'' p@(Pg lc c m t@(TToLabeled _ _)) l = 
-    --     evalEraseProgram (ε l p) l
-    -- ==! ε l (evalProgram (Pg lc c m (TBind t1 t2)))
-    -- ==! ε l (evalProgram p)
-    -- *** QED
-    undefined
+        evalEraseProgram (ε l p) l
+    ==. ε l (evalProgram p)
+    *** QED
+
 simulations'' p@(Pg lc c m t@TException) l =
         evalEraseProgram (ε l p) l
     ==. ε l (evalProgram (ε l p))
