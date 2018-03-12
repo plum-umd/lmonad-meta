@@ -223,8 +223,9 @@ simulations'' p@(Pg lc c m t@(TCanFlowTo _ _)) l = case propagateException t of
         *** QED
 
 simulations'' p@(Pg lc c m t@(TBind t1 t2)) l =
-    undefined
-    --     evalEraseProgram (ε l p) l
+        evalEraseProgram (ε l p) l
+    ==. ε l (evalProgram (Pg lc c m (TBind t1 t2)))
+    *** QED
     -- ==! ε l (evalProgram (ε l p))
     -- ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
     -- ==! ε l (evalProgram (Pg lc c m (TBind (εTerm l t1) (εTerm l t2))))
@@ -244,11 +245,11 @@ simulations'' p@(Pg lc c m t@(TBind t1 t2)) l =
 
 simulations'' p@(Pg lc c m t@(TLowerClearance (TVLabel c'))) l =
         evalEraseProgram (ε l p) l
-    ==! ε l (evalProgram (ε l p))
-    ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
-    ==! ε l (evalProgram (Pg lc c m (TLowerClearance (εTerm l (TVLabel c')))))
-    ==! ε l (evalProgram (Pg lc c m (TLowerClearance (TVLabel c'))))
-    ==! ε l (evalProgram p)
+    ==. ε l (evalProgram (ε l p))
+    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==. ε l (evalProgram (Pg lc c m (TLowerClearance (εTerm l (TVLabel c')))))
+    ==. ε l (evalProgram (Pg lc c m (TLowerClearance (TVLabel c'))))
+    ==. ε l (evalProgram p)
     *** QED
 
 simulations'' p@(Pg lc c m t@(TLowerClearance t1)) l = case propagateException t of
@@ -278,22 +279,22 @@ simulations'' p@(Pg lc c m t@(TLowerClearance t1)) l = case propagateException t
 simulations'' p@(Pg lc c m t@(TUnlabel (TLabeledTCB ll t1))) l = case l' `canFlowTo` c of
     True ->
             evalEraseProgram (ε l p) l
-        ==! ε l (evalProgram (ε l p))
-        ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
-        ==! ε l (evalProgram (Pg lc c m (TLabeledTCB ll (εTerm l t1))))
-        ==! ε l (Pg l' c m (εTerm l t1))
-        ==! Pg l' c m (εTerm l (εTerm l t1))
-        ==: Pg l' c m (εTerm l t1) ? εTermIdempotent l t1
-        ==! ε l (Pg l' c m t1)
-        ==! ε l (evalProgram p)
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (evalProgram (Pg lc c m (TLabeledTCB ll (εTerm l t1))))
+        ==. ε l (Pg l' c m (εTerm l t1))
+        ==. Pg l' c m (εTerm l (εTerm l t1))
+        ==. Pg l' c m (εTerm l t1) ? εTermIdempotent l t1
+        ==. ε l (Pg l' c m t1)
+        ==. ε l (evalProgram p)
         *** QED
     False ->
             evalEraseProgram (ε l p) l
-        ==! ε l (evalProgram (ε l p))
-        ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
-        ==! ε l (evalProgram (Pg lc c m (TLabeledTCB ll (εTerm l t1))))
-        ==! ε l (Pg lc c m TException)
-        ==! ε l (evalProgram p)
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (evalProgram (Pg lc c m (TLabeledTCB ll (εTerm l t1))))
+        ==. ε l (Pg lc c m TException)
+        ==. ε l (evalProgram p)
         *** QED
 
     where
@@ -333,7 +334,12 @@ simulations'' p@(Pg lc c m t@(TLabel (TVLabel ll) t1)) l | lc `canFlowTo` ll && 
 simulations'' p@(Pg lc c m t@(TLabel _ _)) l = 
     admitted
 
-simulations'' p@(Pg lc c m t@(TToLabeled _ _)) l = undefined
+simulations'' p@(Pg lc c m t@(TToLabeled _ _)) l = 
+    --     evalEraseProgram (ε l p) l
+    -- ==! ε l (evalProgram (Pg lc c m (TBind t1 t2)))
+    -- ==! ε l (evalProgram p)
+    -- *** QED
+    undefined
 simulations'' p@(Pg lc c m t@TException) l =
         evalEraseProgram (ε l p) l
     ==. ε l (evalProgram (ε l p))
