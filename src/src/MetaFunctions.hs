@@ -8,7 +8,7 @@ module MetaFunctions where
 import Label
 import Language 
 import Programs 
--- import ProofCombinators
+import ProofCombinators
 
 {-@ reflect evalEraseProgram @-}
 evalEraseProgram :: Program -> Label -> Program 
@@ -114,6 +114,100 @@ evalEraseProgram p l = ε l (evalProgram p)
  -> t : {Term | not (isTVLabel t)}
  -> {not (isTVLabel (εTerm l t))}
  @-}
-eraseNotTVLabel :: Label -> Term -> ()
-eraseNotTVLabel _ _ = undefined
+eraseNotTVLabel :: Label -> Term -> Proof
+eraseNotTVLabel l t@(TLam v t1) = 
+        εTerm l t
+    ==. (TLam v (εTerm l t1))
+    *** QED
+
+eraseNotTVLabel l t@(TApp t1 t2) = 
+        εTerm l t
+    ==. (TApp (εTerm l t1) (εTerm l t2))
+    *** QED
+
+eraseNotTVLabel l t@(TFix t1) = 
+        εTerm l t
+    ==. (TFix (εTerm l t1))
+    *** QED
+
+eraseNotTVLabel l t@(TIf t1 t2 t3) = 
+        εTerm l t
+    ==. (TIf (εTerm l t1) (εTerm l t2) (εTerm l t3))
+    *** QED
+
+eraseNotTVLabel l t@(TJoin t1 t2) = 
+        εTerm l t
+    ==. (TJoin (εTerm l t1) (εTerm l t2))
+    *** QED
+
+eraseNotTVLabel l t@(TMeet t1 t2) = 
+        εTerm l t
+    ==. (TMeet (εTerm l t1) (εTerm l t2))
+    *** QED
+
+eraseNotTVLabel l t@(TCanFlowTo t1 t2) = 
+        εTerm l t
+    ==. (TCanFlowTo (εTerm l t1) (εTerm l t2))
+    *** QED
+
+eraseNotTVLabel l t@(TBind t1 t2) = 
+        εTerm l t
+    ==. (TBind (εTerm l t1) (εTerm l t2))
+    *** QED
+
+eraseNotTVLabel l t@(TLowerClearance t1) = 
+        εTerm l t
+    ==. (TLowerClearance (εTerm l t1))
+    *** QED
+
+eraseNotTVLabel l t@(TLabeledTCB l' t1) | l' `canFlowTo` l = 
+        εTerm l t
+    ==. (TLabeledTCB l' (εTerm l t1))
+    *** QED
+
+eraseNotTVLabel l t@(TLabeledTCB l' t1) = 
+        εTerm l t
+    ==. (TLabeledTCB l' THole)
+    *** QED
+
+eraseNotTVLabel l t@(TLabelOf t1) = 
+        εTerm l t
+    ==. (TLabelOf (εTerm l t1))
+    *** QED
+
+eraseNotTVLabel l t@(TLabel (TVLabel l') t1) | l' `canFlowTo` l = 
+        εTerm l t
+    ==. (TLabel (TVLabel l') (εTerm l t1))
+    *** QED
+
+eraseNotTVLabel l t@(TLabel (TVLabel l') t1) = 
+        εTerm l t
+    ==. (TLabel (TVLabel l') THole)
+    *** QED
+
+eraseNotTVLabel l t@(TLabel t1 t2) = 
+        εTerm l t
+    ==. (TLabel (εTerm l t1) (εTerm l t2))
+    *** QED
+
+eraseNotTVLabel l t@(TUnlabel t1) = 
+        εTerm l t
+    ==. (TUnlabel (εTerm l t1))
+    *** QED
+
+eraseNotTVLabel l t@(TVLabel _) = unreachable
+
+eraseNotTVLabel l t@(TUnlabel t1) = 
+        εTerm l t
+    ==. (TUnlabel (εTerm l t1))
+    *** QED
+
+eraseNotTVLabel l t@(TToLabeled t1 t2) = 
+        εTerm l t
+    ==. (TToLabeled (εTerm l t1) (εTerm l t2))
+    *** QED
+
+eraseNotTVLabel l t = 
+        εTerm l t
+    *** QED
 
