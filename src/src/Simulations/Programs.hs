@@ -22,7 +22,6 @@ import ProofCombinators
  / [evalSteps p, 0] 
  @-}
 monotonicLabelEvalProgram :: Program -> Proof
--- monotonicLabelEvalProgram _ = undefined 
 monotonicLabelEvalProgram PgHole 
   = unreachable 
 
