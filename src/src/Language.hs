@@ -167,7 +167,7 @@ eval t@(TLabeledTCB _ _)                  = t
 eval (TLabelOf (TLabeledTCB l _))         = TVLabel l
 eval (TLabelOf t)                         = TLabelOf (eval t)
 
-eval (TToLabeled l@(TVLabel _) t)         = TToLabeled l (eval t)
+eval t@(TToLabeled l@(TVLabel _) _)       = t -- TToLabeled l (eval t)
 eval (TToLabeled t1 t2)                   = TToLabeled (eval t1) t2
 
 eval t@TException                         = t
