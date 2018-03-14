@@ -201,8 +201,29 @@ eraseEvalEraseSimulation l t@(TUnlabel t1) =
     ==. εTerm l (eval t)
     *** QED
 
-eraseEvalEraseSimulation l t@(TLabel t1 t2) = 
-    undefined -- admitted
+eraseEvalEraseSimulation l t@(TLabel t1@(TVLabel _) t2) = 
+        εTerm l (eval (εTerm l t))
+    ==. εTerm l (eval (TLabel (εTerm l t1) (εTerm l t2)))
+    ==. εTerm l (TLabel (εTerm l t1) (eval (εTerm l t2)))
+        ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
+    ==. TLabel (εTerm l (εTerm l t1)) (εTerm l (eval (εTerm l t2)))
+    ==. TLabel (εTerm l t1) (εTerm l (eval t2))
+        ? εTermIdempotent l t1
+        &&& eraseEvalEraseSimulation l t2
+    ==. εTerm l (eval t)
+    *** QED
+
+eraseEvalEraseSimulation l t@(TLabel t1 t2) =
+        εTerm l (eval (εTerm l t))
+    ==. εTerm l (eval (TLabel (εTerm l t1) (εTerm l t2)))
+    ==. εTerm l (TLabel (eval (εTerm l t1)) (εTerm l t2))
+        ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
+    ==. TLabel (εTerm l (eval (εTerm l t1))) (εTerm l (εTerm l t2))
+    ==. TLabel (εTerm l (eval t1)) (εTerm l t2)
+        ? εTermIdempotent l t2
+        &&& eraseEvalEraseSimulation l t1
+    ==. εTerm l (eval t)
+    *** QED
 
 -- eraseEvalEraseSimulation l t@(TLabelOf (TLabeledTCB l' t1)) =
 --     if  l' `canFlowTo` l then

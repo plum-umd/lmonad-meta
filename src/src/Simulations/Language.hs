@@ -188,14 +188,6 @@ erasePropagateExceptionFalse l t@(TLabelOf t1) =
         not (propagateException (εTerm l t))
     ==. not (propagateException (TLabelOf (εTerm l t1))) ? erasePropagateExceptionFalse l t1
     *** QED
-erasePropagateExceptionFalse l t@(TLabel (TVLabel l') t2) | l' `canFlowTo` l = 
-        not (propagateException (εTerm l t))
-    ==. not (propagateException (TLabel (TVLabel l') (εTerm l t2))) ? erasePropagateExceptionFalse l t2
-    *** QED
-erasePropagateExceptionFalse l t@(TLabel (TVLabel l') t2) =
-        not (propagateException (εTerm l t))
-    ==. not (propagateException (TLabel (TVLabel l') THole))
-    *** QED
 erasePropagateExceptionFalse l t@(TLabel t1 t2) =
         not (propagateException (εTerm l t))
     ==. not (propagateException (TLabel (εTerm l t1) (εTerm l t2))) ? erasePropagateExceptionFalse l t1 &&& erasePropagateExceptionFalse l t2
@@ -381,20 +373,6 @@ erasePropagateExceptionFalseEvalsToNonexception l t@(TUnlabel t1) =
     ==. eval (TUnlabel (εTerm l t1))
     ==. TUnlabel (eval (εTerm l t1)) ?
             erasePropagateExceptionFalse l t1
-    *** QED
-    
-erasePropagateExceptionFalseEvalsToNonexception l t@(TLabel t1@(TVLabel l') t2) | l' `canFlowTo` l =
-        eval (εTerm l t)
-    ==. eval (TLabel t1 (εTerm l t2))
-    ==. TLabel t1 (eval (εTerm l t2)) ?
-            erasePropagateExceptionFalse l t2
-    *** QED
-
-erasePropagateExceptionFalseEvalsToNonexception l t@(TLabel t1@(TVLabel _) t2) =
-        eval (εTerm l t)
-    ==. eval (TLabel t1 THole)
-    ==. TLabel t1 (eval THole)
-    ==. TLabel t1 THole
     *** QED
     
 erasePropagateExceptionFalseEvalsToNonexception l t@(TLabel t1 t2) =

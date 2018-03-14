@@ -172,16 +172,6 @@ eraseNotTVLabel l t@(TLabelOf t1) =
     ==. (TLabelOf (εTerm l t1))
     *** QED
 
-eraseNotTVLabel l t@(TLabel (TVLabel l') t1) | l' `canFlowTo` l = 
-        εTerm l t
-    ==. (TLabel (TVLabel l') (εTerm l t1))
-    *** QED
-
-eraseNotTVLabel l t@(TLabel (TVLabel l') t1) = 
-        εTerm l t
-    ==. (TLabel (TVLabel l') THole)
-    *** QED
-
 eraseNotTVLabel l t@(TLabel t1 t2) = 
         εTerm l t
     ==. (TLabel (εTerm l t1) (εTerm l t2))
