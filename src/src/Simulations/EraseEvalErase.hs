@@ -7,23 +7,11 @@ import Label
 import Language
 import Programs
 import MetaFunctions
+import Simulations.EraseSubErase
 import Simulations.Language
 import Simulations.MetaFunctions
 
 import ProofCombinators
-
-{-@ eraseSubErase
- :: l : Label 
- -> x : Var 
- -> t1 : Term 
- -> t2 : Term 
- -> {v : Proof | εTerm l (subst (Sub x (εTerm l t1)) (εTerm l t2)) == εTerm l (subst (Sub x t1) t2) }
- @-}
-eraseSubErase :: Label -> Var -> Term -> Term -> Proof
-eraseSubErase = undefined
-
---     ==! εTerm l (subst (Sub x (εTerm l t2)) (εTerm l t1))
---     ==: εTerm l (subst (Sub x t2) t1)
 
 {-@ eraseEvalEraseSimulation
  :: l : Label 
