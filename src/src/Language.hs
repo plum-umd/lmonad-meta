@@ -278,6 +278,14 @@ isTLam _          = False
 isTVLabel (TVLabel _) = True
 isTVLabel _           = False
 
+{-@ measure isTTrue @-}
+isTTrue TTrue = True
+isTTrue _ = False
+
+{-@ measure isTFalse @-}
+isTFalse TFalse = True
+isTFalse _ = False
+
 {-@ measure isTLabeledTCB @-}
 isTLabeledTCB (TLabeledTCB _ _) = True
 isTLabeledTCB _ = False
