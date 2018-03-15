@@ -184,11 +184,6 @@ eraseNotTVLabel l t@(TUnlabel t1) =
 
 eraseNotTVLabel l t@(TVLabel _) = unreachable
 
-eraseNotTVLabel l t@(TUnlabel t1) = 
-        εTerm l t
-    ==. (TUnlabel (εTerm l t1))
-    *** QED
-
 eraseNotTVLabel l t@(TToLabeled t1 t2) = 
         εTerm l t
     ==. (TToLabeled (εTerm l t1) (εTerm l t2))
