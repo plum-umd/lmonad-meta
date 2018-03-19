@@ -7,6 +7,7 @@ module Programs where
 
 import Label
 import Language 
+import ProofCombinators
 
 -- LH bug: why this is not given?
 {-@ assume pLabel :: p:Program -> {l:Label | pLabel p == l} @-}
