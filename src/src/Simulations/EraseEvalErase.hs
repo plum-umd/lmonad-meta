@@ -49,6 +49,7 @@ eraseEvalEraseSimulation l t@(TIf t1 t2 t3) =
     ==. εTerm l (eval t)
     *** QED
 
+-- eraseEvalEraseSimulation l t@(TFix (TLam x t1)) = 
 eraseEvalEraseSimulation l t@(TFix t1') | isTLam t1'= 
     let (TLam x t1) = t1' in
         εTerm l (eval (εTerm l t))
