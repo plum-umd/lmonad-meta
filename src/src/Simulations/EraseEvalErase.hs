@@ -22,7 +22,6 @@ import ProofCombinators
 eraseEvalEraseSimulation :: Label -> Term -> Proof
 eraseEvalEraseSimulation l t@(TIf t1 t2 t3) | isTTrue t1 = 
         εTerm l (eval (εTerm l t))
-    ==. εTerm l (eval (εTerm l (TIf t1 t2 t3)))
     ==. εTerm l (eval (εTerm l (TIf TTrue t2 t3))) ? eqTTrue t1 -- JP: Why do we need this? XXX
     ==. εTerm l (eval (TIf (εTerm l TTrue) (εTerm l t2) (εTerm l t3)))
     ==. εTerm l (eval (TIf TTrue (εTerm l t2) (εTerm l t3)))
@@ -50,27 +49,31 @@ eraseEvalEraseSimulation l t@(TIf t1 t2 t3) =
     ==. εTerm l (eval t)
     *** QED
 
--- eraseEvalEraseSimulation l t@(TFix (TLam x t1)) = 
---         εTerm l (eval (εTerm l t))
---     ==. εTerm l (eval (TFix (εTerm l (TLam x t1))))
---     ==. εTerm l (eval (TFix (TLam x (εTerm l t1))))
---     ==. εTerm l (subst (Sub x (TFix (TLam x (εTerm l t1)))) (εTerm l t1)) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
---     ==. εTerm l (subst (Sub x (TFix (εTerm l (TLam x t1)))) (εTerm l t1))
---     ==. εTerm l (subst (Sub x (εTerm l (TFix (TLam x t1)))) (εTerm l t1))
---     ==. εTerm l (subst (Sub x (TFix (TLam x t1))) t1)
---         ? eraseSubErase l x (TFix (TLam x t1)) t1
---     ==. εTerm l (eval t)
---     *** QED
--- 
--- eraseEvalEraseSimulation l t@(TFix t1) = 
---         εTerm l (eval (εTerm l t))
---     ==. εTerm l (eval (TFix (εTerm l t1)))
---     ==. εTerm l (TFix (eval (εTerm l t1))) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
---     ==. TFix (εTerm l (eval (εTerm l t1)))
---     ==. TFix (εTerm l (eval t1)) ? eraseEvalEraseSimulation l t1
---     ==. εTerm l (eval t)
---     *** QED
--- 
+eraseEvalEraseSimulation l t@(TFix t1') | isTLam t1'= 
+    let (TLam x t1) = t1' in
+        εTerm l (eval (εTerm l t))
+    ==. εTerm l (eval (TFix (εTerm l (TLam x t1))))
+    ==. εTerm l (eval (TFix (TLam x (εTerm l t1))))
+    ==. εTerm l (subst (Sub x (TFix (TLam x (εTerm l t1)))) (εTerm l t1)) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
+    ==. εTerm l (subst (Sub x (TFix (εTerm l (TLam x t1)))) (εTerm l t1))
+    ==. εTerm l (subst (Sub x (εTerm l (TFix (TLam x t1)))) (εTerm l t1))
+    ==. εTerm l (subst (Sub x (TFix (TLam x t1))) t1)
+        ? eraseSubErase l x (TFix (TLam x t1)) t1
+    ==. εTerm l (eval t)
+    *** QED
+
+eraseEvalEraseSimulation l t@(TFix t1) = 
+        εTerm l (eval (εTerm l t))
+    ==! εTerm l (eval (TFix (εTerm l t1)))
+    ==: εTerm l (TFix (eval (εTerm l t1))) ? 
+            propagateExceptionFalseEvalsToNonexception t 
+        &&& erasePropagateExceptionFalse l t
+        &&& eraseNotTLam l t1
+    ==! TFix (εTerm l (eval (εTerm l t1)))
+    ==: TFix (εTerm l (eval t1)) ? eraseEvalEraseSimulation l t1
+    ==! εTerm l (eval t)
+    *** QED
+
 -- eraseEvalEraseSimulation l t@(TApp (TLam x t1) t2) = 
 --         εTerm l (eval (εTerm l t))
 --     ==. εTerm l (eval (TApp (εTerm l (TLam x t1)) (εTerm l t2)))
