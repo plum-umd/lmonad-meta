@@ -21,19 +21,19 @@ import ProofCombinators
  @-}
 eraseEvalEraseSimulation :: Label -> Term -> Proof
 eraseEvalEraseSimulation l t@(TIf t1 t2 t3) | isTTrue t1 = 
-    let TTrue = t1 in
         εTerm l (eval (εTerm l t))
-    ==! εTerm l (eval (εTerm l (TIf TTrue t2 t3)))
-    ==! εTerm l (eval (TIf (εTerm l TTrue) (εTerm l t2) (εTerm l t3)))
-    ==! εTerm l (eval (TIf TTrue (εTerm l t2) (εTerm l t3)))
-    ==: εTerm l (εTerm l t2) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
-    ==: εTerm l t2 ? εTermIdempotent l t2
-    ==! εTerm l (eval t)
+    ==. εTerm l (eval (εTerm l (TIf t1 t2 t3)))
+    ==. εTerm l (eval (εTerm l (TIf TTrue t2 t3))) ? eqTTrue t1 -- JP: Why do we need this? XXX
+    ==. εTerm l (eval (TIf (εTerm l TTrue) (εTerm l t2) (εTerm l t3)))
+    ==. εTerm l (eval (TIf TTrue (εTerm l t2) (εTerm l t3)))
+    ==. εTerm l (εTerm l t2) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
+    ==. εTerm l t2 ? εTermIdempotent l t2
+    ==. εTerm l (eval t)
     *** QED
 
 eraseEvalEraseSimulation l t@(TIf t1 t2 t3) | isTFalse t1 = 
         εTerm l (eval (εTerm l t))
-    ==. εTerm l (eval (TIf (εTerm l TFalse) (εTerm l t2) (εTerm l t3)))
+    ==. εTerm l (eval (TIf (εTerm l TFalse) (εTerm l t2) (εTerm l t3))) ? eqTFalse t1
     ==. εTerm l (eval (TIf TFalse (εTerm l t2) (εTerm l t3)))
     ==. εTerm l (εTerm l t3) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
     ==. εTerm l t3 ? εTermIdempotent l t3

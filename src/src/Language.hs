@@ -4,6 +4,7 @@
 module Language where
 
 import Label 
+import ProofCombinators
 
 {-@ reflect boolToTerm @-}
 boolToTerm :: Bool -> Term
@@ -282,9 +283,25 @@ isTVLabel _           = False
 isTTrue TTrue = True
 isTTrue _ = False
 
+{-@ eqTTrue
+ :: t : {isTTrue t}
+ -> {v : Proof | t == TTrue}
+@-}
+eqTTrue :: Term -> Proof
+eqTTrue TTrue = trivial
+eqTTrue _ = unreachable
+
 {-@ measure isTFalse @-}
 isTFalse TFalse = True
 isTFalse _ = False
+
+{-@ eqTFalse
+ :: t : {isTFalse t}
+ -> {v : Proof | t == TFalse}
+@-}
+eqTFalse :: Term -> Proof
+eqTFalse TFalse = trivial
+eqTFalse _ = unreachable
 
 {-@ measure isTLabeledTCB @-}
 isTLabeledTCB (TLabeledTCB _ _) = True
