@@ -1,5 +1,6 @@
 {-@ LIQUID "--exactdc"                                  @-}
 {-@ LIQUID "--higherorder"                              @-}
+{-@ LIQUID "--no-case-expand"                           @-}
 
 module Simulations.EraseEvalErase where
 
@@ -11,7 +12,7 @@ import Simulations.EraseSubErase
 import Simulations.Language
 import Simulations.MetaFunctions
 
-import ProofCombinators
+import LiquidHaskell.ProofCombinators
 
 {-@ eraseEvalEraseSimulation
  :: l : Label 
@@ -64,17 +65,16 @@ eraseEvalEraseSimulation l t@(TFix t1') | (TLam x t1) <- t1' =
 
 eraseEvalEraseSimulation l t@(TFix t1) = 
         εTerm l (eval (εTerm l t))
-    ==! εTerm l (eval (TFix (εTerm l t1)))
-    ==: εTerm l (TFix (eval (εTerm l t1))) ? 
+    ==. εTerm l (eval (TFix (εTerm l t1)))
+    ==. εTerm l (TFix (eval (εTerm l t1))) ? 
             propagateExceptionFalseEvalsToNonexception t 
         &&& erasePropagateExceptionFalse l t
         &&& eraseNotTLam l t1
-    ==! TFix (εTerm l (eval (εTerm l t1)))
-    ==: TFix (εTerm l (eval t1)) ? eraseEvalEraseSimulation l t1
-    ==! εTerm l (eval t)
+    ==. TFix (εTerm l (eval (εTerm l t1)))
+    ==. TFix (εTerm l (eval t1)) ? eraseEvalEraseSimulation l t1
+    ==. εTerm l (eval t)
     *** QED
 
--- eraseEvalEraseSimulation l t@(TApp (TLam x t1) t2) = 
 eraseEvalEraseSimulation l t@(TApp t1' t2) | TLam x t1 <- t1' = 
         εTerm l (eval (εTerm l t))
     ==. εTerm l (eval (TApp (εTerm l (TLam x t1)) (εTerm l t2)))
@@ -88,17 +88,16 @@ eraseEvalEraseSimulation l t@(TApp t1' t2) | TLam x t1 <- t1' =
 
 eraseEvalEraseSimulation l t@(TApp t1 t2) = 
         εTerm l (eval (εTerm l t))
-    ==! εTerm l (eval (TApp (εTerm l t1) (εTerm l t2)))
-    ==: εTerm l (TApp (eval (εTerm l t1)) (εTerm l t2)) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
+    ==. εTerm l (eval (TApp (εTerm l t1) (εTerm l t2)))
+    ==. εTerm l (TApp (eval (εTerm l t1)) (εTerm l t2)) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
         &&& eraseNotTLam l t1
-    ==! TApp (εTerm l (eval (εTerm l t1))) (εTerm l (εTerm l t2))
-    ==: TApp (εTerm l (eval t1)) (εTerm l (εTerm l t2)) ? eraseEvalEraseSimulation l t1 &&& εTermIdempotent l t2
-    ==! εTerm l (eval t)
+    ==. TApp (εTerm l (eval (εTerm l t1))) (εTerm l (εTerm l t2))
+    ==. TApp (εTerm l (eval t1)) (εTerm l (εTerm l t2)) ? eraseEvalEraseSimulation l t1 &&& εTermIdempotent l t2
+    ==. εTerm l (eval t)
     *** QED
 
-eraseEvalEraseSimulation l t@(TJoin t1 t2) | isTVLabel t1 && isTVLabel t2 = 
-    let (TVLabel l1) = t1 in
-    let (TVLabel l2) = t2 in
+
+eraseEvalEraseSimulation l t@(TJoin t1 t2) | TVLabel l1 <- t1, TVLabel l2 <- t2 = 
         εTerm l (eval (εTerm l t))
     ==. εTerm l (eval (TJoin (εTerm l (TVLabel l1)) (εTerm l (TVLabel l2))))
     ==. εTerm l (eval (TJoin t1 t2))
@@ -116,6 +115,7 @@ eraseEvalEraseSimulation l t@(TJoin t1 t2) | TVLabel l1 <- t1 =
     ==. εTerm l (eval t)
     *** QED
 
+
 eraseEvalEraseSimulation l t@(TJoin t1 t2) = 
         εTerm l (eval (εTerm l t))
     ==. εTerm l (eval (TJoin (εTerm l t1) (εTerm l t2)))
@@ -128,9 +128,7 @@ eraseEvalEraseSimulation l t@(TJoin t1 t2) =
     ==. εTerm l (eval t)
     *** QED
 
-eraseEvalEraseSimulation l t@(TMeet t1 t2) | isTVLabel t1 && isTVLabel t2 = 
-    let (TVLabel l1) = t1 in
-    let (TVLabel l2) = t2 in
+eraseEvalEraseSimulation l t@(TMeet t1 t2) | TVLabel l1 <- t1, TVLabel l2 <- t2 = 
         εTerm l (eval (εTerm l t))
     ==. εTerm l (eval (TMeet (εTerm l (TVLabel l1)) (εTerm l (TVLabel l2))))
     ==. εTerm l (eval (TMeet t1 t2))
@@ -148,23 +146,22 @@ eraseEvalEraseSimulation l t@(TMeet t1 t2) | TVLabel l1 <- t1 =
     ==. εTerm l (eval t)
     *** QED
 
-eraseEvalEraseSimulation l t@(TMeet t1 t2) = 
+eraseEvalEraseSimulation l t@(TMeet t1 t2) | not (isTVLabel t1) = 
         εTerm l (eval (εTerm l t))
-    ==! εTerm l (eval (TMeet (εTerm l t1) (εTerm l t2)))
-    ==: εTerm l (TMeet (eval (εTerm l t1)) (εTerm l t2))
+    ==. εTerm l (eval (TMeet (εTerm l t1) (εTerm l t2)))
+    ==. εTerm l (TMeet (eval (εTerm l t1)) (εTerm l t2))
         ? propagateExceptionFalseEvalsToNonexception t 
         &&& erasePropagateExceptionFalse l t
         &&& eraseNotTVLabel l t1
-    ==! TMeet (εTerm l (eval (εTerm l t1))) (εTerm l (εTerm l t2))
-    ==: TMeet (εTerm l (eval t1)) (εTerm l t2)
+    ==. TMeet (εTerm l (eval (εTerm l t1))) (εTerm l (εTerm l t2))
+    ==. TMeet (εTerm l (eval t1)) (εTerm l t2)
         ? eraseEvalEraseSimulation l t1 
         &&& εTermIdempotent l t2
-    ==! εTerm l (eval t)
+    ==. εTerm l (eval t)
     *** QED
 
-eraseEvalEraseSimulation l t@(TCanFlowTo t1 t2) | isTVLabel t1 && isTVLabel t2 = 
-    let (TVLabel l1) = t1 in
-    let (TVLabel l2) = t2 in
+
+eraseEvalEraseSimulation l t@(TCanFlowTo t1 t2) | TVLabel l1 <- t1, TVLabel l2 <- t2 = 
         εTerm l (eval (εTerm l t))
     ==. εTerm l (eval (TCanFlowTo (εTerm l (TVLabel l1)) (εTerm l (TVLabel l2))))
     ==. εTerm l (eval (TCanFlowTo t1 t2))
@@ -281,10 +278,66 @@ eraseEvalEraseSimulation l t@(TToLabeled t1 t2) =
         &&& eraseEvalEraseSimulation l t1
     ==. εTerm l (eval t)
     *** QED
+    {- 
+
+eraseEvalEraseSimulation l THole = 
+        εTerm l (eval (εTerm l THole))
+    ==. εTerm l (eval THole)
+    *** QED
+
+eraseEvalEraseSimulation l TTrue = 
+        εTerm l (eval (εTerm l TTrue))
+    ==. εTerm l (eval TTrue)
+    *** QED
+
+eraseEvalEraseSimulation l TFalse = 
+        εTerm l (eval (εTerm l TFalse))
+    ==. εTerm l (eval TFalse)
+    *** QED
+
+eraseEvalEraseSimulation l TUnit =
+        εTerm l (eval (εTerm l TUnit))
+    ==. εTerm l (eval TUnit)
+    *** QED
+
+eraseEvalEraseSimulation l (TVar v) =
+        εTerm l (eval (εTerm l (TVar v)))
+    ==. εTerm l (eval (TVar v))
+    *** QED
+
+
+eraseEvalEraseSimulation l (TVLabel v) =
+        εTerm l (eval (εTerm l (TVLabel v)))
+    ==. εTerm l (eval (TVLabel v))
+    *** QED
+
+eraseEvalEraseSimulation l TException =
+        εTerm l (eval (εTerm l TException))
+    ==. εTerm l (eval TException)
+    *** QED
+
+eraseEvalEraseSimulation l TGetLabel =
+        εTerm l (eval (εTerm l TGetLabel))
+    ==. εTerm l (eval TGetLabel)
+    *** QED
+
+eraseEvalEraseSimulation l TGetClearance =
+        εTerm l (eval (εTerm l TGetClearance))
+    ==. εTerm l (eval TGetClearance)
+    *** QED
 
 eraseEvalEraseSimulation l t = 
         εTerm l (eval (εTerm l t))
     ==. εTerm l (eval t)
     *** QED
--- eraseEvalEraseSimulation l t = undefined
+-}
+   
+eraseEvalEraseSimulation l t = undefined
 
+
+{-
+  | TLam {lamVar :: Var, lamTerm :: Term}
+  | TBind {tBind1 :: Term, tBind2 :: Term}
+  | TLowerClearance Term
+  | TLabeledTCB {tLabeledLabel :: Label, tLabeledTerm :: Term}
+-}
