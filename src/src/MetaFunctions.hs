@@ -106,14 +106,29 @@ evalEraseProgram p l = ε l (evalProgram p)
 ς (Pg _ _ _ t) = ςTerm t 
 ς PgHole = False
 
-{-@
- :: eraseNotTLam
- -> l : Label
- -> t : {Term | not (isTLam t)}
- -> {not (isTLam (εTerm l t))}
- @-}
-eraseNotTLam :: Label -> Term -> Proof
-eraseNotTLam = undefined
+-- {-@ inv_isTLam
+--  :: v:Term
+--  -> { isTLam v <=> is$Language.TLam v}
+--  @-}
+-- inv_isTLam :: Term -> Proof
+-- inv_isTLam (TLam _ _) = trivial
+-- inv_isTLam _          = trivial
+-- 
+-- {-@ eraseNotTLam
+--  :: l : Label
+--  -> t : {Term | not (isTLam t)}
+--  -> {not (isTLam (εTerm l t))}
+--  @-}
+-- eraseNotTLam :: Label -> Term -> Proof
+-- eraseNotTLam = undefined
+-- 
+-- {-@ inv_isTVLabel 
+--     :: v:Term 
+--     -> { isTVLabel v <=> is$Language.TVLabel v}
+--     @-}
+-- inv_isTVLabel :: Term -> Proof
+-- inv_isTVLabel (TVLabel _) = trivial
+-- inv_isTVLabel _           = trivial
 
 {-@ eraseNotTVLabel
  :: l : Label
