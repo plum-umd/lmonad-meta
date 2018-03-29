@@ -146,7 +146,10 @@ eraseEvalEraseSimulation l t@(TMeet t1 t2) | TVLabel l1 <- t1 =
     ==. εTerm l (eval t)
     *** QED
 
-eraseEvalEraseSimulation l t@(TMeet t1 t2) | not (isTVLabel t1) = 
+{-@ invariant {v:Term | isTVLabel v <=> is$Language.TVLabel v} @-}    
+-- adding the above invariant to get the precondition of eraseNotTVLabel SAT 
+
+eraseEvalEraseSimulation l t@(TMeet t1 t2) = 
         εTerm l (eval (εTerm l t))
     ==. εTerm l (eval (TMeet (εTerm l t1) (εTerm l t2)))
     ==. εTerm l (TMeet (eval (εTerm l t1)) (εTerm l t2))
