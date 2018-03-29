@@ -281,7 +281,6 @@ eraseEvalEraseSimulation l t@(TToLabeled t1 t2) =
         &&& eraseEvalEraseSimulation l t1
     ==. εTerm l (eval t)
     *** QED
-    {- 
 
 eraseEvalEraseSimulation l THole = 
         εTerm l (eval (εTerm l THole))
@@ -297,6 +296,8 @@ eraseEvalEraseSimulation l TFalse =
         εTerm l (eval (εTerm l TFalse))
     ==. εTerm l (eval TFalse)
     *** QED
+
+    {- 
 
 eraseEvalEraseSimulation l TUnit =
         εTerm l (eval (εTerm l TUnit))
@@ -334,7 +335,18 @@ eraseEvalEraseSimulation l t =
     ==. εTerm l (eval t)
     *** QED
 -}
+
+eraseEvalEraseSimulation l (TLam x t) = 
+        εTerm l (eval (εTerm l (TLam x t)))
+    ==. εTerm l (eval (TLam x (εTerm l t)))
+    ==. εTerm l (TLam x (εTerm l t))
+    ==. TLam x (εTerm l (εTerm l t)) ? εTermIdempotent l t 
+    ==. TLam x (εTerm l t)
+    ==. εTerm l (TLam x t)
+    ==. εTerm l (eval (TLam x t))
+    *** QED
    
+
 eraseEvalEraseSimulation l t = undefined
 
 
