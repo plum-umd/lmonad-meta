@@ -146,7 +146,7 @@ eval (TCanFlowTo (TVLabel l1) t2)           = TCanFlowTo (TVLabel l1) (eval t2)
 eval (TCanFlowTo t1 t2)                     = TCanFlowTo (eval t1) t2
 
 eval THole                                = THole
-eval t@(TLam _ _)                         = t
+eval (TLam x t)                         = TLam x t
 eval t@TTrue                              = t
 eval t@TFalse                             = t
 eval t@TUnit                              = t
@@ -176,6 +176,7 @@ eval t@TException                         = t
 -- eval (TLowerClearance t)   = TLowerClearance (eval t)
 -- eval v | isValue v         = v 
 -- eval v                     = v 
+
 
 {-@ measure propagateException @-}
 propagateException :: Term -> Bool 

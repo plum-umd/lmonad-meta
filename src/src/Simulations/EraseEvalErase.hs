@@ -21,9 +21,9 @@ import LiquidHaskell.ProofCombinators
  / [size t]
  @-}
 eraseEvalEraseSimulation :: Label -> Term -> Proof
-eraseEvalEraseSimulation l t@(TIf t1 t2 t3) | isTTrue t1 = 
+eraseEvalEraseSimulation l t@(TIf TTrue t2 t3)  = 
         εTerm l (eval (εTerm l t))
-    ==. εTerm l (eval (εTerm l (TIf TTrue t2 t3))) ? eqTTrue t1 -- JP: Why do we need this? XXX
+    ==. εTerm l (eval (εTerm l (TIf TTrue t2 t3))) -- ? eqTTrue t1 -- JP: Why do we need this? XXX
     ==. εTerm l (eval (TIf (εTerm l TTrue) (εTerm l t2) (εTerm l t3)))
     ==. εTerm l (eval (TIf TTrue (εTerm l t2) (εTerm l t3)))
     ==. εTerm l (εTerm l t2) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
@@ -31,9 +31,9 @@ eraseEvalEraseSimulation l t@(TIf t1 t2 t3) | isTTrue t1 =
     ==. εTerm l (eval t)
     *** QED
 
-eraseEvalEraseSimulation l t@(TIf t1 t2 t3) | isTFalse t1 = 
+eraseEvalEraseSimulation l t@(TIf TFalse t2 t3)  = 
         εTerm l (eval (εTerm l t))
-    ==. εTerm l (eval (TIf (εTerm l TFalse) (εTerm l t2) (εTerm l t3))) ? eqTFalse t1
+    ==. εTerm l (eval (TIf (εTerm l TFalse) (εTerm l t2) (εTerm l t3))) -- ? eqTFalse t1
     ==. εTerm l (eval (TIf TFalse (εTerm l t2) (εTerm l t3)))
     ==. εTerm l (εTerm l t3) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
     ==. εTerm l t3 ? εTermIdempotent l t3
@@ -43,7 +43,8 @@ eraseEvalEraseSimulation l t@(TIf t1 t2 t3) | isTFalse t1 =
 eraseEvalEraseSimulation l t@(TIf t1 t2 t3) = 
         εTerm l (eval (εTerm l t))
     ==. εTerm l (eval (TIf (εTerm l t1) (εTerm l t2) (εTerm l t3)))
-    ==. εTerm l (TIf (eval (εTerm l t1)) (εTerm l t2) (εTerm l t3)) ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
+    ==. εTerm l (TIf (eval (εTerm l t1)) (εTerm l t2) (εTerm l t3)) 
+        ? propagateExceptionFalseEvalsToNonexception t &&& erasePropagateExceptionFalse l t
     ==. TIf (εTerm l (eval (εTerm l t1))) (εTerm l (εTerm l t2)) (εTerm l (εTerm l t3))
     ==. TIf (εTerm l (eval (εTerm l t1))) (εTerm l t2) (εTerm l t3) ? εTermIdempotent l t2 &&& εTermIdempotent l t3
     ==. TIf (εTerm l (eval t1)) (εTerm l t2) (εTerm l t3) ? eraseEvalEraseSimulation l t1
@@ -297,7 +298,6 @@ eraseEvalEraseSimulation l TFalse =
     ==. εTerm l (eval TFalse)
     *** QED
 
-    {- 
 
 eraseEvalEraseSimulation l TUnit =
         εTerm l (eval (εTerm l TUnit))
@@ -308,7 +308,6 @@ eraseEvalEraseSimulation l (TVar v) =
         εTerm l (eval (εTerm l (TVar v)))
     ==. εTerm l (eval (TVar v))
     *** QED
-
 
 eraseEvalEraseSimulation l (TVLabel v) =
         εTerm l (eval (εTerm l (TVLabel v)))
@@ -330,29 +329,71 @@ eraseEvalEraseSimulation l TGetClearance =
     ==. εTerm l (eval TGetClearance)
     *** QED
 
-eraseEvalEraseSimulation l t = 
-        εTerm l (eval (εTerm l t))
-    ==. εTerm l (eval t)
-    *** QED
--}
-
 eraseEvalEraseSimulation l (TLam x t) = 
         εTerm l (eval (εTerm l (TLam x t)))
     ==. εTerm l (eval (TLam x (εTerm l t)))
-    ==. εTerm l (TLam x (εTerm l t))
+    ==. εTerm l (TLam x (εTerm l t)) ? helperTLam x l t 
     ==. TLam x (εTerm l (εTerm l t)) ? εTermIdempotent l t 
     ==. TLam x (εTerm l t)
     ==. εTerm l (TLam x t)
     ==. εTerm l (eval (TLam x t))
     *** QED
-   
-
-eraseEvalEraseSimulation l t = undefined
 
 
-{-
-  | TLam {lamVar :: Var, lamTerm :: Term}
-  | TBind {tBind1 :: Term, tBind2 :: Term}
-  | TLowerClearance Term
-  | TLabeledTCB {tLabeledLabel :: Label, tLabeledTerm :: Term}
--}
+
+eraseEvalEraseSimulation l (TLowerClearance t) = 
+        εTerm l (eval (εTerm l (TLowerClearance t)))
+    ==. εTerm l (eval (TLowerClearance (εTerm l t)))
+    ==. εTerm l (TLowerClearance (eval (εTerm l t))) ? helperTLowerClearance l t 
+    ==. TLowerClearance (εTerm l (eval (εTerm l t)))
+    ==. TLowerClearance (εTerm l (eval t)) ? eraseEvalEraseSimulation l t 
+    ==. εTerm l (TLowerClearance (eval t))
+    ==. εTerm l (eval (TLowerClearance t))
+    *** QED   
+
+eraseEvalEraseSimulation l (TBind t1 t2) = 
+        εTerm l (eval (εTerm l (TBind t1 t2)))
+    ==. εTerm l (eval (TBind (εTerm l t1) (εTerm l t2)))
+         ? helperTBind l t1 t2 
+    ==. εTerm l (TBind (εTerm l t1) (εTerm l t2))
+    ==. TBind (εTerm l (εTerm l t1)) (εTerm l (εTerm l t2))
+         ? εTermIdempotent l t1 &&& εTermIdempotent l t2 
+    ==. TBind (εTerm l t1) (εTerm l t2)
+    ==. εTerm l (TBind t1 t2)
+    ==. εTerm l (eval (TBind t1 t2))
+    *** QED
+
+eraseEvalEraseSimulation l (TLabeledTCB l' t) | l' `canFlowTo` l = 
+        εTerm l (eval (TLabeledTCB l' (εTerm l t)))
+    ==. εTerm l (TLabeledTCB l' (εTerm l t))
+    ==. TLabeledTCB l' (εTerm l (εTerm l t))
+    ==. TLabeledTCB l' (εTerm l t) ? εTermIdempotent l t 
+    ==. εTerm l (TLabeledTCB l' t)
+    ==. εTerm l (eval (TLabeledTCB l' t))
+    *** QED
+
+
+eraseEvalEraseSimulation l (TLabeledTCB l' t) = 
+        εTerm l (eval (εTerm l (TLabeledTCB l' t)))
+    ==. εTerm l (eval (TLabeledTCB l' THole))
+    ==. εTerm l (TLabeledTCB l' THole)
+    ==. TLabeledTCB l' THole
+    ==. εTerm l (TLabeledTCB l' t)
+    ==. εTerm l (eval (TLabeledTCB l' t))
+    *** QED
+
+{-@ helperTLam :: x:Var -> l:Label -> {t:Term | not (propagateException (TLam x t))}
+       -> {not (propagateException ((εTerm l t)))} @-}
+helperTLam :: Var -> Label -> Term -> Proof 
+helperTLam = undefined 
+
+
+{-@ helperTLowerClearance :: l:Label -> {t:Term | not (propagateException (TLowerClearance t))}
+       -> {not (propagateException ((εTerm l t)))} @-}
+helperTLowerClearance ::  Label -> Term -> Proof 
+helperTLowerClearance = undefined 
+
+{-@ helperTBind :: l:Label -> t1:Term -> t2:{Term | not (propagateException (TBind t1 t2))}
+       -> {not (propagateException (TBind (εTerm l t1) (εTerm l t2))) } @-}
+helperTBind ::  Label -> Term -> Term -> Proof 
+helperTBind = undefined 
