@@ -351,14 +351,14 @@ simulations'' p@(Pg lc c m t@(TLabel t1@(TVLabel ll) t2)) l =
 
 simulations'' p@(Pg lc c m t@(TLabel _ _)) l = 
         evalEraseProgram (ε l p) l
-    ==. ε l (evalProgram (ε l p))
-    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
-    ==. ε l (Pg lc c m (eval (εTerm l t)))
-    ==. Pg lc c m (εTerm l (eval (εTerm l t)))
-    ==. Pg lc c m (εTerm l (eval t))
+    ==! ε l (evalProgram (ε l p))
+    ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==! ε l (Pg lc c m (eval (εTerm l t)))
+    ==! Pg lc c m (εTerm l (eval (εTerm l t)))
+    ==: Pg lc c m (εTerm l (eval t))
         ? eraseEvalEraseSimulation l t
-    ==. ε l (Pg lc c m (eval t))
-    ==. ε l (evalProgram p)
+    ==! ε l (Pg lc c m (eval t))
+    ==! ε l (evalProgram p)
     *** QED
 
 simulations'' p@(Pg lc c m t@(TToLabeled _ _)) l = 
@@ -368,13 +368,18 @@ simulations'' p@(Pg lc c m t@(TToLabeled _ _)) l =
 
 simulations'' p@(Pg lc c m t@TException) l =
         evalEraseProgram (ε l p) l
-    ==. ε l (evalProgram (ε l p))
+    ==. ε l (evalProgram (ε l (Pg lc c m TException)))
+    ==. ε l (evalProgram (Pg lc c m (εTerm l TException)))
+    ==. ε l (evalProgram (Pg lc c m TException))
     ==. ε l (evalProgram p)
     *** QED
+
 simulations'' p@(Pg lc c m t) l =
         evalEraseProgram (ε l p) l
-    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
     ==. ε l (evalProgram (ε l (Pg lc c m t)))
+    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==. ε l (evalProgram (Pg lc c m t))
+    ==. ε l (evalProgram p)
     *** QED
 
 {-@ simulationsHoles'' 
