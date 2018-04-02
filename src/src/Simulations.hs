@@ -336,6 +336,7 @@ simulations'' p@(Pg lc c m t@(TLabel t1@(TVLabel ll) t2)) l | lc `canFlowTo` ll 
         ==. Pg lc c m (TLabeledTCB ll (εTerm l (εTerm l t2)))
         ==. Pg lc c m (TLabeledTCB ll (εTerm l t2))
             ? εTermIdempotent l t2
+        ==. Pg lc c m (εTerm l (TLabeledTCB ll t2))
         ==. ε l (Pg lc c m (TLabeledTCB ll t2))
         ==. ε l (evalProgram p)
         *** QED
@@ -364,18 +365,30 @@ simulations'' p@(Pg lc c m t@(TLabel t1@(TVLabel ll) t2)) l =
     ==. ε l (evalProgram p)
     *** QED
 
+simulations'' p@(Pg lc c m t@(TLabel t1 t2)) l | propagateException t = 
+        evalEraseProgram (ε l p) l
+    ==. ε l (evalProgram (ε l p))
+    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==. ε l (evalProgram (Pg lc c m (TLabel (εTerm l t1) (εTerm l t2))))
+    ==. ε l (Pg lc c m (eval (TLabel (εTerm l t1) (εTerm l t2))))
+    ==. ε l (Pg lc c m (eval (εTerm l t)))
+    ==. ε l (Pg lc c m TException) ? propagateErasePropagates l t
+    ==. ε l (Pg lc c m (eval t))
+    ==. ε l (evalProgram p)
+    *** QED
+
 simulations'' p@(Pg lc c m t@(TLabel t1 t2)) l = 
         evalEraseProgram (ε l p) l
-    ==! ε l (evalProgram (ε l p))
-    ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
-    ==! ε l (evalProgram (Pg lc c m (TLabel (εTerm l t1) (εTerm l t2))))
-    ==! ε l (Pg lc c m (eval (TLabel (εTerm l t1) (εTerm l t2))))
-    ==! ε l (Pg lc c m (eval (εTerm l t)))
-    ==! Pg lc c m (εTerm l (eval (εTerm l t)))
-    ==: Pg lc c m (εTerm l (eval t))
+    ==. ε l (evalProgram (ε l p))
+    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==. ε l (evalProgram (Pg lc c m (TLabel (εTerm l t1) (εTerm l t2))))
+    ==. ε l (Pg lc c m (eval (TLabel (εTerm l t1) (εTerm l t2))))
+    ==. ε l (Pg lc c m (eval (εTerm l t)))
+    ==. Pg lc c m (εTerm l (eval (εTerm l t)))
+    ==. Pg lc c m (εTerm l (eval t))
         ? eraseEvalEraseSimulation l t
-    ==! ε l (Pg lc c m (eval t))
-    ==! ε l (evalProgram p)
+    ==. ε l (Pg lc c m (eval t))
+    ==. ε l (evalProgram p)
     *** QED
 
 simulations'' p@(Pg lc c m t@(TToLabeled _ _)) l = 
