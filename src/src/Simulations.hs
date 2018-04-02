@@ -48,6 +48,14 @@ simulations' (Pg lcurr c m t) l | not (lcurr `canFlowTo` l) -- l < lcurr
 simulations' p l {- | lcurr <= l -}
   = simulations'' p l
 
+{-@ simulationsStar'' 
+ :: {p : Program | ς p}
+ -> {l : Label | canFlowTo (pLabel p) l}
+ -> {v : Proof | ε l (evalProgramStar (ε l p)) = ε l (evalProgramStar p)}
+ @-}
+simulationsStar'' :: Program -> Label -> Proof
+simulationsStar'' = undefined
+
 {-@ simulations'' 
  :: {p : Program | ς p} 
  -> {l : Label | canFlowTo (pLabel p) l}
@@ -224,24 +232,18 @@ simulations'' p@(Pg lc c m t@(TCanFlowTo _ _)) l = case propagateException t of
 
 simulations'' p@(Pg lc c m t@(TBind t1 t2)) l =
         evalEraseProgram (ε l p) l
-    ==. ε l (evalProgram (Pg lc c m (TBind t1 t2)))
+    ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==! ε l (evalProgram (Pg lc c m (TBind (εTerm l t1) (εTerm l t2))))
+    ==! ε l (Pg l'' c'' m'' (TApp (εTerm l t2) t''))
+    
+    ==: ε l (Pg l' c' m' (TApp t2 t')) ? simulationsStar'' p l
+    ==! ε l (evalProgram (Pg lc c m (TBind t1 t2)))
+    ==! ε l (evalProgram (Pg lc c m t))
     *** QED
-    -- ==! ε l (evalProgram (ε l p))
-    -- ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
-    -- ==! ε l (evalProgram (Pg lc c m (TBind (εTerm l t1) (εTerm l t2))))
-    -- ==! ε l (Pg l'' c'' m'' (TApp (εTerm l t2) t''))
 
-    -- -- ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
-    -- -- ==. ε l (evalProgram (ε l (Pg lc c m t)))
-
-    -- ==! ε l (Pg l' c' m' (TApp t2 t'))
-    -- ==! ε l (evalProgram (Pg lc c m (TBind t1 t2)))
-    -- ==! ε l (evalProgram p)
-    -- *** QED
-
-    -- where
-    --     (Pg l' c' m' t') = evalProgramStar (Pg lc c m t1)
-    --     (Pg l'' c'' m'' t'') = evalProgramStar (Pg lc c m (εTerm l t1))
+    where
+        (Pg l' c' m' t') = evalProgramStar (Pg lc c m t1)
+        (Pg l'' c'' m'' t'') = evalProgramStar (Pg lc c m (εTerm l t1))
 
 simulations'' p@(Pg lc c m t@(TLowerClearance (TVLabel c'))) l =
         evalEraseProgram (ε l p) l
