@@ -325,19 +325,34 @@ simulations'' p@(Pg lc c m t@(TUnlabel t1)) l = case propagateException t of
         *** QED
 
 simulations'' p@(Pg lc c m t@(TLabel t1@(TVLabel ll) t2)) l | lc `canFlowTo` ll && ll `canFlowTo` c =
-        evalEraseProgram (ε l p) l
-    ==. ε l (evalProgram (ε l p))
-    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
-    ==. ε l (evalProgram (Pg lc c m (TLabel (εTerm l t1) (εTerm l t2))))
-    ==. ε l (evalProgram (Pg lc c m (TLabel t1 (εTerm l t2))))
-    ==. ε l (Pg lc c m (TLabeledTCB ll (εTerm l t2)))
-    ==. Pg lc c m (εTerm l (TLabeledTCB ll (εTerm l t2)))
-    ==. Pg lc c m (TLabeledTCB ll (εTerm l (εTerm l t2)))
-    ==. Pg lc c m (TLabeledTCB ll (εTerm l t2))
-        ? εTermIdempotent l t2
-    ==. ε l (Pg lc c m (TLabeledTCB ll t1))
-    ==. ε l (evalProgram p)
-    *** QED
+    if ll `canFlowTo` l then
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (evalProgram (Pg lc c m (TLabel (εTerm l t1) (εTerm l t2))))
+        ==. ε l (evalProgram (Pg lc c m (TLabel t1 (εTerm l t2))))
+        ==. ε l (Pg lc c m (TLabeledTCB ll (εTerm l t2)))
+        ==. Pg lc c m (εTerm l (TLabeledTCB ll (εTerm l t2)))
+        ==. Pg lc c m (TLabeledTCB ll (εTerm l (εTerm l t2)))
+        ==. Pg lc c m (TLabeledTCB ll (εTerm l t2))
+            ? εTermIdempotent l t2
+        ==. ε l (Pg lc c m (TLabeledTCB ll t2))
+        ==. ε l (evalProgram p)
+        *** QED
+    else
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (evalProgram (Pg lc c m (TLabel (εTerm l t1) (εTerm l t2))))
+        ==. ε l (evalProgram (Pg lc c m (TLabel t1 (εTerm l t2))))
+        ==. ε l (Pg lc c m (TLabeledTCB ll (εTerm l t2)))
+        ==. Pg lc c m (εTerm l (TLabeledTCB ll (εTerm l t2)))
+        ==. Pg lc c m (TLabeledTCB ll THole)
+        ==. Pg lc c m (εTerm l (TLabeledTCB ll t2))
+        ==. ε l (Pg lc c m (TLabeledTCB ll t2))
+        ==. ε l (evalProgram p)
+        *** QED
+        
 
 simulations'' p@(Pg lc c m t@(TLabel t1@(TVLabel ll) t2)) l = 
         evalEraseProgram (ε l p) l
@@ -349,10 +364,12 @@ simulations'' p@(Pg lc c m t@(TLabel t1@(TVLabel ll) t2)) l =
     ==. ε l (evalProgram p)
     *** QED
 
-simulations'' p@(Pg lc c m t@(TLabel _ _)) l = 
+simulations'' p@(Pg lc c m t@(TLabel t1 t2)) l = 
         evalEraseProgram (ε l p) l
     ==! ε l (evalProgram (ε l p))
     ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==! ε l (evalProgram (Pg lc c m (TLabel (εTerm l t1) (εTerm l t2))))
+    ==! ε l (Pg lc c m (eval (TLabel (εTerm l t1) (εTerm l t2))))
     ==! ε l (Pg lc c m (eval (εTerm l t)))
     ==! Pg lc c m (εTerm l (eval (εTerm l t)))
     ==: Pg lc c m (εTerm l (eval t))
@@ -374,13 +391,61 @@ simulations'' p@(Pg lc c m t@TException) l =
     ==. ε l (evalProgram p)
     *** QED
 
-simulations'' p@(Pg lc c m t) l =
+simulations'' p@(Pg lc c m t@THole) l =
         evalEraseProgram (ε l p) l
     ==. ε l (evalProgram (ε l (Pg lc c m t)))
     ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
     ==. ε l (evalProgram (Pg lc c m t))
     ==. ε l (evalProgram p)
     *** QED
+
+simulations'' p@(Pg lc c m t@TTrue) l =
+        evalEraseProgram (ε l p) l
+    ==. ε l (evalProgram (ε l (Pg lc c m t)))
+    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==. ε l (evalProgram (Pg lc c m t))
+    ==. ε l (evalProgram p)
+    *** QED
+
+simulations'' p@(Pg lc c m t@TFalse) l =
+        evalEraseProgram (ε l p) l
+    ==. ε l (evalProgram (ε l (Pg lc c m t)))
+    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==. ε l (evalProgram (Pg lc c m t))
+    ==. ε l (evalProgram p)
+    *** QED
+
+simulations'' p@(Pg lc c m t@TUnit) l =
+        evalEraseProgram (ε l p) l
+    ==. ε l (evalProgram (ε l (Pg lc c m t)))
+    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==. ε l (evalProgram (Pg lc c m t))
+    ==. ε l (evalProgram p)
+    *** QED
+
+simulations'' p@(Pg lc c m t@(TVar _)) l =
+        evalEraseProgram (ε l p) l
+    ==. ε l (evalProgram (ε l (Pg lc c m t)))
+    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==. ε l (evalProgram (Pg lc c m t))
+    ==. ε l (evalProgram p)
+    *** QED
+
+simulations'' p@(Pg lc c m t@(TVLabel _)) l =
+        evalEraseProgram (ε l p) l
+    ==. ε l (evalProgram (ε l (Pg lc c m t)))
+    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+    ==. ε l (evalProgram (Pg lc c m t))
+    ==. ε l (evalProgram p)
+    *** QED
+
+-- simulations'' p@(Pg lc c m t) l =
+--         evalEraseProgram (ε l p) l
+--     ==. ε l (evalProgram (ε l (Pg lc c m t)))
+--     ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+--     ==. ε l (evalProgram (Pg lc c m t))
+--     ==. ε l (evalProgram p)
+--     *** QED
 
 {-@ simulationsHoles'' 
  :: p : {Program | ς p} 
