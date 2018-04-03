@@ -33,10 +33,7 @@ orderedSrcFiles = [
 
 runLiquid :: String -> IO ExitCode
 runLiquid fname 
-  = runCommand' ("cd " ++ sourceDir ++ "; stack exec -- liquid " ++ fname)
-
-sourceDir :: String
-sourceDir = "src"
+  = runCommand' ("stack exec -- liquid " ++ fname)
 
 runCommand' :: String -> IO ExitCode
 runCommand' str = 
