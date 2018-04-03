@@ -393,10 +393,32 @@ simulations'' p@(Pg lc c m t@(TLabel t1 t2)) l =
     ==. ε l (evalProgram p)
     *** QED
 
-simulations'' p@(Pg lc c m t@(TToLabeled _ _)) l = 
-        evalEraseProgram (ε l p) l
-    ==. ε l (evalProgram p)
-    *** QED
+simulations'' p@(Pg lc c m t@(TToLabeled t1 t2)) l | TVLabel ll <- t1 = 
+    if lc `canFlowTo` ll && ll `canFlowTo` c then
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (evalProgram (Pg lc c m (TToLabeled (εTerm l t1) (εTerm l t2)))
+        ==. ε l (evalProgram (Pg lc c m (TToLabeled (TVLabel ll) (εTerm l t2)))
+
+        ==. ε l (evalProgram p)
+        *** QED
+    else
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (evalProgram (Pg lc c m (TToLabeled (εTerm l t1) (εTerm l t2)))
+        ==. ε l (evalProgram (Pg lc c m (TToLabeled (TVLabel ll) (εTerm l t2)))
+        ==. ε l (Pg lc c m TException)
+        ==. ε l (evalProgram p)
+        *** QED
+
+    where
+        (Pg l'' c'' m'' t'') = evalProgramStar (Pg lc c m (εTerm l t2))
+        (Pg l' c' m' t') = evalProgramStar (Pg lc c m t2)
+
+simulations'' p@(Pg lc c m t@(TToLabeled t1 t2)) l =
+    undefined
 
 simulations'' p@(Pg lc c m t@TGetLabel) l =
         evalEraseProgram (ε l p) l
