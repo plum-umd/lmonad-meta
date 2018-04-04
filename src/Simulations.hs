@@ -56,6 +56,46 @@ simulations' p l {- | lcurr <= l -}
 simulationsStar'' :: Program -> Label -> Proof
 simulationsStar'' = undefined
 
+{-@ simulationsBindHelper 
+ :: l : Label
+ -> lc : Label
+ -> lc' : Label
+ -> lc'' : Label
+ -> c : Label
+ -> c' : Label
+ -> c'' : Label
+ -> m : Memory
+ -> m' : Memory
+ -> m'' : Memory
+ -> t1 : Term
+ -> t2 : Term
+ -> t' : {Term | Pg lc' c' m' t' = evalProgramStar (Pg lc c m t1)}
+ -> t'' : {Term | Pg lc'' c'' m'' t'' = evalProgramStar (Pg lc c m (εTerm l t1))}
+ -> {ε l (Pg lc' c' m' (TApp t2 t')) = ε l (Pg lc'' c'' m'' (TApp (εTerm l t2) t''))}
+ @-}
+simulationsBindHelper :: Label -> Label -> Label -> Label -> Label -> Label -> Label -> Memory -> Memory -> Memory -> Term -> Term -> Term -> Term -> Proof
+simulationsBindHelper = undefined -- l lc lc' c c' m m' t t' t2 = undefined
+
+{-@ simulationsToLabeledHelper
+ :: l : Label
+ -> lc : Label
+ -> lc' : Label
+ -> lc'' : Label
+ -> c : Label
+ -> c' : Label
+ -> c'' : Label
+ -> m : Memory
+ -> m' : Memory
+ -> m'' : Memory
+ -> ll : Label
+ -> t : Term
+ -> t' : {Term | Pg lc' c' m' t' = evalProgramStar (Pg lc c m t)}
+ -> t'' : {Term | Pg lc'' c'' m'' t'' = evalProgramStar (Pg lc c m (εTerm l t))}
+ -> {ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException))) = ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))}
+ @-}
+simulationsToLabeledHelper :: Label -> Label -> Label -> Label -> Label -> Label -> Label -> Memory -> Memory -> Memory -> Label -> Term -> Term -> Term -> Proof
+simulationsToLabeledHelper = undefined
+
 {-@ simulations'' 
  :: {p : Program | ς p} 
  -> {l : Label | canFlowTo (pLabel p) l}
@@ -233,10 +273,12 @@ simulations'' p@(Pg lc c m t@(TCanFlowTo _ _)) l = case propagateException t of
 simulations'' p@(Pg lc c m t@(TBind t1 t2)) l =
         evalEraseProgram (ε l p) l
     ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
-    ==! ε l (evalProgram (Pg lc c m (TBind (εTerm l t1) (εTerm l t2))))
+    ==! ε l (evalProgram (Pg lc c m (TBind (εTerm l t1) (εTerm l t2)))) -- () >>= \() -> 32
     ==! ε l (Pg l'' c'' m'' (TApp (εTerm l t2) t''))
     
-    ==: ε l (Pg l' c' m' (TApp t2 t')) ? simulationsStar'' p l
+    ==: ε l (Pg l' c' m' (TApp t2 t')) ?
+            simulationsStar'' p l 
+        &&& simulationsBindHelper l lc l' l'' c c' c'' m m' m'' t1 t2 t' t''
     ==! ε l (evalProgram (Pg lc c m (TBind t1 t2)))
     ==! ε l (evalProgram (Pg lc c m t))
     *** QED
@@ -398,24 +440,28 @@ simulations'' p@(Pg lc c m t@(TToLabeled t1 t2)) l | TVLabel ll <- t1 =
             evalEraseProgram (ε l p) l
         ==. ε l (evalProgram (ε l p))
         ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
-        ==. ε l (evalProgram (Pg lc c m (TToLabeled (εTerm l t1) (εTerm l t2)))
-        ==. ε l (evalProgram (Pg lc c m (TToLabeled (TVLabel ll) (εTerm l t2)))
+        ==. ε l (evalProgram (Pg lc c m (TToLabeled (εTerm l t1) (εTerm l t2))))
+        ==. ε l (evalProgram (Pg lc c m (TToLabeled (TVLabel ll) (εTerm l t2))))
+        ==. ε l (if lc'' `canFlowTo` ll then Pg lc c m'' (TLabeledTCB ll t'') else Pg lc c m'' (TLabeledTCB ll TException))
 
+        ==. ε l (if lc' `canFlowTo` ll then Pg lc c m' (TLabeledTCB ll t') else Pg lc c m' (TLabeledTCB ll TException)) ?
+                simulationsStar'' p l
+            &&& simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t2 t' t''
         ==. ε l (evalProgram p)
         *** QED
     else
             evalEraseProgram (ε l p) l
         ==. ε l (evalProgram (ε l p))
         ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
-        ==. ε l (evalProgram (Pg lc c m (TToLabeled (εTerm l t1) (εTerm l t2)))
-        ==. ε l (evalProgram (Pg lc c m (TToLabeled (TVLabel ll) (εTerm l t2)))
+        ==. ε l (evalProgram (Pg lc c m (TToLabeled (εTerm l t1) (εTerm l t2))))
+        ==. ε l (evalProgram (Pg lc c m (TToLabeled (TVLabel ll) (εTerm l t2))))
         ==. ε l (Pg lc c m TException)
         ==. ε l (evalProgram p)
         *** QED
 
     where
-        (Pg l'' c'' m'' t'') = evalProgramStar (Pg lc c m (εTerm l t2))
-        (Pg l' c' m' t') = evalProgramStar (Pg lc c m t2)
+        (Pg lc' c' m' t') = evalProgramStar (Pg lc c m t2)
+        (Pg lc'' c'' m'' t'') = evalProgramStar (Pg lc c m (εTerm l t2))
 
 simulations'' p@(Pg lc c m t@(TToLabeled t1 t2)) l =
     undefined
