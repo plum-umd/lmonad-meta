@@ -4,6 +4,7 @@
 module Language where
 
 import Label 
+import ProofCombinators
 
 {-@ reflect boolToTerm @-}
 boolToTerm :: Bool -> Term
@@ -51,6 +52,7 @@ data Term
   | TException
   deriving (Eq, Show)
 
+
 -- JP: Join, Meet, CanFlowTo...
 
 {-@ data Term [size] @-}
@@ -91,15 +93,18 @@ size TException     = 1
 
 isValue :: Term -> Bool 
 {-@ reflect isValue @-}
-isValue (TLam _ _)  = True  -- TLam :: _ -> _ -> {v:Term | isValue v}
-isValue TUnit       = True  -- TUnit :: {v:Term | isValue v}
-isValue TTrue       = True 
-isValue TFalse      = True 
-isValue (TVLabel _) = True 
-isValue TException  = True
-isValue _           = False 
+isValue (TLam _ _)        = True  -- TLam :: _ -> _ -> {v:Term | isValue v}
+isValue TUnit             = True  -- TUnit :: {v:Term | isValue v}
+isValue TTrue             = True 
+isValue TFalse            = True 
+isValue (TVLabel _)       = True 
+isValue TException        = True
+isValue THole             = True
+isValue (TLabeledTCB _ _) = True
+isValue _                 = False 
 
 -- JP: TLabeledTCB _ t if isValue t ?
+-- TVar? Shouldn't type check?
 
 
 -------------------------------------------------------------------------------
@@ -141,7 +146,7 @@ eval (TCanFlowTo (TVLabel l1) t2)           = TCanFlowTo (TVLabel l1) (eval t2)
 eval (TCanFlowTo t1 t2)                     = TCanFlowTo (eval t1) t2
 
 eval THole                                = THole
-eval t@(TLam _ _)                         = t
+eval (TLam x t)                         = TLam x t
 eval t@TTrue                              = t
 eval t@TFalse                             = t
 eval t@TUnit                              = t
@@ -163,7 +168,7 @@ eval t@(TLabeledTCB _ _)                  = t
 eval (TLabelOf (TLabeledTCB l _))         = TVLabel l
 eval (TLabelOf t)                         = TLabelOf (eval t)
 
-eval (TToLabeled l@(TVLabel _) t)         = TToLabeled l (eval t)
+eval t@(TToLabeled l@(TVLabel _) _)       = t -- TToLabeled l (eval t)
 eval (TToLabeled t1 t2)                   = TToLabeled (eval t1) t2
 
 eval t@TException                         = t
@@ -171,6 +176,7 @@ eval t@TException                         = t
 -- eval (TLowerClearance t)   = TLowerClearance (eval t)
 -- eval v | isValue v         = v 
 -- eval v                     = v 
+
 
 {-@ measure propagateException @-}
 propagateException :: Term -> Bool 
@@ -269,3 +275,36 @@ subst _ TException           = TException
 isTLam :: Term -> Bool 
 isTLam (TLam _ _) = True 
 isTLam _          = False 
+
+{-@ measure isTVLabel @-}
+isTVLabel (TVLabel _) = True
+isTVLabel _           = False
+
+{-@ measure isTTrue @-}
+isTTrue TTrue = True
+isTTrue _ = False
+
+{-@ eqTTrue
+ :: t : {isTTrue t}
+ -> {v : Proof | t == TTrue}
+@-}
+eqTTrue :: Term -> Proof
+eqTTrue TTrue = trivial
+eqTTrue _ = unreachable
+
+{-@ measure isTFalse @-}
+isTFalse TFalse = True
+isTFalse _ = False
+
+{-@ eqTFalse
+ :: t : {isTFalse t}
+ -> {v : Proof | t == TFalse}
+@-}
+eqTFalse :: Term -> Proof
+eqTFalse TFalse = trivial
+eqTFalse _ = unreachable
+
+{-@ measure isTLabeledTCB @-}
+isTLabeledTCB (TLabeledTCB _ _) = True
+isTLabeledTCB _ = False
+

@@ -24,6 +24,8 @@ orderedSrcFiles = [
   , "Simulations/MetaFunctions.hs"
   , "Simulations/Helpers.hs"
   , "Simulations/Programs.hs"
+  , "Simulations/EraseSubErase.hs"
+  , "Simulations/EraseEvalErase.hs"
   , "Simulations.hs"
   , "Determinacy.hs"
   , "LLIO.hs"
@@ -31,10 +33,7 @@ orderedSrcFiles = [
 
 runLiquid :: String -> IO ExitCode
 runLiquid fname 
-  = runCommand' ("cd " ++ sourceDir ++ "; stack exec -- liquid " ++ fname)
-
-sourceDir :: String
-sourceDir = "src"
+  = runCommand' ("stack exec -- liquid " ++ fname)
 
 runCommand' :: String -> IO ExitCode
 runCommand' str = 

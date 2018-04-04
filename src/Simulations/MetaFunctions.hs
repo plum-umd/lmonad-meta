@@ -31,19 +31,6 @@ import ProofCombinators
     ==! εTerm l t
     *** QED
 
-εTermIdempotent l t@(TLabel (TVLabel l') t2) | l' `canFlowTo` l = 
-        εTerm l (εTerm l t)
-    ==! εTerm l (TLabel (TVLabel l') (εTerm l t2))
-    ==! TLabel (TVLabel l') (εTerm l (εTerm l t2))
-    ==: TLabel (TVLabel l') (εTerm l t2) ? εTermIdempotent l t2
-    ==! εTerm l t
-    ***QED
-εTermIdempotent l t@(TLabel (TVLabel l') _) =
-        εTerm l (εTerm l t)
-    ==! εTerm l (TLabel (TVLabel l') THole)
-    ==! TLabel (TVLabel l') THole
-    ==! εTerm l t
-    ***QED
 εTermIdempotent l t@(TLabel t1 t2) = 
         εTerm l (εTerm l t)
     ==! εTerm l (TLabel (εTerm l t1) (εTerm l t2))

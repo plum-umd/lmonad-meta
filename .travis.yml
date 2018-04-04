@@ -9,6 +9,7 @@ cache:
 
 before_install:
   # Download and unpack the stack executable
+  - sudo rm /etc/apt/sources.list.d/mongodb-3.2.list
   - mkdir -p ${HOME}/.local/bin
   - export PATH=${HOME}/.local/bin:${PATH}
   - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ${HOME}/.local/bin '*/stack'
@@ -26,5 +27,5 @@ addons:
 
 
 script:
-  - stack build 
+  - stack build --flag llio:testing
   - travis_wait 30 stack --skip-ghc-check test --flag llio:testing llio
