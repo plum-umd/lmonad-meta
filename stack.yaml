@@ -2,7 +2,7 @@
 resolver: lts-10.0
 
 packages:
-- 'src'
+- '.'
 
 - location:
     git: https://github.com/ucsd-progsys/liquid-fixpoint.git
