@@ -1,5 +1,6 @@
 {-@ LIQUID "--exactdc"                                  @-}
 {-@ LIQUID "--higherorder"                              @-}
+{-@ LIQUID "--no-case-expand"                           @-}
 
 module Simulations where
 
@@ -466,22 +467,26 @@ simulations'' p@(Pg lc c m t@(TToLabeled t1 t2)) l | TVLabel ll <- t1 =
 simulations'' p@(Pg lc c m t@(TToLabeled t1 t2)) l = case propagateException t of
     True -> 
             evalEraseProgram (ε l p) l
-        ==! ε l (evalProgram (ε l p))
-        ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
-        ==! ε l (Pg lc c m (eval (εTerm l t)))
-        ==: ε l (Pg lc c m TException) ? propagateErasePropagates l t
-        ==! ε l (Pg lc c m (eval t))
-        ==! ε l (evalProgram p)
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (evalProgram (Pg lc c m (TToLabeled (εTerm l t1) (εTerm l t2))))
+        ==. ε l (Pg lc c m (eval (TToLabeled (εTerm l t1) (εTerm l t2))))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. ε l (Pg lc c m TException) ? propagateErasePropagates l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
         *** QED
     False -> 
             evalEraseProgram (ε l p) l
-        ==! ε l (evalProgram (ε l p))
-        ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
-        ==! ε l (Pg lc c m (eval (εTerm l t)))
-        ==! Pg lc c m (εTerm l (eval (εTerm l t)))
-        ==: Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
-        ==! ε l (Pg lc c m (eval t))
-        ==! ε l (evalProgram p)
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (evalProgram (Pg lc c m (TToLabeled (εTerm l t1) (εTerm l t2))))
+        ==. ε l (Pg lc c m (eval (TToLabeled (εTerm l t1) (εTerm l t2))))
+        ==. ε l (Pg lc c m (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval (εTerm l t)))
+        ==. Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram p)
         *** QED
 
 simulations'' p@(Pg lc c m t@TGetLabel) l =
