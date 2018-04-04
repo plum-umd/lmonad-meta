@@ -463,8 +463,26 @@ simulations'' p@(Pg lc c m t@(TToLabeled t1 t2)) l | TVLabel ll <- t1 =
         (Pg lc' c' m' t') = evalProgramStar (Pg lc c m t2)
         (Pg lc'' c'' m'' t'') = evalProgramStar (Pg lc c m (εTerm l t2))
 
-simulations'' p@(Pg lc c m t@(TToLabeled t1 t2)) l =
-    undefined
+simulations'' p@(Pg lc c m t@(TToLabeled t1 t2)) l = case propagateException t of
+    True -> 
+            evalEraseProgram (ε l p) l
+        ==! ε l (evalProgram (ε l p))
+        ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==! ε l (Pg lc c m (eval (εTerm l t)))
+        ==: ε l (Pg lc c m TException) ? propagateErasePropagates l t
+        ==! ε l (Pg lc c m (eval t))
+        ==! ε l (evalProgram p)
+        *** QED
+    False -> 
+            evalEraseProgram (ε l p) l
+        ==! ε l (evalProgram (ε l p))
+        ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==! ε l (Pg lc c m (eval (εTerm l t)))
+        ==! Pg lc c m (εTerm l (eval (εTerm l t)))
+        ==: Pg lc c m (εTerm l (eval t)) ? eraseEvalEraseSimulation l t
+        ==! ε l (Pg lc c m (eval t))
+        ==! ε l (evalProgram p)
+        *** QED
 
 simulations'' p@(Pg lc c m t@TGetLabel) l =
         evalEraseProgram (ε l p) l
