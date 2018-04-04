@@ -25,12 +25,12 @@ terminationAxiom _ = ()
 
 
 {-@ assume terminationAxiomTBind 
-  :: l:Label -> c:Label -> m:Memory -> t1:Term -> t2:Term
+  :: l:Label -> c:Label -> m:Database -> t1:Term -> t2:Term
   -> { (evalSteps (Pg l c m t1) < evalSteps (Pg l c m (TBind t1 t2))) &&
        (terminates (Pg l c m (TBind t1 t2)) => terminates (Pg l c m t1)) 
      } 
   @-}
-terminationAxiomTBind :: Label -> Label -> Memory -> Term -> Term -> Proof 
+terminationAxiomTBind :: Label -> Label -> Database -> Term -> Term -> Proof 
 terminationAxiomTBind _ _ _ _ _ = ()
 
 

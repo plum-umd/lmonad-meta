@@ -5,6 +5,7 @@
 {-@ LIQUID "--automatic-instances=liquidinstanceslocal" @-}
 module Programs where
 
+import Data.Map.Strict (Map)
 import Label
 import Language 
 import ProofCombinators
@@ -13,7 +14,7 @@ import ProofCombinators
 {-@ assume pLabel :: p:Program -> {l:Label | pLabel p == l} @-}
 
 data Program =
-      Pg {pLabel :: Label, pClearance :: Label, pMemory :: Memory, pTerm :: Term}
+      Pg {pLabel :: Label, pClearance :: Label, pDatabase :: Database, pTerm :: Term}
     | PgHole
   deriving (Eq, Show)
 
@@ -48,18 +49,28 @@ data Program =
     | PgHole
  @-}
 
+-- newtype Map k v = Map [(k,v)]
+--     deriving (Show)
+
 data DBValue = DBValue Term
     -- | Option types, bools, unit, 
+    deriving (Eq, Show)
 
 data DBLabelFunction = DBLabelFunction Term
     -- | Function that takes columns from a row and returns that column's label.
+    deriving (Eq, Show)
 
-data DBTable = DBTable {
-      tableRows :: [Map String DBValue]
-    , tableLabelFunctions :: Map String DBLabelFunction
+type ColumnName = Int
+data Table = Table {
+      tableRows :: [Map ColumnName DBValue]
+    , tableLabelFunctions :: Map ColumnName DBLabelFunction
     }
+    deriving (Eq, Show)
 
-data Memory  = Memory (Map String DBTable) deriving (Eq, Show)
+type TableName = Int
+data Database = Database (Map TableName Table) 
+    deriving (Eq, Show)
+
 {-@ reflect evalProgram @-}
 evalProgram :: Program -> Program
 -- JP: Should we check to propagate exceptions here?

@@ -24,17 +24,24 @@ library
                        MetaFunctions
                        Termination
                        Simulations
-                       Simulations.Programs
-                       Simulations.Language
+                       Simulations.EraseEvalErase
+                       Simulations.EraseSubErase
                        Simulations.Helpers
+                       Simulations.Language
                        Simulations.MetaFunctions
-  build-depends:       base >=4.9 && <5, liquidhaskell
+                       Simulations.Programs
+  build-depends:       base >=4.9 && <5, 
+                       liquidhaskell, 
+                       containers
   hs-source-dirs:      src     
   default-language:    Haskell98
 
 executable lmonad-meta-exe
   hs-source-dirs:      test
-  build-depends:       base >=4.9 && <5, liquidhaskell, llio
+  build-depends:       base >=4.9 && <5,
+                       liquidhaskell,
+                       llio,
+                       containers
   main-is:             Main.hs
   default-language:    Haskell98
 

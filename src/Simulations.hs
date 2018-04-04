@@ -64,16 +64,16 @@ simulationsStar'' = undefined
  -> c : Label
  -> c' : Label
  -> c'' : Label
- -> m : Memory
- -> m' : Memory
- -> m'' : Memory
+ -> m : Database
+ -> m' : Database
+ -> m'' : Database
  -> t1 : Term
  -> t2 : Term
  -> t' : {Term | Pg lc' c' m' t' = evalProgramStar (Pg lc c m t1)}
  -> t'' : {Term | Pg lc'' c'' m'' t'' = evalProgramStar (Pg lc c m (εTerm l t1))}
  -> {ε l (Pg lc' c' m' (TApp t2 t')) = ε l (Pg lc'' c'' m'' (TApp (εTerm l t2) t''))}
  @-}
-simulationsBindHelper :: Label -> Label -> Label -> Label -> Label -> Label -> Label -> Memory -> Memory -> Memory -> Term -> Term -> Term -> Term -> Proof
+simulationsBindHelper :: Label -> Label -> Label -> Label -> Label -> Label -> Label -> Database -> Database -> Database -> Term -> Term -> Term -> Term -> Proof
 simulationsBindHelper = undefined -- l lc lc' c c' m m' t t' t2 = undefined
 
 {-@ simulationsToLabeledHelper
@@ -84,16 +84,16 @@ simulationsBindHelper = undefined -- l lc lc' c c' m m' t t' t2 = undefined
  -> c : Label
  -> c' : Label
  -> c'' : Label
- -> m : Memory
- -> m' : Memory
- -> m'' : Memory
+ -> m : Database
+ -> m' : Database
+ -> m'' : Database
  -> ll : Label
  -> t : Term
  -> t' : {Term | Pg lc' c' m' t' = evalProgramStar (Pg lc c m t)}
  -> t'' : {Term | Pg lc'' c'' m'' t'' = evalProgramStar (Pg lc c m (εTerm l t))}
  -> {ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException))) = ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))}
  @-}
-simulationsToLabeledHelper :: Label -> Label -> Label -> Label -> Label -> Label -> Label -> Memory -> Memory -> Memory -> Label -> Term -> Term -> Term -> Proof
+simulationsToLabeledHelper :: Label -> Label -> Label -> Label -> Label -> Label -> Label -> Database -> Database -> Database -> Label -> Term -> Term -> Term -> Proof
 simulationsToLabeledHelper = undefined
 
 {-@ simulations'' 
@@ -743,11 +743,11 @@ simulationsHoles' PgHole l =
  -> lc:{Label | not (canFlowTo lc l)} 
  -> ll:Label
  -> cc:Label 
- -> m:Memory
+ -> m:Database
  -> t:Term
  -> v:{Proof | ε l (Pg (join lc ll) cc m t) = PgHole} 
 @-}
-eraseJoinLeft :: Label -> Label -> Label -> Label -> Memory -> Term -> Proof
+eraseJoinLeft :: Label -> Label -> Label -> Label -> Database -> Term -> Proof
 eraseJoinLeft l lc ll cc m t = 
         ε l (Pg (join lc ll) cc m t) ==. PgHole ? joinLeftNotFlowTo l lc ll
     *** QED
