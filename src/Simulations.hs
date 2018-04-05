@@ -89,7 +89,7 @@ simulationsBindHelper = undefined -- l lc lc' c c' m m' t t' t2 = undefined
  -> m' : Memory
  -> m'' : Memory
  -> ll : Label
- -> t : Term
+ -> t : {Term | ε l (evalProgramStar (ε l (Pg lc c m t))) = ε l (evalProgramStar (Pg lc c m t))}
  -> t' : {Term | Pg lc' c' m' t' = evalProgramStar (Pg lc c m t)}
  -> t'' : {Term | Pg lc'' c'' m'' t'' = evalProgramStar (Pg lc c m (εTerm l t))}
  -> {ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException))) = ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))}
@@ -472,7 +472,7 @@ simulations'' p@(Pg lc c m t@(TToLabeled t1 t2)) l | TVLabel ll <- t1 =
         ==. ε l (if lc'' `canFlowTo` ll then Pg lc c m'' (TLabeledTCB ll t'') else Pg lc c m'' (TLabeledTCB ll TException))
 
         ==. ε l (if lc' `canFlowTo` ll then Pg lc c m' (TLabeledTCB ll t') else Pg lc c m' (TLabeledTCB ll TException)) ?
-                simulationsStar'' p l
+                simulationsStar'' (Pg lc c m t2) l
             &&& simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t2 t' t''
         ==. ε l (evalProgram p)
         *** QED
