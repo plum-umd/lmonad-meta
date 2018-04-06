@@ -1,6 +1,6 @@
 {-@ LIQUID "--exactdc"                                  @-}
 {-@ LIQUID "--higherorder"                              @-}
-{-@ LIQUID "--no-case-expand"                           @-}
+{-@ LIQUID "--max-case-expand=0"                        @-}
 
 module Simulations where
 
@@ -12,6 +12,7 @@ import Simulations.Language
 import Simulations.MetaFunctions
 import Simulations.Programs
 import Simulations.Helpers
+import Simulations.TBind
 import Simulations.EraseEvalErase
 import Termination
 
@@ -57,25 +58,6 @@ simulations' p l {- | lcurr <= l -}
 simulationsStar'' :: Program -> Label -> Proof
 simulationsStar'' = undefined
 
-{-@ simulationsBindHelper 
- :: l : Label
- -> lc : Label
- -> lc' : Label
- -> lc'' : Label
- -> c : Label
- -> c' : Label
- -> c'' : Label
- -> m : Memory
- -> m' : Memory
- -> m'' : Memory
- -> t1 : Term
- -> t2 : Term
- -> t' : {Term | Pg lc' c' m' t' = evalProgramStar (Pg lc c m t1)}
- -> t'' : {Term | Pg lc'' c'' m'' t'' = evalProgramStar (Pg lc c m (εTerm l t1))}
- -> {ε l (Pg lc' c' m' (TApp t2 t')) = ε l (Pg lc'' c'' m'' (TApp (εTerm l t2) t''))}
- @-}
-simulationsBindHelper :: Label -> Label -> Label -> Label -> Label -> Label -> Label -> Memory -> Memory -> Memory -> Term -> Term -> Term -> Term -> Proof
-simulationsBindHelper = undefined -- l lc lc' c c' m m' t t' t2 = undefined
 
 {-@ simulationsToLabeledHelper
  :: l : Label
@@ -298,21 +280,9 @@ simulations'' p@(Pg lc c m t@(TCanFlowTo _ _)) l = case propagateException t of
         *** QED
 
 simulations'' p@(Pg lc c m t@(TBind t1 t2)) l =
-        evalEraseProgram (ε l p) l
-    ==! ε l (evalProgram (Pg lc c m (εTerm l t)))
-    ==! ε l (evalProgram (Pg lc c m (TBind (εTerm l t1) (εTerm l t2)))) -- () >>= \() -> 32
-    ==! ε l (Pg l'' c'' m'' (TApp (εTerm l t2) t''))
-    
-    ==: ε l (Pg l' c' m' (TApp t2 t')) ?
-            simulationsStar'' p l 
-        &&& simulationsBindHelper l lc l' l'' c c' c'' m m' m'' t1 t2 t' t''
-    ==! ε l (evalProgram (Pg lc c m (TBind t1 t2)))
-    ==! ε l (evalProgram (Pg lc c m t))
-    *** QED
-
-    where
-        (Pg l' c' m' t') = evalProgramStar (Pg lc c m t1)
-        (Pg l'' c'' m'' t'') = evalProgramStar (Pg lc c m (εTerm l t1))
+        evalEraseProgram (ε l p) l 
+    ==. ε l (evalProgram p) ? simulationsTBind l lc c m t1 t2 
+    *** QED 
 
 simulations'' p@(Pg lc c m t@(TLowerClearance (TVLabel c'))) l =
         evalEraseProgram (ε l p) l

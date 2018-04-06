@@ -28,6 +28,7 @@ library
                        Simulations.Language
                        Simulations.Helpers
                        Simulations.MetaFunctions
+                       Simulations.TBind
   build-depends:       base >=4.9 && <5, liquidhaskell
   hs-source-dirs:      src     
   default-language:    Haskell98
