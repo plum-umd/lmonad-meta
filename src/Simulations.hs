@@ -79,7 +79,7 @@ simulationsBindHelper = undefined -- l lc lc' c c' m m' t t' t2 = undefined
 
 {-@ simulationsToLabeledHelper
  :: l : Label
- -> lc : Label
+ -> lc : {Label | canFlowTo lc l}
  -> lc' : Label
  -> lc'' : Label
  -> c : Label
@@ -89,13 +89,39 @@ simulationsBindHelper = undefined -- l lc lc' c c' m m' t t' t2 = undefined
  -> m' : Memory
  -> m'' : Memory
  -> ll : Label
- -> t : Term
+ -> t : {Term | ε l (evalProgramStar (ε l (Pg lc c m t))) = ε l (evalProgramStar (Pg lc c m t))}
  -> t' : {Term | Pg lc' c' m' t' = evalProgramStar (Pg lc c m t)}
  -> t'' : {Term | Pg lc'' c'' m'' t'' = evalProgramStar (Pg lc c m (εTerm l t))}
  -> {ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException))) = ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))}
  @-}
 simulationsToLabeledHelper :: Label -> Label -> Label -> Label -> Label -> Label -> Label -> Memory -> Memory -> Memory -> Label -> Term -> Term -> Term -> Proof
-simulationsToLabeledHelper = undefined
+simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t t' t'' | ll `canFlowTo` l = 
+        ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException)))
+    ==! ε l (Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
+    ==! Pg lc c m' (εTerm l (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
+    ==! Pg lc c m' (TLabeledTCB ll (εTerm l (if canFlowTo lc' ll then t' else TException)))
+    ==! Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then (εTerm l t') else (εTerm l TException)))
+    ==! Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then (εTerm l t') else TException))
+
+    -- TODO XXX
+    
+    ==? Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then (εTerm l t'') else TException))
+    ==! Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then (εTerm l t'') else (εTerm l TException)))
+    ==! Pg lc c m'' (TLabeledTCB ll (εTerm l (if canFlowTo lc'' ll then t'' else TException)))
+    ==! Pg lc c m'' (εTerm l (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
+    ==! ε l (Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
+    ==! ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))
+    *** QED
+
+simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t t' t'' = 
+        ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException)))
+    ==. ε l (Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
+    ==. Pg lc c m' (εTerm l (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
+    ==. Pg lc c m' (εTerm l (TLabeledTCB ll THole))
+    ==. Pg lc c m'' (εTerm l (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
+    ==. ε l (Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
+    ==. ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))
+    *** QED
 
 {-@ simulations'' 
  :: {p : Program | ς p} 
@@ -446,7 +472,7 @@ simulations'' p@(Pg lc c m t@(TToLabeled t1 t2)) l | TVLabel ll <- t1 =
         ==. ε l (if lc'' `canFlowTo` ll then Pg lc c m'' (TLabeledTCB ll t'') else Pg lc c m'' (TLabeledTCB ll TException))
 
         ==. ε l (if lc' `canFlowTo` ll then Pg lc c m' (TLabeledTCB ll t') else Pg lc c m' (TLabeledTCB ll TException)) ?
-                simulationsStar'' p l
+                simulationsStar'' (Pg lc c m t2) l
             &&& simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t2 t' t''
         ==. ε l (evalProgram p)
         *** QED
