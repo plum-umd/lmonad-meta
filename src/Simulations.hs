@@ -768,7 +768,7 @@ simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t t' t'' | ll `can
 
     -- TODO XXX
     
-    ==. Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then (εTerm l t'') else TException))
+    ==? Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then (εTerm l t'') else TException))
     ==. Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then (εTerm l t'') else (εTerm l TException)))
     ==. Pg lc c m'' (TLabeledTCB ll (εTerm l (if canFlowTo lc'' ll then t'' else TException)))
     ==. Pg lc c m'' (εTerm l (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
