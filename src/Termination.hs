@@ -24,6 +24,12 @@ terminationAxiom :: Program -> Proof
 terminationAxiom _ = ()
 
 
+{-@ assume terminationAxiomErase 
+  :: l:Label -> {p:Program | terminates p }
+  -> {  evalSteps (evalProgram (ε l p)) < evalSteps p && terminates (evalProgram (ε l p)) } @-}
+terminationAxiomErase :: Label -> Program -> Proof 
+terminationAxiomErase _ _ = ()
+
 {-@ assume terminationAxiomTBind 
   :: l:Label -> c:Label -> m:Memory -> t1:Term -> t2:Term
   -> { (evalSteps (Pg l c m t1) < evalSteps (Pg l c m (TBind t1 t2))) &&
@@ -34,4 +40,12 @@ terminationAxiomTBind :: Label -> Label -> Memory -> Term -> Term -> Proof
 terminationAxiomTBind _ _ _ _ _ = ()
 
 
+{-@ assume terminationAxiomTToLabeled 
+  :: l:Label -> c:Label -> m:Memory -> t1:Term -> t2:Term
+  -> { (evalSteps (Pg l c m t2) < evalSteps (Pg l c m (TToLabeled t1 t2))) &&
+       (terminates (Pg l c m (TToLabeled t1 t2)) => terminates (Pg l c m t2)) 
+     } 
+  @-}
+terminationAxiomTToLabeled :: Label -> Label -> Memory -> Term -> Term -> Proof 
+terminationAxiomTToLabeled _ _ _ _ _ = ()
 

@@ -16,7 +16,8 @@ import Simulations.TBind
 import Simulations.EraseEvalErase
 import Termination
 
-import ProofCombinators
+import  ProofCombinators
+
 
 {-@ simulationsCorollary 
   :: p:{Program | ς p && terminates p} 
@@ -51,64 +52,49 @@ simulations' p l {- | lcurr <= l -}
   = simulations'' p l
 
 {-@ simulationsStar'' 
- :: {p : Program | ς p}
+ :: {p : Program | ς p && terminates p}
  -> {l : Label | canFlowTo (pLabel p) l}
  -> {v : Proof | ε l (evalProgramStar (ε l p)) = ε l (evalProgramStar p)}
+ / [evalSteps p, 1]
  @-}
 simulationsStar'' :: Program -> Label -> Proof
-simulationsStar'' = undefined
+simulationsStar'' (Pg lp c m t) l | isValue t
+  =   ε l (evalProgramStar (ε l (Pg lp c m t)))  
+  ==. ε l (evalProgramStar (Pg lp c m (εTerm l t)))  
+  ==. ε l (Pg lp c m (εTerm l t))  
+  ==. Pg lp c m (εTerm l (εTerm l t))  
+      ? εTermIdempotent l t 
+  ==. Pg lp c m (εTerm l t)
+      ? valueEterm l t 
+  ==. ε l (Pg lp c m t)
+  ==. ε l (evalProgramStar (Pg lp c m t))
+  *** QED 
 
+simulationsStar'' p@(Pg _ _ _ t) l | not (isValue t)
+  =   ε l (evalProgramStar (ε l p)) 
+  ==. ε l (evalProgramStar (evalProgram (ε l p)))
+      ? valueEterm l t
+  ==. ε l (evalProgramStar (ε l (evalProgram (ε l p))))
+      ?   terminationAxiomErase l p &&& ςAxiomErase l p &&& evalFlowErase l p  
+      &&& simulationsStar'' (evalProgram (ε l p)) l 
+  ==. ε l (evalProgramStar (evalEraseProgram (ε l p) l))
+      ? simulations'' p l 
+  ==. ε l (evalProgramStar (ε l (evalProgram p)))
+      ? terminationAxiom p &&& ςAxiom p &&& evalFlow l p &&& 
+        simulationsStar'' (evalProgram p) l 
+  ==. ε l (evalProgramStar (evalProgram p))
+  ==. ε l (evalProgramStar p)
+  *** QED 
 
-{-@ simulationsToLabeledHelper
- :: l : Label
- -> lc : {Label | canFlowTo lc l}
- -> lc' : Label
- -> lc'' : Label
- -> c : Label
- -> c' : Label
- -> c'' : Label
- -> m : Memory
- -> m' : Memory
- -> m'' : Memory
- -> ll : Label
- -> t : {Term | ε l (evalProgramStar (ε l (Pg lc c m t))) = ε l (evalProgramStar (Pg lc c m t))}
- -> t' : {Term | Pg lc' c' m' t' = evalProgramStar (Pg lc c m t)}
- -> t'' : {Term | Pg lc'' c'' m'' t'' = evalProgramStar (Pg lc c m (εTerm l t))}
- -> {ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException))) = ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))}
- @-}
-simulationsToLabeledHelper :: Label -> Label -> Label -> Label -> Label -> Label -> Label -> Memory -> Memory -> Memory -> Label -> Term -> Term -> Term -> Proof
-simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t t' t'' | ll `canFlowTo` l = 
-        ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException)))
-    ==! ε l (Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
-    ==! Pg lc c m' (εTerm l (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
-    ==! Pg lc c m' (TLabeledTCB ll (εTerm l (if canFlowTo lc' ll then t' else TException)))
-    ==! Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then (εTerm l t') else (εTerm l TException)))
-    ==! Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then (εTerm l t') else TException))
+simulationsStar'' PgHole _ 
+  = trivial 
 
-    -- TODO XXX
-    
-    ==? Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then (εTerm l t'') else TException))
-    ==! Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then (εTerm l t'') else (εTerm l TException)))
-    ==! Pg lc c m'' (TLabeledTCB ll (εTerm l (if canFlowTo lc'' ll then t'' else TException)))
-    ==! Pg lc c m'' (εTerm l (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
-    ==! ε l (Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
-    ==! ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))
-    *** QED
-
-simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t t' t'' = 
-        ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException)))
-    ==. ε l (Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
-    ==. Pg lc c m' (εTerm l (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
-    ==. Pg lc c m' (εTerm l (TLabeledTCB ll THole))
-    ==. Pg lc c m'' (εTerm l (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
-    ==. ε l (Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
-    ==. ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))
-    *** QED
 
 {-@ simulations'' 
- :: {p : Program | ς p} 
+ :: {p : Program | ς p && terminates p} 
  -> {l : Label | canFlowTo (pLabel p) l}
  -> {v : Proof | evalEraseProgram (ε l p) l = ε l (evalProgram p)}
+ / [evalSteps p, 0] 
  @-}
 simulations'' :: Program -> Label -> Proof
 simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
@@ -442,7 +428,8 @@ simulations'' p@(Pg lc c m t@(TToLabeled t1 t2)) l | TVLabel ll <- t1 =
         ==. ε l (if lc'' `canFlowTo` ll then Pg lc c m'' (TLabeledTCB ll t'') else Pg lc c m'' (TLabeledTCB ll TException))
 
         ==. ε l (if lc' `canFlowTo` ll then Pg lc c m' (TLabeledTCB ll t') else Pg lc c m' (TLabeledTCB ll TException)) ?
-                simulationsStar'' (Pg lc c m t2) l
+                terminationAxiomTToLabeled lc c m t1 t2 
+            &&& simulationsStar'' (Pg lc c m t2) l
             &&& simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t2 t' t''
         ==. ε l (evalProgram p)
         *** QED
@@ -752,4 +739,74 @@ eraseJoinLeft :: Label -> Label -> Label -> Label -> Memory -> Term -> Proof
 eraseJoinLeft l lc ll cc m t = 
         ε l (Pg (join lc ll) cc m t) ==. PgHole ? joinLeftNotFlowTo l lc ll
     *** QED
+
+{-@ simulationsToLabeledHelper
+ :: l : Label
+ -> lc : {Label | canFlowTo lc l}
+ -> lc' : Label
+ -> lc'' : Label
+ -> c : Label
+ -> c' : Label
+ -> c'' : Label
+ -> m : Memory
+ -> m' : Memory
+ -> m'' : Memory
+ -> ll : Label
+ -> t : {Term | ε l (evalProgramStar (ε l (Pg lc c m t))) = ε l (evalProgramStar (Pg lc c m t))}
+ -> t' : {Term | Pg lc' c' m' t' = evalProgramStar (Pg lc c m t)}
+ -> t'' : {Term | Pg lc'' c'' m'' t'' = evalProgramStar (Pg lc c m (εTerm l t))}
+ -> {ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException))) = ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))}
+ @-}
+simulationsToLabeledHelper :: Label -> Label -> Label -> Label -> Label -> Label -> Label -> Memory -> Memory -> Memory -> Label -> Term -> Term -> Term -> Proof
+simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t t' t'' | ll `canFlowTo` l = 
+        ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException)))
+    ==. ε l (Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
+    ==. Pg lc c m' (εTerm l (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
+    ==. Pg lc c m' (TLabeledTCB ll (εTerm l (if canFlowTo lc' ll then t' else TException)))
+    ==. Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then (εTerm l t') else (εTerm l TException)))
+    ==. Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then (εTerm l t') else TException))
+
+    -- TODO XXX
+    
+    ==. Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then (εTerm l t'') else TException))
+    ==. Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then (εTerm l t'') else (εTerm l TException)))
+    ==. Pg lc c m'' (TLabeledTCB ll (εTerm l (if canFlowTo lc'' ll then t'' else TException)))
+    ==. Pg lc c m'' (εTerm l (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
+    ==. ε l (Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
+    ==. ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))
+    *** QED
+
+simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t t' t'' = 
+        ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException)))
+    ==. ε l (Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
+    ==. Pg lc c m' (εTerm l (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
+    ==. Pg lc c m' (εTerm l (TLabeledTCB ll THole))
+    ==. Pg lc c m'' (εTerm l (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
+    ==. ε l (Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
+    ==. ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))
+    *** QED
+
+
+valueEterm :: Label -> Term -> Proof
+{-@ valueEterm :: l:Label -> t:Term -> {v:Proof | isValue t <=> isValue (εTerm l t) } @-}
+valueEterm = undefined 
+
+
+ςAxiom :: Program -> Proof
+{-@ ςAxiom :: p:Program -> {ς p => ς (evalProgram p)} @-}
+ςAxiom = undefined
+
+
+ςAxiomErase :: Label -> Program -> Proof
+{-@ ςAxiomErase :: l:Label -> p:Program -> {ς p => ς (evalProgram (ε l p))} @-}
+ςAxiomErase = undefined
+
+-- Either prove this, or remove the canFlowTo preconditions of simulationsStar''
+evalFlow :: Label -> Program -> Proof
+{-@ evalFlow :: l:Label -> p:Program -> {canFlowTo (pLabel p) l => canFlowTo (pLabel (evalProgram p)) l} @-}
+evalFlow = undefined 
+
+evalFlowErase :: Label -> Program -> Proof
+{-@ evalFlowErase :: l:Label -> p:Program -> {canFlowTo (pLabel p) l => canFlowTo (pLabel (evalProgram (ε l p))) l} @-}
+evalFlowErase = undefined 
 
