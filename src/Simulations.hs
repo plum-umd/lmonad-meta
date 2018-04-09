@@ -50,7 +50,7 @@ simulations' p l {- | lcurr <= l -}
   = simulations'' p l
 
 {-@ simulationsStar'' 
- :: {p : Program | ς p && terminates p}
+ :: {p : Program | terminates p}
  -> {l : Label | canFlowTo (pLabel p) l}
  -> {v : Proof | ε l (evalProgramStar (ε l p)) = ε l (evalProgramStar p)}
  / [evalSteps p, 1]
@@ -85,16 +85,17 @@ simulationsStar'' p@(Pg _ _ _ t) l | not (isValue t)
   *** QED 
 
 simulationsStar'' PgHole _ 
-  = trivial 
+  = undefined
 
 
 {-@ simulations'' 
- :: {p : Program | ς p && terminates p} 
+ :: {p : Program | terminates p} 
  -> {l : Label | canFlowTo (pLabel p) l}
  -> {v : Proof | evalEraseProgram (ε l p) l = ε l (evalProgram p)}
  / [evalSteps p, 0] 
  @-}
 simulations'' :: Program -> Label -> Proof
+simulations'' p l | not (ς p) = undefined
 simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
     True -> 
             evalEraseProgram (ε l p) l
@@ -574,6 +575,8 @@ simulations'' p@(Pg lc c m t@(TLabeledTCB _ _)) l =
     ==. ε l (evalProgram (Pg lc c m t))
     ==. ε l (evalProgram p)
     *** QED
+
+simulations'' PgHole l = trivial
 
 -- simulations'' p@(Pg lc c m t) l =
 --         evalEraseProgram (ε l p) l
