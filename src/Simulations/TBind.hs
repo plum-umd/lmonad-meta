@@ -94,7 +94,7 @@ simulationsTBind l lc c m TGetClearance t2
   *** QED 
 
 simulationsTBind l lc c m t1@(TBind t11 t12) t2
-  | l'' `canFlowTo` l, l' `canFlowTo` l = 
+  | l'' `canFlowTo` l =
         ε l (evalProgram (Pg lc c m (TBind (εTerm l (TBind t11 t12)) (εTerm l t2))))
     ==. ε l (evalProgram (Pg lc c m (TBind (TBind (εTerm l t11) (εTerm l t12)) (εTerm l t2))))
     ==. ε l (Pg l'' c'' m'' (TApp (εTerm l t2) t''))
@@ -117,13 +117,32 @@ simulationsTBind l lc c m t1@(TBind t11 t12) t2
     ==. Pg l' c' m' (εTerm l (TApp t2 t'))
     ==. ε l (Pg l' c' m' (TApp t2 t'))
     ==. ε l (evalProgram (Pg lc c m (TBind (TBind t11 t12) t2)))
-    ==. ε l (evalProgram (Pg lc c m (TBind (TBind t11 t12) t2)))
     *** QED 
-  -- | otherwise = undefined
 
-  where
-    Pg l'' c'' m'' t'' = evalProgramStar (Pg lc c m (TBind (εTerm l t11) (εTerm l t12)))
-    Pg l' c' m' t' = evalProgramStar (Pg lc c m (TBind t11 t12))
+    where
+      Pg l'' c'' m'' t'' = evalProgramStar (Pg lc c m (TBind (εTerm l t11) (εTerm l t12)))
+      Pg l' c' m' t' = evalProgramStar (Pg lc c m (TBind t11 t12))
+  
+simulationsTBind l lc c m t1@(TBind t11 t12) t2 | l' `canFlowTo` l = undefined
 
+    where
+      Pg l'' c'' m'' t'' = evalProgramStar (Pg lc c m (TBind (εTerm l t11) (εTerm l t12)))
+      Pg l' c' m' t' = evalProgramStar (Pg lc c m (TBind t11 t12))
+  
+simulationsTBind l lc c m t1@(TBind t11 t12) t2 | l' `canFlowTo` l =
+        ε l (evalProgram (Pg lc c m (TBind (εTerm l (TBind t11 t12)) (εTerm l t2))))
+    ==! ε l (evalProgram (Pg lc c m (TBind (TBind (εTerm l t11) (εTerm l t12)) (εTerm l t2))))
+    ==! ε l (Pg l'' c'' m'' (TApp (εTerm l t2) t''))
+    ==! PgHole
+
+
+    ==! ε l (Pg l' c' m' (TApp t2 t'))
+    ==! ε l (evalProgram (Pg lc c m (TBind (TBind t11 t12) t2)))
+    *** QED 
+
+    where
+      Pg l'' c'' m'' t'' = evalProgramStar (Pg lc c m (TBind (εTerm l t11) (εTerm l t12)))
+      Pg l' c' m' t' = evalProgramStar (Pg lc c m (TBind t11 t12))
+  
 simulationsTBind l lc c m t1 t2
   = undefined 
