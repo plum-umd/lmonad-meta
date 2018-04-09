@@ -18,7 +18,6 @@ import Termination
 
 import  ProofCombinators
 
-
 {-@ simulationsCorollary 
   :: p:{Program | ς p && terminates p} 
   -> p':Program 

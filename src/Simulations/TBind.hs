@@ -17,7 +17,27 @@ import Termination
 
 import ProofCombinators
 
-{-@ simulationsTBind :: l:Label -> lc:{Label | canFlowTo lc l} -> c:Label -> m:Memory -> t1:Term -> t2:Term 
+{-@ terminatesBind
+ :: lc : Label
+ -> c : Label
+ -> m : Memory
+ -> t1 : Term
+ -> t2 : {Term | terminates (Pg lc c m (TBind t1 t2))}
+ -> {terminates (Pg lc c m t1)}
+ @-}
+terminatesBind :: Label -> Label -> Memory -> Term -> Term -> Proof
+terminatesBind = undefined
+
+{-@ simulationsStar'' 
+ :: {p : Program | terminates p}
+ -> {l : Label | canFlowTo (pLabel p) l}
+ -> {v : Proof | ε l (evalProgramStar (ε l p)) = ε l (evalProgramStar p)}
+ / [evalSteps p, 1]
+ @-}
+simulationsStar'' :: Program -> Label -> Proof
+simulationsStar'' = undefined
+
+{-@ simulationsTBind :: l:Label -> lc:{Label | canFlowTo lc l} -> c:Label -> m:Memory -> t1:Term -> {t2:Term | terminates (Pg lc c m (TBind t1 t2))}
  -> {v : Proof | ε l (evalProgram (Pg lc c m (TBind (εTerm l t1) (εTerm l t2)))) == ε l (evalProgram (Pg lc c m (TBind t1 t2))) }
  @-}
 
@@ -73,12 +93,37 @@ simulationsTBind l lc c m TGetClearance t2
   ==. ε l (evalProgram (Pg lc c m (TBind TGetClearance t2)))
   *** QED 
 
-simulationsTBind l lc c m (TBind t11 t12) t2
-  =   ε l (evalProgram (Pg lc c m (TBind (εTerm l (TBind t11 t12)) (εTerm l t2))))
-  -- HERE 
-  ==? ε l (evalProgram (Pg lc c m (TBind (TBind t11 t12) t2)))
-  ==. ε l (evalProgram (Pg lc c m (TBind (TBind t11 t12) t2)))
-  *** QED 
+simulationsTBind l lc c m t1@(TBind t11 t12) t2
+  | l'' `canFlowTo` l, l' `canFlowTo` l = 
+        ε l (evalProgram (Pg lc c m (TBind (εTerm l (TBind t11 t12)) (εTerm l t2))))
+    ==. ε l (evalProgram (Pg lc c m (TBind (TBind (εTerm l t11) (εTerm l t12)) (εTerm l t2))))
+    ==. ε l (Pg l'' c'' m'' (TApp (εTerm l t2) t''))
+    ==. Pg l'' c'' m'' (εTerm l (TApp (εTerm l t2) t''))
+    ==. Pg l'' c'' m'' (TApp (εTerm l (εTerm l t2)) (εTerm l t''))
+    ==. Pg l'' c'' m'' (TApp (εTerm l t2) (εTerm l t''))
+        ? εTermIdempotent l t2
+    ==. Pg l' c' m' (TApp (εTerm l t2) (εTerm l t')) ?
+        (   Pg l'' c'' m'' (εTerm l t'')
+        ==. ε l (Pg l'' c'' m'' t'') 
+        ==. ε l (evalProgramStar (Pg lc c m (TBind (εTerm l t11) (εTerm l t12))))
+        ==. ε l (evalProgramStar (Pg lc c m (εTerm l (TBind t11 t12))))
+        ==. ε l (evalProgramStar (ε l (Pg lc c m (TBind t11 t12))))
+        ==. ε l (evalProgramStar (Pg lc c m (TBind t11 t12))) ?
+                terminatesBind lc c m t1 t2
+            &&& simulationsStar'' (Pg lc c m (TBind t11 t12)) l
+        ==. ε l (Pg l' c' m' t') 
+        ==. Pg l' c' m' (εTerm l t')
+        *** QED)
+    ==. Pg l' c' m' (εTerm l (TApp t2 t'))
+    ==. ε l (Pg l' c' m' (TApp t2 t'))
+    ==. ε l (evalProgram (Pg lc c m (TBind (TBind t11 t12) t2)))
+    ==. ε l (evalProgram (Pg lc c m (TBind (TBind t11 t12) t2)))
+    *** QED 
+  -- | otherwise = undefined
+
+  where
+    Pg l'' c'' m'' t'' = evalProgramStar (Pg lc c m (TBind (εTerm l t11) (εTerm l t12)))
+    Pg l' c' m' t' = evalProgramStar (Pg lc c m (TBind t11 t12))
 
 simulationsTBind l lc c m t1 t2
   = undefined 
