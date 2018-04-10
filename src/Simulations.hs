@@ -108,7 +108,20 @@ simulationsStar'' p@PgHole l
  / [evalSteps p, 1]
  @-}
 simulations'' :: Program -> Label -> Proof
-simulations'' p l | not (ς p) = undefined
+simulations'' p@PgHole l =
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram p)
+        *** QED
+
+simulations'' p@(Pg lc c m t@THole) l =
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l p))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (evalProgram (Pg lc c m t))
+        ==. ε l (evalProgram p)
+        *** QED
+
 simulations'' p@(Pg lc c m t@(TLam v t1)) l = case propagateException t of
     True -> 
             evalEraseProgram (ε l p) l
@@ -317,26 +330,53 @@ simulations'' p@(Pg lc c m t@(TLowerClearance t1)) l = case propagateException t
         ==. ε l (evalProgram p)
         *** QED
 
-simulations'' p@(Pg lc c m t@(TUnlabel (TLabeledTCB ll t1))) l = case l' `canFlowTo` c of
+simulations'' p@(Pg lc c m t@(TUnlabel t1'@(TLabeledTCB ll t1))) l = case l' `canFlowTo` c of
     True ->
-            evalEraseProgram (ε l p) l
-        ==. ε l (evalProgram (ε l p))
-        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
-        ==. ε l (evalProgram (Pg lc c m (TLabeledTCB ll (εTerm l t1))))
-        ==. ε l (Pg l' c m (εTerm l t1))
-        ==. Pg l' c m (εTerm l (εTerm l t1))
-        ==. Pg l' c m (εTerm l t1) ? εTermIdempotent l t1
-        ==. ε l (Pg l' c m t1)
-        ==. ε l (evalProgram p)
-        *** QED
+        if ll `canFlowTo` l then
+                evalEraseProgram (ε l p) l
+            ==. ε l (evalProgram (ε l p))
+            ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+            ==. ε l (evalProgram (Pg lc c m (TUnlabel (εTerm l t1'))))
+            ==. ε l (evalProgram (Pg lc c m (TUnlabel (TLabeledTCB ll (εTerm l t1)))))
+            ==. ε l (Pg l' c m (εTerm l t1))
+            ==. Pg l' c m (εTerm l (εTerm l t1))
+            ==. Pg l' c m (εTerm l t1) ? εTermIdempotent l t1
+            ==. ε l (Pg l' c m t1)
+            ==. ε l (evalProgram p)
+            *** QED
+        else
+                evalEraseProgram (ε l p) l
+            ==. ε l (evalProgram (ε l p))
+            ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+            ==. ε l (evalProgram (Pg lc c m (TUnlabel (εTerm l t1'))))
+            ==. ε l (evalProgram (Pg lc c m (TUnlabel (TLabeledTCB ll THole))))
+            ==. ε l (Pg l' c m THole) -- JP: Why is this THole not used?
+            ==. PgHole ?
+                assert (not (l' `canFlowTo` l))
+            ==. ε l (Pg l' c m t1)
+            ==. ε l (evalProgram p)
+            *** QED
+
     False ->
-            evalEraseProgram (ε l p) l
-        ==. ε l (evalProgram (ε l p))
-        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
-        ==. ε l (evalProgram (Pg lc c m (TLabeledTCB ll (εTerm l t1))))
-        ==. ε l (Pg lc c m TException)
-        ==. ε l (evalProgram p)
-        *** QED
+        if ll `canFlowTo` l then
+                evalEraseProgram (ε l p) l
+            ==. ε l (evalProgram (ε l p))
+            ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+            ==. ε l (evalProgram (Pg lc c m (TUnlabel (εTerm l t1'))))
+            ==. ε l (evalProgram (Pg lc c m (TUnlabel (TLabeledTCB ll (εTerm l t1)))))
+            ==. ε l (Pg lc c m TException)
+            ==. ε l (evalProgram p)
+            *** QED
+        else
+                evalEraseProgram (ε l p) l
+            ==. ε l (evalProgram (ε l p))
+            ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+            ==. ε l (evalProgram (Pg lc c m (TUnlabel (εTerm l t1'))))
+            ==. ε l (evalProgram (Pg lc c m (TUnlabel (TLabeledTCB ll THole))))
+            ==. ε l (evalProgram (Pg lc c m (TUnlabel (TLabeledTCB ll THole))))
+            ==. ε l (Pg lc c m TException)
+            ==. ε l (evalProgram p)
+            *** QED
 
     where
         l' = lc `join` ll
@@ -533,13 +573,13 @@ simulations'' p@(Pg lc c m t@TException) l =
     ==. ε l (evalProgram p)
     *** QED
 
-simulations'' p@(Pg lc c m t@THole) l =
-        evalEraseProgram (ε l p) l
-    ==. ε l (evalProgram (ε l (Pg lc c m t)))
-    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
-    ==. ε l (evalProgram (Pg lc c m t))
-    ==. ε l (evalProgram p)
-    *** QED
+-- simulations'' p@(Pg lc c m t@THole) l =
+--         evalEraseProgram (ε l p) l
+--     ==. ε l (evalProgram (ε l (Pg lc c m t)))
+--     ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+--     ==. ε l (evalProgram (Pg lc c m t))
+--     ==. ε l (evalProgram p)
+--     *** QED
 
 simulations'' p@(Pg lc c m t@TTrue) l =
         evalEraseProgram (ε l p) l
@@ -581,15 +621,52 @@ simulations'' p@(Pg lc c m t@(TVLabel _)) l =
     ==. ε l (evalProgram p)
     *** QED
 
-simulations'' p@(Pg lc c m t@(TLabeledTCB _ _)) l =
-        evalEraseProgram (ε l p) l
-    ==. ε l (evalProgram (ε l (Pg lc c m t)))
-    ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
-    ==. ε l (evalProgram (Pg lc c m t))
-    ==. ε l (evalProgram p)
-    *** QED
+simulations'' p@(Pg lc c m t@(TLabeledTCB ll t1)) l =
+    if ll `canFlowTo` l then
+            evalEraseProgram (ε l p) l
+        ==. ε l (evalProgram (ε l (Pg lc c m t)))
+        ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+        ==. ε l (evalProgram (Pg lc c m (TLabeledTCB ll (εTerm l t1))))
+        ==. ε l (Pg lc c m (eval (TLabeledTCB ll (εTerm l t1))))
+        ==. ε l (Pg lc c m (TLabeledTCB ll (εTerm l t1)))
+        ==. Pg lc c m (εTerm l (TLabeledTCB ll (εTerm l t1)))
+        ==. Pg lc c m (TLabeledTCB ll (εTerm l (εTerm l t1)))
+        ==. Pg lc c m (TLabeledTCB ll (εTerm l t1)) ?
+            εTermIdempotent l t1
 
-simulations'' PgHole l = trivial
+        ==. Pg lc c m (εTerm l (TLabeledTCB ll t1))
+        ==. ε l (Pg lc c m (TLabeledTCB ll t1))
+        ==. ε l (Pg lc c m (eval t))
+        ==. ε l (evalProgram (Pg lc c m t))
+        ==. ε l (evalProgram p)
+        *** QED
+    else
+        if lc `canFlowTo` l then
+                evalEraseProgram (ε l p) l
+            ==. ε l (evalProgram (ε l (Pg lc c m t)))
+            ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+            ==. ε l (evalProgram (Pg lc c m (TLabeledTCB ll THole)))
+            ==. ε l (Pg lc c m (eval (TLabeledTCB ll THole)))
+            ==. ε l (Pg lc c m (TLabeledTCB ll THole))
+            ==. Pg lc c m (εTerm l (TLabeledTCB ll THole))
+            ==. Pg lc c m (TLabeledTCB ll THole)
+            ==. Pg lc c m (εTerm l t)
+            ==. ε l (Pg lc c m t)
+            ==. ε l (Pg lc c m (eval t))
+            ==. ε l (evalProgram p)
+            *** QED
+        else
+                evalEraseProgram (ε l p) l
+            ==. ε l (evalProgram (ε l (Pg lc c m t)))
+            ==. ε l (evalProgram (Pg lc c m (εTerm l t)))
+            ==. ε l (evalProgram (Pg lc c m (TLabeledTCB ll THole)))
+            ==. ε l (Pg lc c m (eval (TLabeledTCB ll THole)))
+            ==. ε l (Pg lc c m (TLabeledTCB ll THole))
+            ==. PgHole
+            ==. ε l (Pg lc c m t)
+            ==. ε l (Pg lc c m (eval t))
+            ==. ε l (evalProgram p)
+            *** QED
 
 -- simulations'' p@(Pg lc c m t) l =
 --         evalEraseProgram (ε l p) l
