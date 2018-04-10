@@ -803,7 +803,121 @@ simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t t' t'' =
 
 valueEterm :: Label -> Term -> Proof
 {-@ valueEterm :: l:Label -> t:Term -> {v:Proof | isValue t <=> isValue (εTerm l t) } @-}
-valueEterm l t = undefined 
+valueEterm l t@THole = 
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TLam _ _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@TTrue =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@TFalse =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@TUnit =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TVar _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TApp _ _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TFix _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TIf _ _ _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TVLabel _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TJoin _ _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TMeet _ _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TCanFlowTo _ _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TBind _ _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@TGetLabel =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@TGetClearance =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TLowerClearance _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TLabeledTCB _ _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TLabelOf _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TLabel _ _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TUnlabel _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TToLabeled _ _) =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@TException =
+        isValue t
+    ==. isValue (εTerm l t)
+    *** QED
+
 
 
 -- -- Either prove this, or remove the canFlowTo preconditions of simulationsStar''
