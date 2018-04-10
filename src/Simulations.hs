@@ -49,6 +49,17 @@ simulations' (Pg lcurr c m t) l | not (lcurr `canFlowTo` l) -- l < lcurr
 simulations' p l {- | lcurr <= l -}
   = simulations'' p l
 
+{-@ simulationsStar
+ :: {p : Program | terminates p}
+ -> l : Label
+ -> {v : Proof | ε l (evalProgramStar (ε l p)) = ε l (evalProgramStar p)}
+ / [evalSteps p, 3]
+ @-}
+simulationsStar :: Program -> Label -> Proof
+simulationsStar p l | canFlowTo (pLabel p) l = simulationsStar'' p l
+simulationsStar p l = undefined
+
+-- -> {l : Label | canFlowTo (pLabel p) l}
 {-@ simulationsStar'' 
  :: {p : Program | terminates p}
  -> {l : Label | canFlowTo (pLabel p) l}
@@ -73,13 +84,13 @@ simulationsStar'' p@(Pg _ _ _ t) l | not (isValue t)
   ==. ε l (evalProgramStar (evalProgram (ε l p)))
       ? valueEterm l t
   ==. ε l (evalProgramStar (ε l (evalProgram (ε l p))))
-      ?   terminationAxiomErase l p &&& ςAxiomErase l p &&& evalFlowErase l p  
-      &&& simulationsStar'' (evalProgram (ε l p)) l 
+      ?   terminationAxiomErase l p
+      &&& simulationsStar (evalProgram (ε l p)) l 
   ==. ε l (evalProgramStar (evalEraseProgram (ε l p) l))
       ? simulations'' p l 
   ==. ε l (evalProgramStar (ε l (evalProgram p)))
-      ? terminationAxiom p &&& ςAxiom p &&& evalFlow l p &&& 
-        simulationsStar'' (evalProgram p) l 
+      ?  terminationAxiom p
+      &&& simulationsStar (evalProgram p) l 
   ==. ε l (evalProgramStar (evalProgram p))
   ==. ε l (evalProgramStar p)
   *** QED 
@@ -792,26 +803,17 @@ simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t t' t'' =
 
 valueEterm :: Label -> Term -> Proof
 {-@ valueEterm :: l:Label -> t:Term -> {v:Proof | isValue t <=> isValue (εTerm l t) } @-}
-valueEterm = undefined 
+valueEterm l t = undefined 
 
 
-ςAxiom :: Program -> Proof
-{-@ ςAxiom :: p:Program -> {ς p => ς (evalProgram p)} @-}
-ςAxiom = undefined
-
-
-ςAxiomErase :: Label -> Program -> Proof
-{-@ ςAxiomErase :: l:Label -> p:Program -> {ς p => ς (evalProgram (ε l p))} @-}
-ςAxiomErase = undefined
-
--- Either prove this, or remove the canFlowTo preconditions of simulationsStar''
-evalFlow :: Label -> Program -> Proof
-{-@ evalFlow :: l:Label -> p:Program -> {canFlowTo (pLabel p) l => canFlowTo (pLabel (evalProgram p)) l} @-}
-evalFlow = undefined 
-
-evalFlowErase :: Label -> Program -> Proof
-{-@ evalFlowErase :: l:Label -> p:Program -> {canFlowTo (pLabel p) l => canFlowTo (pLabel (evalProgram (ε l p))) l} @-}
-evalFlowErase = undefined 
+-- -- Either prove this, or remove the canFlowTo preconditions of simulationsStar''
+-- evalFlow :: Label -> Program -> Proof
+-- {-@ evalFlow :: l:Label -> p:Program -> {canFlowTo (pLabel p) l => canFlowTo (pLabel (evalProgram p)) l} @-}
+-- evalFlow = undefined 
+-- 
+-- evalFlowErase :: Label -> Program -> Proof
+-- {-@ evalFlowErase :: l:Label -> p:Program -> {canFlowTo (pLabel p) l => canFlowTo (pLabel (evalProgram (ε l p))) l} @-}
+-- evalFlowErase = undefined 
 
 {-@ simulationsTBind :: l:Label -> lc:{Label | canFlowTo lc l} -> c:Label -> m:Memory -> t1:Term -> t2:{Term | terminates (Pg lc c m (TBind t1 t2)) } 
  -> {v : Proof | ε l (evalProgram (Pg lc c m (TBind (εTerm l t1) (εTerm l t2)))) == ε l (evalProgram (Pg lc c m (TBind t1 t2))) }

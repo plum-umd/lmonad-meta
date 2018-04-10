@@ -11,6 +11,7 @@ module Termination where
 import Language
 import Programs
 import Label
+import MetaFunctions
 
 import ProofCombinators
 
@@ -23,6 +24,16 @@ import ProofCombinators
 terminationAxiom :: Program -> Proof 
 terminationAxiom _ = ()
 
+-- {-@ terminatesBind
+--  :: lc : Label
+--  -> c : Label
+--  -> m : Memory
+--  -> t1 : Term
+--  -> t2 : {Term | terminates (Pg lc c m (TBind t1 t2))}
+--  -> {terminates (Pg lc c m t1)}
+--  @-}
+-- terminatesBind :: Label -> Label -> Memory -> Term -> Term -> Proof
+-- terminatesBind = undefined
 
 {-@ assume terminationAxiomErase 
   :: l:Label -> {p:Program | terminates p }
@@ -30,11 +41,15 @@ terminationAxiom _ = ()
 terminationAxiomErase :: Label -> Program -> Proof 
 terminationAxiomErase _ _ = ()
 
+-- {-@ assume terminationAxiomTBind 
+--   :: l:Label -> c:Label -> m:Memory -> t1:Term -> t2:Term
+--   -> { (evalSteps (Pg l c m t1) < evalSteps (Pg l c m (TBind t1 t2))) &&
+--        (terminates (Pg l c m (TBind t1 t2)) => terminates (Pg l c m t1)) 
+--      } 
+--   @-}
 {-@ assume terminationAxiomTBind 
-  :: l:Label -> c:Label -> m:Memory -> t1:Term -> t2:Term
-  -> { (evalSteps (Pg l c m t1) < evalSteps (Pg l c m (TBind t1 t2))) &&
-       (terminates (Pg l c m (TBind t1 t2)) => terminates (Pg l c m t1)) 
-     } 
+  :: l:Label -> c:Label -> m:Memory -> t1:Term -> {t2:Term | terminates (Pg l c m (TBind t1 t2))}
+  -> { terminates (Pg l c m t1) && evalSteps (Pg l c m t1) < evalSteps (Pg l c m (TBind t1 t2)) } 
   @-}
 terminationAxiomTBind :: Label -> Label -> Memory -> Term -> Term -> Proof 
 terminationAxiomTBind _ _ _ _ _ = ()
