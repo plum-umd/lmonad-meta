@@ -53,7 +53,7 @@ simulations' p l {- | lcurr <= l -}
  :: {p : Program | terminates p}
  -> {l : Label | canFlowTo (pLabel p) l}
  -> {v : Proof | ε l (evalProgramStar (ε l p)) = ε l (evalProgramStar p)}
- / [evalSteps p, 1]
+ / [evalSteps p, 2]
  @-}
 simulationsStar'' :: Program -> Label -> Proof
 simulationsStar'' (Pg lp c m t) l | isValue t
@@ -92,7 +92,7 @@ simulationsStar'' PgHole _
  :: {p : Program | terminates p} 
  -> {l : Label | canFlowTo (pLabel p) l}
  -> {v : Proof | evalEraseProgram (ε l p) l = ε l (evalProgram p)}
- / [evalSteps p, 0] 
+ / [evalSteps p, 1]
  @-}
 simulations'' :: Program -> Label -> Proof
 simulations'' p l | not (ς p) = undefined
@@ -815,7 +815,7 @@ evalFlowErase = undefined
 
 {-@ simulationsTBind :: l:Label -> lc:{Label | canFlowTo lc l} -> c:Label -> m:Memory -> t1:Term -> t2:{Term | terminates (Pg lc c m (TBind t1 t2)) } 
  -> {v : Proof | ε l (evalProgram (Pg lc c m (TBind (εTerm l t1) (εTerm l t2)))) == ε l (evalProgram (Pg lc c m (TBind t1 t2))) }
- / [evalSteps (Pg lc c m (TBind t1 t2)), 1]
+ / [evalSteps (Pg lc c m (TBind t1 t2)), 0]
  @-}
 
 simulationsTBind :: Label -> Label -> Label -> Memory -> Term -> Term -> Proof 
