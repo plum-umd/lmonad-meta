@@ -95,8 +95,10 @@ simulationsStar'' p@(Pg _ _ _ t) l | not (isValue t)
   ==. ε l (evalProgramStar p)
   *** QED 
 
-simulationsStar'' PgHole _ 
-  = undefined
+simulationsStar'' p@PgHole l
+  =   ε l (evalProgramStar (ε l p)) 
+  ==. ε l (evalProgramStar p)
+  *** QED 
 
 
 {-@ simulations'' 
