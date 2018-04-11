@@ -258,3 +258,11 @@ propagateErasePropagates l t@(TToLabeled t1 t2) =
 --     ==! propagateException (TLabel (TVLabel l') (εTerm l t2))
 propagateErasePropagates l t = unreachable
 
+-- {-@ erasedStarCanFlowTo
+--  :: p : Program
+--  -> l : Label
+--  -> {canFlowTo (pLabel (evalProgramStar (Pg (pLabel p) (pClearance p) (pMemory p) (εTerm l (pTerm p))))) (pLabel (evalProgramStar p))}
+--  @-}
+-- erasedStarCanFlowTo :: Program -> Label -> Proof
+-- erasedStarCanFlowTo p l = undefined
+

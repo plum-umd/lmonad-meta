@@ -845,29 +845,79 @@ eraseJoinLeft l lc ll cc m t =
  -> m' : Memory
  -> m'' : Memory
  -> ll : Label
- -> t : {Term | ε l (evalProgramStar (ε l (Pg lc c m t))) = ε l (evalProgramStar (Pg lc c m t))}
+ -> t : {Term | ε l (evalProgramStar (ε l (Pg lc c m t))) = ε l (evalProgramStar (Pg lc c m t)) && terminates (Pg lc c m t)}
  -> t' : {Term | Pg lc' c' m' t' = evalProgramStar (Pg lc c m t)}
  -> t'' : {Term | Pg lc'' c'' m'' t'' = evalProgramStar (Pg lc c m (εTerm l t))}
  -> {ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException))) = ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))}
+ / [evalSteps (Pg lc c m t), 4]
  @-}
 simulationsToLabeledHelper :: Label -> Label -> Label -> Label -> Label -> Label -> Label -> Memory -> Memory -> Memory -> Label -> Term -> Term -> Term -> Proof
-simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t t' t'' | ll `canFlowTo` l = 
-        ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException)))
-    ==. ε l (Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
-    ==. Pg lc c m' (εTerm l (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
-    ==. Pg lc c m' (TLabeledTCB ll (εTerm l (if canFlowTo lc' ll then t' else TException)))
-    ==. Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then (εTerm l t') else (εTerm l TException)))
-    ==? Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then (εTerm l t') else TException))
+simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t t' t'' | ll `canFlowTo` l = case ( lc' `canFlowTo` l, lc'' `canFlowTo` l) of
+    (True, True) -> 
+            ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException)))
+        ==. ε l (Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
+        ==. Pg lc c m' (εTerm l (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
+        ==. Pg lc c m' (TLabeledTCB ll (εTerm l (if canFlowTo lc' ll then t' else TException)))
+        ==. Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then (εTerm l t') else (εTerm l TException)))
+        ==. Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then (εTerm l t') else TException))
 
-    -- TODO XXX
-    
-    ==? Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then (εTerm l t'') else TException))
-    ==. Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then (εTerm l t'') else (εTerm l TException)))
-    ==. Pg lc c m'' (TLabeledTCB ll (εTerm l (if canFlowTo lc'' ll then t'' else TException)))
-    ==. Pg lc c m'' (εTerm l (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
-    ==. ε l (Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
-    ==. ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))
-    *** QED
+        ==. Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then (εTerm l t'') else TException)) ? 
+            (   Pg lc' c' m' (εTerm l t')
+            ==. ε l (Pg lc' c' m' t')
+            ==. ε l (evalProgramStar (Pg lc c m t))
+            ==. ε l (evalProgramStar (ε l (Pg lc c m t)))
+            ==. ε l (evalProgramStar (Pg lc c m (εTerm l t)))
+            ==. ε l (Pg lc'' c'' m'' t'')
+            ==. Pg lc'' c'' m'' (εTerm l t'')
+            *** QED
+            )
+        ==. Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then (εTerm l t'') else (εTerm l TException)))
+        ==. Pg lc c m'' (TLabeledTCB ll (εTerm l (if canFlowTo lc'' ll then t'' else TException)))
+        ==. Pg lc c m'' (εTerm l (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
+        ==. ε l (Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
+        ==. ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))
+        *** QED
+
+    (True, False) ->
+        -- this case is unreachable
+        -- lc'' < lc'
+        -- lc' < l && not (lc'' < l) 
+        -- lc'' < lc' < l && lc'' > l
+
+        --     erasedStarCanFlowTo (Pg lc c m t) l
+        -- &&& assert (lc'' `canFlowTo` lc')
+
+        -- Contradiction
+        
+            Pg lc' c' m' (εTerm l t')
+        ==. ε l (Pg lc' c' m' t')
+        ==. ε l (evalProgramStar (Pg lc c m t))
+        ==. ε l (evalProgramStar (ε l (Pg lc c m t)))
+        ==. ε l (evalProgramStar (Pg lc c m (εTerm l t)))
+        ==. ε l (Pg lc'' c'' m'' t'')
+        ==. PgHole
+        *** QED
+
+    (False, False) -> -- Implies lc' > l, lc'' > l
+            ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException)))
+        ==. ε l (Pg lc c m' (TLabeledTCB ll (if canFlowTo lc' ll then t' else TException)))
+        ==. ε l (Pg lc c m' (TLabeledTCB ll TException))
+        ==. ε l (Pg lc c m'' (TLabeledTCB ll TException))
+        ==. ε l (Pg lc c m'' (TLabeledTCB ll (if canFlowTo lc'' ll then t'' else TException)))
+        ==. ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))
+        *** QED
+
+    (False, True) -> -- Implies lc'' > l
+        -- Contradiction
+
+            PgHole
+        ==. ε l (Pg lc' c' m' t')
+        ==. ε l (evalProgramStar (Pg lc c m t))
+        ==. ε l (evalProgramStar (ε l (Pg lc c m t)))
+        ==. ε l (evalProgramStar (Pg lc c m (εTerm l t)))
+        ==. ε l (Pg lc'' c'' m'' t'')
+        ==. Pg lc'' c'' m'' (εTerm l t'')
+        *** QED
 
 simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t t' t'' = 
         ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException)))
@@ -996,17 +1046,6 @@ valueEterm l t@TException =
         isValue t
     ==. isValue (εTerm l t)
     *** QED
-
-
-
--- -- Either prove this, or remove the canFlowTo preconditions of simulationsStar''
--- evalFlow :: Label -> Program -> Proof
--- {-@ evalFlow :: l:Label -> p:Program -> {canFlowTo (pLabel p) l => canFlowTo (pLabel (evalProgram p)) l} @-}
--- evalFlow = undefined 
--- 
--- evalFlowErase :: Label -> Program -> Proof
--- {-@ evalFlowErase :: l:Label -> p:Program -> {canFlowTo (pLabel p) l => canFlowTo (pLabel (evalProgram (ε l p))) l} @-}
--- evalFlowErase = undefined 
 
 {-@ simulationsTBind :: l:Label -> lc:{Label | canFlowTo lc l} -> c:Label -> m:Memory -> t1:Term -> t2:{Term | terminates (Pg lc c m (TBind t1 t2)) } 
  -> {v : Proof | ε l (evalProgram (Pg lc c m (TBind (εTerm l t1) (εTerm l t2)))) == ε l (evalProgram (Pg lc c m (TBind t1 t2))) }
