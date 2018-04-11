@@ -97,6 +97,7 @@ isValue TUnit             = True  -- TUnit :: {v:Term | isValue v}
 isValue TTrue             = True 
 isValue TFalse            = True 
 isValue (TVLabel _)       = True 
+isValue (TVar _)          = True 
 isValue TException        = True
 isValue THole             = True
 isValue (TLabeledTCB _ _) = True
