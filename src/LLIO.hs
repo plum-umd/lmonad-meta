@@ -30,8 +30,8 @@ _hackImport = THole
 {-@ 
 nonInterference
    :: l:Label  
-   -> k1:{Program  | ς k1 && terminates k1} 
-   -> k2:{Program  | ς k2 && terminates k2}
+   -> k1:{Program  | terminates k1} 
+   -> k2:{Program  | terminates k2}
    -> {v:Proof     | εEquiv l k1 k2}
    -> k1':{Program | evalProgram k1 == k1' } 
    -> k2':{Program | evalProgram k2 == k2' } 

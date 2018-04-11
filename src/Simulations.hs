@@ -18,7 +18,7 @@ import Termination
 import  ProofCombinators
 
 {-@ simulationsCorollary 
-  :: p:{Program | ς p && terminates p} 
+  :: p:{Program | terminates p} 
   -> p':Program 
   -> l:Label
   -> {v:Proof | evalProgram p == p'}
@@ -28,7 +28,7 @@ simulationsCorollary p p' l evalProp = simulations p p' l evalProp
 
 simulations :: Program -> Program -> Label -> Proof -> Proof
 {-@ simulations 
-  :: {p:Program | ς p && terminates p} -> p':Program -> l:Label
+  :: {p:Program | terminates p} -> p':Program -> l:Label
   -> {v:Proof | evalProgram p == p'}
   -> {v:Proof | evalEraseProgram (ε l p) l = ε l p'} @-}
 simulations p p' l evalProp 
@@ -39,9 +39,15 @@ simulations p p' l evalProp
 
 simulations' :: Program -> Label -> Proof
 {-@ simulations' 
-  :: {p:Program | ς p && terminates p} 
+  :: {p:Program | terminates p} 
   -> l:Label
   -> {v:Proof | evalEraseProgram (ε l p) l = ε l (evalProgram p)} @-}
+
+simulations' p@PgHole l =
+        evalEraseProgram (ε l p) l
+    ==. ε l (evalProgram (ε l p))
+    ==. ε l (evalProgram p)
+    *** QED
 
 simulations' (Pg lcurr c m t) l | not (lcurr `canFlowTo` l) -- l < lcurr
     = simulationsHoles' (Pg lcurr c m t) l
@@ -703,7 +709,7 @@ simulations'' p@(Pg lc c m t@(TLabeledTCB ll t1)) l =
 --     *** QED
 
 {-@ simulationsHoles'' 
- :: p : {Program | ς p} 
+ :: {p : Program | isPg p}
  -> {l : Label | not (canFlowTo (pLabel p) l)} 
  -> {v:Proof | evalEraseProgram (ε l p) l = PgHole} @-}
 simulationsHoles'' :: Program -> Label -> Proof
@@ -717,7 +723,7 @@ simulationsHoles'' p@(Pg _ _ _ _) l =
 
 -- Simulations case when there are holes (current label exceeds output label).
 {-@ simulationsHoles' 
-  :: {p : Program | ς p && terminates p}
+  :: {p : Program | isPg p && terminates p}
   -> {l : Label | not (canFlowTo (pLabel p) l)}
   -> {v:Proof | evalEraseProgram (ε l p) l = ε l (evalProgram p)} @-}
 
@@ -728,15 +734,14 @@ simulationsHoles' p@(Pg lc cc m (TBind t1 t2)) l =
         ps@(Pg l' c' m' t') -> 
                 evalEraseProgram (ε l p) l
             ==. PgHole ? simulationsHoles'' p l
-            ==. ε l (Pg l' c' m' (TApp t2 t')) ? (safeProgramBindsToSafeProgram p t1 t2 &&& terminationAxiomTBind lc cc m t1 t2 &&& monotonicLabelEvalProgramStar p1 &&& greaterLabelNotFlowTo lc l' l)
+            ==. ε l (Pg l' c' m' (TApp t2 t')) ? 
+                    terminationAxiomTBind lc cc m t1 t2 
+                &&& monotonicLabelEvalProgramStar p1 
+                &&& greaterLabelNotFlowTo lc l' l
             ==. ε l (evalProgram p)
             *** QED
         PgHole ->
-                evalEraseProgram (ε l p) l
-            ==. PgHole ? simulationsHoles'' p l
-            ==. ε l PgHole
-            ==. ε l (evalProgram p)
-            *** QED
+            unreachable
 
 simulationsHoles' p@(Pg lc cc m TGetLabel) l =
         evalEraseProgram (ε l p) l
@@ -840,10 +845,11 @@ simulationsHoles' p@(Pg lc cc m t) l =
     *** QED
 
 simulationsHoles' PgHole l =
-        evalEraseProgram (ε l PgHole) l
-    ==. PgHole ? simulationsHoles'' PgHole l
-    ==. ε l (evalProgram PgHole)
-    *** QED
+    unreachable
+    --     evalEraseProgram (ε l PgHole) l
+    -- ==. PgHole ? simulationsHoles'' PgHole l
+    -- ==. ε l (evalProgram PgHole)
+    -- *** QED
 
 {-@ eraseJoinLeft 
  :: l:Label 
