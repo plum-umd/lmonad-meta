@@ -963,8 +963,9 @@ valueEterm l t@THole =
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TLam _ _) =
+valueEterm l t@(TLam v t1) =
         isValue t
+    ==. isValue (TLam v (εTerm l t1))
     ==. isValue (εTerm l t)
     *** QED
 
@@ -988,18 +989,21 @@ valueEterm l t@(TVar _) =
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TApp _ _) =
+valueEterm l t@(TApp t1 t2) =
         isValue t
+    ==. isValue (TApp (εTerm l t1) (εTerm l t2))
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TFix _) =
+valueEterm l t@(TFix t1) =
         isValue t
+    ==. isValue (TFix (εTerm l t1))
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TIf _ _ _) =
+valueEterm l t@(TIf t1 t2 t3) =
         isValue t
+    ==. isValue (TIf (εTerm l t1) (εTerm l t2) (εTerm l t3))
     ==. isValue (εTerm l t)
     *** QED
 
@@ -1008,23 +1012,27 @@ valueEterm l t@(TVLabel _) =
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TJoin _ _) =
+valueEterm l t@(TJoin t1 t2) =
         isValue t
+    ==. isValue (TJoin (εTerm l t1) (εTerm l t2))
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TMeet _ _) =
+valueEterm l t@(TMeet t1 t2) =
         isValue t
+    ==. isValue (TMeet (εTerm l t1) (εTerm l t2))
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TCanFlowTo _ _) =
+valueEterm l t@(TCanFlowTo t1 t2) =
         isValue t
+    ==. isValue (TCanFlowTo (εTerm l t1) (εTerm l t2))
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TBind _ _) =
+valueEterm l t@(TBind t1 t2) =
         isValue t
+    ==. isValue (TBind (εTerm l t1) (εTerm l t2))
     ==. isValue (εTerm l t)
     *** QED
 
@@ -1038,33 +1046,45 @@ valueEterm l t@TGetClearance =
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TLowerClearance _) =
+valueEterm l t@(TLowerClearance t1) =
         isValue t
+    ==. isValue (TLowerClearance (εTerm l t1))
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TLabeledTCB _ _) =
+valueEterm l t@(TLabeledTCB ll t1) | ll `canFlowTo` l =
         isValue t
+    ==. isValue (TLabeledTCB ll (εTerm l t1))
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TLabelOf _) =
+valueEterm l t@(TLabeledTCB ll t1) =
         isValue t
+    ==. isValue (TLabeledTCB ll THole)
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TLabel _ _) =
+valueEterm l t@(TLabelOf t1) =
         isValue t
+    ==. isValue (TLabelOf (εTerm l t1))
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TUnlabel _) =
+valueEterm l t@(TLabel t1 t2) =
         isValue t
+    ==. isValue (TLabel (εTerm l t1) (εTerm l t2))
     ==. isValue (εTerm l t)
     *** QED
 
-valueEterm l t@(TToLabeled _ _) =
+valueEterm l t@(TUnlabel t1) =
         isValue t
+    ==. isValue (TUnlabel (εTerm l t1))
+    ==. isValue (εTerm l t)
+    *** QED
+
+valueEterm l t@(TToLabeled t1 t2) =
+        isValue t
+    ==. isValue (TToLabeled (εTerm l t1) (εTerm l t2))
     ==. isValue (εTerm l t)
     *** QED
 
