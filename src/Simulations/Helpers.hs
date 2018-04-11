@@ -264,5 +264,5 @@ propagateErasePropagates l t = unreachable
 --  -> {canFlowTo (pLabel (evalProgramStar (Pg (pLabel p) (pClearance p) (pMemory p) (εTerm l (pTerm p))))) (pLabel (evalProgramStar p))}
 --  @-}
 -- erasedStarCanFlowTo :: Program -> Label -> Proof
--- erasedStarCanFlowTo p l = undefined
+-- erasedStarCanFlowTo p l = ()
 

@@ -33,7 +33,7 @@ terminationAxiom _ = ()
 --  -> {terminates (Pg lc c m t1)}
 --  @-}
 -- terminatesBind :: Label -> Label -> Memory -> Term -> Term -> Proof
--- terminatesBind = undefined
+-- terminatesBind _ _ _ _ _ = ()
 
 {-@ assume terminationAxiomErase 
   :: l:Label -> {p:Program | terminates p }
