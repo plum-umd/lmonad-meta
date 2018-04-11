@@ -25,6 +25,7 @@ module ProofCombinators (
   
   , (==?) -- x ==? y always succeds 
   , admitted -- always succeds 
+  , assume -- always succeeds
 
   -- * The below operator does not check intermediate equalities
   --   but takes optional proof argument.
@@ -195,4 +196,11 @@ assertNotEqual _ _ = ()
  @-}
 assert :: Bool -> Proof
 assert _ = ()
+
+{-@ assume assume
+ :: x : Bool
+ -> {v : Proof | x}
+ @-}
+assume :: Bool -> Proof
+assume x = ()
 
