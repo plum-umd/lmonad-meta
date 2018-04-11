@@ -66,6 +66,7 @@ safeProgramBindsToSafeProgram p@(Pg l c m tb@(TBind t1 t2)) t1' t2' | t1 == t1' 
  -> {v : Proof | isPg (evalProgramStar p)}
  @-}
 safeProgramStarEvalsToNonHole :: Program -> Proof
+safeProgramStarEvalsToNonHole PgHole = unreachable
 safeProgramStarEvalsToNonHole p = case evalProgramStar p of
     p'@(Pg _ _ _ t) -> -- | isValue t ->
             isPg (evalProgramStar p)
