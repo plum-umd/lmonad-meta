@@ -57,9 +57,35 @@ simulations' p l {- | lcurr <= l -}
  @-}
 simulationsStar :: Program -> Label -> Proof
 simulationsStar p l | canFlowTo (pLabel p) l = simulationsStar'' p l
-simulationsStar p l = undefined
+simulationsStar p l = simulationsStar' p l
 
--- -> {l : Label | canFlowTo (pLabel p) l}
+{-@ simulationsStar' 
+ :: {p : Program | terminates p}
+ -> {l : Label | not (canFlowTo (pLabel p) l)}
+ -> {v : Proof | ε l (evalProgramStar (ε l p)) = ε l (evalProgramStar p)}
+ / [evalSteps p, 2]
+ @-}
+simulationsStar' :: Program -> Label -> Proof
+simulationsStar' PgHole l = 
+        ε l (evalProgramStar (ε l PgHole))  
+    ==. ε l (evalProgramStar PgHole)
+    *** QED
+
+simulationsStar' p@(Pg lc c m t) l = -- | isValue t = 
+        ε l (evalProgramStar (ε l p))  
+    ==! ε l (evalProgramStar PgHole)
+    ==! ε l PgHole
+    ==! PgHole
+    ==: ε l p' ?
+            monotonicLabelEvalProgramStar p
+        &&& greaterLabelNotFlowTo lc lc' l
+    ==! ε l (evalProgramStar (Pg lc c m t))
+    *** QED 
+
+    where
+        p'@(Pg lc' _ _ _) = evalProgramStar p
+
+
 {-@ simulationsStar'' 
  :: {p : Program | terminates p}
  -> {l : Label | canFlowTo (pLabel p) l}
