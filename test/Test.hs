@@ -33,15 +33,15 @@ orderedSrcFiles = [
 
 runLiquid :: String -> IO ExitCode
 runLiquid fname 
-  = runCommand' ("stack exec -- liquid " ++ fname)
+  = runCommand' ("stack exec -- liquid src/" ++ fname)
 
 runCommand' :: String -> IO ExitCode
 runCommand' str = 
   do ps <- runCommand str -- (str ++ "> log 2>&1")
      ec <- waitForProcess ps 
      putStrLn ("\nCommand `" ++ str ++ "` exited with " ++ show ec)
-     when (ec /= ExitSuccess) $ 
-        runCommand "cat log" >>= waitForProcess >> return ()
+     -- when (ec /= ExitSuccess) $ 
+     --    runCommand "cat log" >>= waitForProcess >> return ()
      return ec
 
 
