@@ -872,9 +872,9 @@ eraseJoinLeft l lc ll cc m t =
  -> c : Label
  -> c' : Label
  -> c'' : Label
- -> m : Memory
- -> m' : Memory
- -> m'' : Memory
+ -> m : Database
+ -> m' : Database
+ -> m'' : Database
  -> ll : Label
  -> t : {Term | ε l (evalProgramStar (ε l (Pg lc c m t))) = ε l (evalProgramStar (Pg lc c m t)) && terminates (Pg lc c m t)}
  -> t' : {Term | Pg lc' c' m' t' = evalProgramStar (Pg lc c m t)}
@@ -882,7 +882,7 @@ eraseJoinLeft l lc ll cc m t =
  -> {ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException))) = ε l (if (canFlowTo lc'' ll) then (Pg lc c m'' (TLabeledTCB ll t'')) else Pg lc c m'' (TLabeledTCB ll TException))}
  / [evalSteps (Pg lc c m t), 4]
  @-}
-simulationsToLabeledHelper :: Label -> Label -> Label -> Label -> Label -> Label -> Label -> Memory -> Memory -> Memory -> Label -> Term -> Term -> Term -> Proof
+simulationsToLabeledHelper :: Label -> Label -> Label -> Label -> Label -> Label -> Label -> Database -> Database -> Database -> Label -> Term -> Term -> Term -> Proof
 simulationsToLabeledHelper l lc lc' lc'' c c' c'' m m' m'' ll t t' t'' | ll `canFlowTo` l = case ( lc' `canFlowTo` l, lc'' `canFlowTo` l) of
     (True, True) -> 
             ε l (if (canFlowTo lc' ll) then (Pg lc c m' (TLabeledTCB ll t')) else (Pg lc c m' (TLabeledTCB ll TException)))
@@ -1098,12 +1098,12 @@ valueEterm l t@TException =
     ==. isValue (εTerm l t)
     *** QED
 
-{-@ simulationsTBind :: l:Label -> lc:{Label | canFlowTo lc l} -> c:Label -> m:Memory -> t1:Term -> t2:{Term | terminates (Pg lc c m (TBind t1 t2)) } 
+{-@ simulationsTBind :: l:Label -> lc:{Label | canFlowTo lc l} -> c:Label -> m:Database -> t1:Term -> t2:{Term | terminates (Pg lc c m (TBind t1 t2)) } 
  -> {v : Proof | ε l (evalProgram (Pg lc c m (TBind (εTerm l t1) (εTerm l t2)))) == ε l (evalProgram (Pg lc c m (TBind t1 t2))) }
  / [evalSteps (Pg lc c m (TBind t1 t2)), 0]
  @-}
 
-simulationsTBind :: Label -> Label -> Label -> Memory -> Term -> Term -> Proof 
+simulationsTBind :: Label -> Label -> Label -> Database -> Term -> Term -> Proof 
 
 simulationsTBind l lc c m t1 t2 
   | l'' `canFlowTo` l, l' `canFlowTo` l 

@@ -60,14 +60,15 @@ data DBLabelFunction = DBLabelFunction Term
     -- | Function that takes columns from a row and returns that column's label.
     deriving (Eq, Show)
 
-type ColumnName = Int
+newtype Row = Row (Map ColumnName DBValue)
+    deriving (Eq, Show)
+
 data Table = Table {
-      tableRows :: [Map ColumnName DBValue]
+      tableRows :: Map PrimaryKey Row
     , tableLabelFunctions :: Map ColumnName DBLabelFunction
     }
     deriving (Eq, Show)
 
-type TableName = Int
 data Database = Database (Map TableName Table) 
     deriving (Eq, Show)
 

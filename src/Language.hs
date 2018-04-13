@@ -13,6 +13,12 @@ boolToTerm False = TFalse
 
 
 type Var   = Integer
+
+type ColumnName = Int
+type TableName = Int
+type PrimaryKey = Int
+
+
 -------------------------------------------------------------------------------
 -- | Terms --------------------------------------------------------------------
 -------------------------------------------------------------------------------
@@ -28,6 +34,11 @@ data Term
   | TApp {tApp1 :: Term, tApp2 :: Term}
   | TFix {tFix :: Term}
   | TIf  {tIfCond :: Term, tIfThen :: Term, tIfElse :: Term} 
+  | TInt Int
+
+  | TPair Term Term
+  | TFst Term
+  | TSnd Term
 
   | TVLabel Label
   | TJoin {tJoin1 :: Term, tJoin2 :: Term}
@@ -49,6 +60,11 @@ data Term
   | TToLabeled {tToLabeledLabel :: Term, tToLabeledTerm :: Term}
 
   | TException
+
+  -- TODO: Need lists, records, ints...
+
+  -- Database functions.
+  | TInsert TableName Term
   deriving (Eq, Show)
 
 
@@ -69,6 +85,11 @@ size (TLam _ e)     = 1 + size e
 size TTrue          = 1 
 size TFalse         = 1 
 size TUnit          = 1 
+size (TInt _)       = 1 
+
+size (TPair t1 t2)  = 1 + size t1 + size t2
+size (TFst t1)      = 1 + size t1
+size (TSnd t1)      = 1 + size t1
 
 size (TVLabel _)     = 1 -- JP: Is this fine???
 size (TJoin t1 t2)  = 1 + size t1 + size t2
@@ -90,6 +111,8 @@ size (TToLabeled t1 t2) = 1 + size t1 + size t2
 
 size TException     = 1
 
+size (TInsert _ t1) = 1 + size t1
+
 isValue :: Term -> Bool 
 {-@ measure isValue @-}
 isValue (TLam _ _)        = True  -- TLam :: _ -> _ -> {v:Term | isValue v}
@@ -101,6 +124,8 @@ isValue (TVar _)          = True
 isValue TException        = True
 isValue THole             = True
 isValue (TLabeledTCB _ _) = True
+isValue (TInt _)          = True
+isValue (TPair t1 t2)     = True -- isValue t1 && isValue t2
 isValue _                 = False 
 
 -- JP: TLabeledTCB _ t if isValue t ?
@@ -146,11 +171,22 @@ eval (TCanFlowTo (TVLabel l1) t2)           = TCanFlowTo (TVLabel l1) (eval t2)
 eval (TCanFlowTo t1 t2)                     = TCanFlowTo (eval t1) t2
 
 eval THole                                = THole
-eval (TLam x t)                         = TLam x t
+eval (TLam x t)                           = TLam x t
 eval t@TTrue                              = t
 eval t@TFalse                             = t
 eval t@TUnit                              = t
 eval t@(TVar _)                           = t
+eval t@(TInt _)                           = t
+
+eval t@(TPair _ _)                        = t
+-- eval (TPair t1 t2) | isValue t1           = TPair t1 (eval t2)
+-- eval (TPair t1 t2)                        = TPair (eval t1) t2
+
+eval (TFst (TPair t1 t2))                 = t1
+eval (TFst t)                             = eval t
+
+eval (TSnd (TPair t1 t2))                 = t2
+eval (TSnd t)                             = eval t
 
 eval t@(TVLabel _)                        = t
 
@@ -173,6 +209,8 @@ eval (TToLabeled t1 t2)                   = TToLabeled (eval t1) t2
 
 eval t@TException                         = t
 
+eval (TInsert _ t1)                       = t1
+
 -- eval (TLowerClearance t)   = TLowerClearance (eval t)
 -- eval v | isValue v         = v 
 -- eval v                     = v 
@@ -193,6 +231,11 @@ propagateException TGetLabel           = False
 propagateException TGetClearance       = False
 -- propagateException (TLabeledTCB _ TException) = True -- JP: Do we propagate here?
 propagateException (TLabeledTCB _ _)   = False
+
+propagateException (TInt _)            = False
+propagateException (TPair t1 t2)       = propagateException t1 || propagateException t2
+propagateException (TFst t1)           = propagateException t1
+propagateException (TSnd t1)           = propagateException t1
 
 {- 
 propagateException (TLam _ e)          = e  == TException 
@@ -222,9 +265,10 @@ propagateException (TCanFlowTo e1 e2)  = propagateException e1 || propagateExcep
 propagateException (TLabelOf e)        = propagateException e 
 propagateException (TLabel e1 e2)      = propagateException e1 || propagateException e2 
 propagateException (TUnlabel e)        = propagateException e 
-propagateException (TToLabeled e1 _e2)  = propagateException e1
+propagateException (TToLabeled e1 _e2) = propagateException e1
     -- || propagateException e2 
 
+propagateException (TInsert _ t1)      = propagateException t1
 
 -------------------------------------------------------------------------------
 -- | Substitution -------------------------------------------------------------
@@ -234,9 +278,9 @@ propagateException (TToLabeled e1 _e2)  = propagateException e1
 {-@ subst :: Sub -> t:Term -> Term / [size t] @-}
 subst :: Sub -> Term -> Term 
 subst (Sub x xt) (TVar y)
-  | x == y             = xt 
-  | otherwise          = TVar y 
-subst (Sub x xt) (TLam y e)   
+  | x == y             = xt
+  | otherwise          = TVar y
+subst (Sub x xt) (TLam y e)
   | x == y             = TLam y e
   | otherwise          = TLam y (subst (Sub x xt) e)
 
@@ -244,9 +288,13 @@ subst _  THole         = THole
 subst su (TApp t1 t2)  = TApp (subst su t1) (subst su t2)
 subst su (TFix t)      = TFix (subst su t)
 subst su (TIf t t1 t2) = TIf (subst su t) (subst su t1) (subst su t2)
-subst _ TTrue         = TTrue
-subst _ TFalse        = TFalse
-subst _ TUnit         = TUnit
+subst su (TPair t1 t2) = TPair (subst su t1) (subst su t2)
+subst su (TFst t1)     = TFst (subst su t1)
+subst su (TSnd t1)     = TSnd (subst su t1)
+subst _ TTrue          = TTrue
+subst _ TFalse         = TFalse
+subst _ TUnit          = TUnit
+subst _ t@(TInt _)     = t
 subst _ t@(TVLabel _)  = t
 subst su (TJoin t1 t2) = TJoin (subst su t1) (subst su t2)
 subst su (TMeet t1 t2) = TMeet (subst su t1) (subst su t2)
@@ -266,6 +314,7 @@ subst su (TToLabeled t1 t2)        = TToLabeled (subst su t1) (subst su t2)
 subst _ TException           = TException
 -- subst _  x             = x 
 
+subst su (TInsert n t1) = TInsert n (subst su t1)
 
 -------------------------------------------------------------------------------
 -- Predicates ----------------------------------------------------------------

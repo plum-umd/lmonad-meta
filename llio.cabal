@@ -35,6 +35,8 @@ library
                        containers
   hs-source-dirs:      src     
   default-language:    Haskell98
+  extensions:          PatternGuards
+  ghc-options:         -Wall -Werror -Wno-missing-signatures -Wno-unused-matches
 
 executable lmonad-meta-exe
   hs-source-dirs:      test

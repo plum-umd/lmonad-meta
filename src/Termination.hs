@@ -27,12 +27,12 @@ terminationAxiom _ = ()
 -- {-@ terminatesBind
 --  :: lc : Label
 --  -> c : Label
---  -> m : Memory
+--  -> m : Database
 --  -> t1 : Term
 --  -> t2 : {Term | terminates (Pg lc c m (TBind t1 t2))}
 --  -> {terminates (Pg lc c m t1)}
 --  @-}
--- terminatesBind :: Label -> Label -> Memory -> Term -> Term -> Proof
+-- terminatesBind :: Label -> Label -> Database -> Term -> Term -> Proof
 -- terminatesBind _ _ _ _ _ = ()
 
 {-@ assume terminationAxiomErase 
@@ -42,7 +42,7 @@ terminationAxiomErase :: Label -> Program -> Proof
 terminationAxiomErase _ _ = ()
 
 -- {-@ assume terminationAxiomTBind 
---   :: l:Label -> c:Label -> m:Memory -> t1:Term -> t2:Term
+--   :: l:Label -> c:Label -> m:Database -> t1:Term -> t2:Term
 --   -> { (evalSteps (Pg l c m t1) < evalSteps (Pg l c m (TBind t1 t2))) &&
 --        (terminates (Pg l c m (TBind t1 t2)) => terminates (Pg l c m t1)) 
 --      } 
@@ -53,7 +53,7 @@ terminationAxiomErase _ _ = ()
 --        (terminates (Pg l c m (TBind t1 t2)) => terminates (Pg l c m t1)) 
 --      } 
 {-@ assume terminationAxiomTBind 
-  :: l:Label -> c:Label -> m:Memory -> t1:Term -> {t2:Term | terminates (Pg l c m (TBind t1 t2))}
+  :: l:Label -> c:Label -> m:Database -> t1:Term -> {t2:Term | terminates (Pg l c m (TBind t1 t2))}
   -> { terminates (Pg l c m t1) && evalSteps (Pg l c m t1) < evalSteps (Pg l c m (TBind t1 t2)) }
   @-}
 terminationAxiomTBind :: Label -> Label -> Database -> Term -> Term -> Proof 
@@ -61,11 +61,11 @@ terminationAxiomTBind _ _ _ _ _ = ()
 
 
 {-@ assume terminationAxiomTToLabeled 
-  :: l:Label -> c:Label -> m:Memory -> t1:Term -> t2:Term
+  :: l:Label -> c:Label -> m:Database -> t1:Term -> t2:Term
   -> { (evalSteps (Pg l c m t2) < evalSteps (Pg l c m (TToLabeled t1 t2))) &&
        (terminates (Pg l c m (TToLabeled t1 t2)) => terminates (Pg l c m t2)) 
      } 
   @-}
-terminationAxiomTToLabeled :: Label -> Label -> Memory -> Term -> Term -> Proof 
+terminationAxiomTToLabeled :: Label -> Label -> Database -> Term -> Term -> Proof 
 terminationAxiomTToLabeled _ _ _ _ _ = ()
 
