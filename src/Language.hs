@@ -40,6 +40,9 @@ data Term
   | TFst Term
   | TSnd Term
 
+  | TCons Term Term
+  | TNil
+
   | TVLabel Label
   | TJoin {tJoin1 :: Term, tJoin2 :: Term}
   | TMeet {tMeet1 :: Term, tMeet2 :: Term}
@@ -91,15 +94,18 @@ size (TPair t1 t2)  = 1 + size t1 + size t2
 size (TFst t1)      = 1 + size t1
 size (TSnd t1)      = 1 + size t1
 
-size (TVLabel _)     = 1 -- JP: Is this fine???
+size (TCons t1 t2)  = 1 + size t1 + size t2
+size TNil           = 1
+
+size (TVLabel _)    = 1
 size (TJoin t1 t2)  = 1 + size t1 + size t2
 size (TMeet t1 t2)  = 1 + size t1 + size t2
 size (TCanFlowTo t1 t2)  = 1 + size t1 + size t2
 
 size (TBind t1 t2)  = 1 + size t1 + size t2
 
-size TGetLabel      = 0 -- JP: Is this fine???
-size TGetClearance  = 0 -- JP: Is this fine???
+size TGetLabel      = 0
+size TGetClearance  = 0
 size (TLowerClearance t) = 1 + size t
 
 size (TLabeledTCB _ t) = 1 + size t
@@ -126,6 +132,8 @@ isValue THole             = True
 isValue (TLabeledTCB _ _) = True
 isValue (TInt _)          = True
 isValue (TPair t1 t2)     = True -- isValue t1 && isValue t2
+isValue (TCons t1 t2)     = True -- isValue t1 && isValue t2
+isValue TNil              = True
 isValue _                 = False 
 
 -- JP: TLabeledTCB _ t if isValue t ?
@@ -188,6 +196,9 @@ eval (TFst t)                             = eval t
 eval (TSnd (TPair t1 t2))                 = t2
 eval (TSnd t)                             = eval t
 
+eval t@(TCons _ _)                        = t
+eval t@TNil                               = TNil
+
 eval t@(TVLabel _)                        = t
 
 -- Monadic
@@ -233,9 +244,13 @@ propagateException TGetClearance       = False
 propagateException (TLabeledTCB _ _)   = False
 
 propagateException (TInt _)            = False
+
 propagateException (TPair t1 t2)       = propagateException t1 || propagateException t2
 propagateException (TFst t1)           = propagateException t1
 propagateException (TSnd t1)           = propagateException t1
+
+propagateException (TCons t1 t2)       = propagateException t1 || propagateException t2
+propagateException TNil                = False
 
 {- 
 propagateException (TLam _ e)          = e  == TException 
@@ -291,6 +306,8 @@ subst su (TIf t t1 t2) = TIf (subst su t) (subst su t1) (subst su t2)
 subst su (TPair t1 t2) = TPair (subst su t1) (subst su t2)
 subst su (TFst t1)     = TFst (subst su t1)
 subst su (TSnd t1)     = TSnd (subst su t1)
+subst su (TCons t1 t2) = TCons (subst su t1) (subst su t2)
+subst _ TNil           = TNil
 subst _ TTrue          = TTrue
 subst _ TFalse         = TFalse
 subst _ TUnit          = TUnit

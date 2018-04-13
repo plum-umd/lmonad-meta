@@ -6,6 +6,7 @@
 module Programs where
 
 import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
 import Label
 import Language 
 import ProofCombinators
@@ -43,7 +44,7 @@ data Program =
 {-@ data Program <p :: Term -> Bool>
   = Pg { pLabel     :: Label
        , pClearance :: Label
-       , pMemory    :: Memory
+       , pDatabase  :: Database
        , pTerm      :: (Term<p>)
        }
     | PgHole
@@ -53,10 +54,10 @@ data Program =
 --     deriving (Show)
 
 data DBValue = DBValue Term
-    -- | Option types, bools, unit, 
+    -- | Option types, bools, unit, ints
     deriving (Eq, Show)
 
-data DBLabelFunction = DBLabelFunction Term
+data DBLabelFunction = DBLabelFunction Term -- (PrimaryKey -> Row -> Label)
     -- | Function that takes columns from a row and returns that column's label.
     deriving (Eq, Show)
 
@@ -69,8 +70,9 @@ data Table = Table {
     }
     deriving (Eq, Show)
 
-data Database = Database (Map TableName Table) 
-    deriving (Eq, Show)
+-- data Database = Database (Map TableName Table) 
+--     deriving (Eq, Show)
+type Database = Map TableName Table
 
 {-@ reflect evalProgram @-}
 {-@ evalProgram
@@ -129,6 +131,15 @@ evalProgram (Pg l c m (TToLabeled (TVLabel ll) t)) | l `canFlowTo` ll && ll `can
         --       Pair (n+1) (Pg l c m (TLabeledTCB ll THole))
             
 evalProgram (Pg l c m (TToLabeled (TVLabel _) _)) = Pg l c m TException
+
+evalProgram (Pg l c m (TInsert n rs)) | Map.lookup n m == Nothing = 
+    Pg l c m TException
+
+evalProgram (Pg l c m t@(TInsert n rs)) | Just table <- Map.lookup n m =
+    undefined
+
+    -- let t = Map.lookup 
+    -- let (. t') = insert
 
 evalProgram (Pg l c m t) = Pg l c m (eval t)
 
