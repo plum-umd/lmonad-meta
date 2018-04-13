@@ -1,6 +1,6 @@
 {-@ LIQUID "--exactdc"                                  @-}
 {-@ LIQUID "--higherorder"                              @-}
-{-@ LIQUID "--no-case-expand"                           @-}
+{-@ LIQUID "--max-case-expand=0"                        @-}
 
 module Simulations.EraseEvalErase where
 

@@ -72,6 +72,10 @@ data Database = Database (Map TableName Table)
     deriving (Eq, Show)
 
 {-@ reflect evalProgram @-}
+{-@ evalProgram
+ :: p : Program
+ -> p' : {Program | isPg p => isPg p'}
+ @-}
 evalProgram :: Program -> Program
 -- JP: Should we check to propagate exceptions here?
 evalProgram PgHole =  PgHole
@@ -136,10 +140,11 @@ evalProgram (Pg l c m t) = Pg l c m (eval t)
 -- TODO: 
 -- {-@ evalProgramStar :: Pair Index Program -> Pair Index (Program <{\v -> isValue v}>) @-}
 {-@ evalProgramStar 
- :: Program 
- -> {p' : Program | isPg p' && isValue (pTerm p')} 
+ :: p : Program 
+ -> {p' : Program | (isPg p => isPg p' && isValue (pTerm p'))} 
 @-}
 evalProgramStar :: Program -> Program
+evalProgramStar PgHole = PgHole
 evalProgramStar (Pg l c m t) | isValue t 
   = Pg l c m t
 evalProgramStar p 

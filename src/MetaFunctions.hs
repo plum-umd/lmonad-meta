@@ -120,7 +120,7 @@ evalEraseProgram p l = ε l (evalProgram p)
 --  -> {not (isTLam (εTerm l t))}
 --  @-}
 -- eraseNotTLam :: Label -> Term -> Proof
--- eraseNotTLam = undefined
+-- eraseNotTLam _ _ = ()
 -- 
 -- {-@ inv_isTVLabel 
 --     :: v:Term 
@@ -132,7 +132,7 @@ evalEraseProgram p l = ε l (evalProgram p)
 
 {-@ eraseNotTVLabel
  :: l : Label
- -> t : {Term | not (isTVLabel t)}
+ -> t : {Term | not (is$Language.TVLabel t)}
  -> {not (isTVLabel (εTerm l t))}
  @-}
 eraseNotTVLabel :: Label -> Term -> Proof

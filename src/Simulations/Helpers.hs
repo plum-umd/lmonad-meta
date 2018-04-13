@@ -46,66 +46,67 @@ pgTheorem p =
     *** QED
 
 
-{-@ safeProgramBindsToSafeProgram 
- :: {p : Program | ς p}
- -> t1 : Term
- -> {t2 : Term | (TBind t1 t2) = pTerm p}
- -> {v:Proof | ς (Pg (pLabel p) (pClearance p) (pMemory p) t1)}
- @-}
-safeProgramBindsToSafeProgram :: Program -> Term -> Term -> Proof
-safeProgramBindsToSafeProgram p@(Pg l c m tb@(TBind t1 t2)) t1' t2' | t1 == t1' && t2 == t2' = 
-    let p' = Pg l c m t1 in
-        ς p'
-    ==. ςTerm t1
-    ==. ςTerm tb
-    ==. True
-    *** QED
-
-{-@ safeProgramStarEvalsToNonHole
- :: {p : Program | ς p}
- -> {v : Proof | isPg (evalProgramStar p)}
- @-}
-safeProgramStarEvalsToNonHole :: Program -> Proof
-safeProgramStarEvalsToNonHole p = case evalProgramStar p of
-    p'@(Pg _ _ _ t) -> -- | isValue t ->
-            isPg (evalProgramStar p)
-        ==. isPg p'
-        ==. True
-        *** QED
-
-    PgHole ->
-        unreachable
-
--- {-@ automatic-instances safeProgramEvalsToNonHole @-}
-{-@ safeProgramEvalsToNonHole
- :: {p : Program | ς p}
- -> {v : Proof | isPg (evalProgram p)}
- @-}
-safeProgramEvalsToNonHole :: Program -> Proof
-safeProgramEvalsToNonHole PgHole = unreachable
-safeProgramEvalsToNonHole p@(Pg _ _ _ t@(TLabeledTCB _ _)) = unreachable
-safeProgramEvalsToNonHole p@(Pg l c m (TBind t1 _)) = case evalProgram p of
-    p'@PgHole ->
-        let p1 = Pg l c m t1 in
-            False
-        ==. isPg PgHole
-        ==. isPg p'
-        ==. isPg (evalProgram p)
-        ==. isPg (evalProgramStar p1)
-        ==. True ? safeProgramStarEvalsToNonHole p1
-        *** QED
-        
-    p'@(Pg _ _ _ _) -> 
-            isPg p'
-        ==. True
-        *** QED
-
-
-safeProgramEvalsToNonHole p@(Pg _ _ _ _) = 
-    let p'@(Pg _ _ _ _) = evalProgram p in
-        isPg p'
-    ==. True
-    *** QED
+-- {-@ safeProgramBindsToSafeProgram 
+--  :: {p : Program | ς p}
+--  -> t1 : Term
+--  -> {t2 : Term | (TBind t1 t2) = pTerm p}
+--  -> {v:Proof | ς (Pg (pLabel p) (pClearance p) (pMemory p) t1)}
+--  @-}
+-- safeProgramBindsToSafeProgram :: Program -> Term -> Term -> Proof
+-- safeProgramBindsToSafeProgram p@(Pg l c m tb@(TBind t1 t2)) t1' t2' | t1 == t1' && t2 == t2' = 
+--     let p' = Pg l c m t1 in
+--         ς p'
+--     ==. ςTerm t1
+--     ==. ςTerm tb
+--     ==. True
+--     *** QED
+-- 
+-- {-@ safeProgramStarEvalsToNonHole
+--  :: {p : Program | ς p}
+--  -> {v : Proof | isPg (evalProgramStar p)}
+--  @-}
+-- safeProgramStarEvalsToNonHole :: Program -> Proof
+-- safeProgramStarEvalsToNonHole PgHole = unreachable
+-- safeProgramStarEvalsToNonHole p = case evalProgramStar p of
+--     p'@(Pg _ _ _ t) -> -- | isValue t ->
+--             isPg (evalProgramStar p)
+--         ==. isPg p'
+--         ==. True
+--         *** QED
+-- 
+--     PgHole ->
+--         unreachable
+-- 
+-- -- {-@ automatic-instances safeProgramEvalsToNonHole @-}
+-- {-@ safeProgramEvalsToNonHole
+--  :: {p : Program | ς p}
+--  -> {v : Proof | isPg (evalProgram p)}
+--  @-}
+-- safeProgramEvalsToNonHole :: Program -> Proof
+-- safeProgramEvalsToNonHole PgHole = unreachable
+-- safeProgramEvalsToNonHole p@(Pg _ _ _ t@(TLabeledTCB _ _)) = unreachable
+-- safeProgramEvalsToNonHole p@(Pg l c m (TBind t1 _)) = case evalProgram p of
+--     p'@PgHole ->
+--         let p1 = Pg l c m t1 in
+--             False
+--         ==. isPg PgHole
+--         ==. isPg p'
+--         ==. isPg (evalProgram p)
+--         ==. isPg (evalProgramStar p1)
+--         ==. True ? safeProgramStarEvalsToNonHole p1
+--         *** QED
+--         
+--     p'@(Pg _ _ _ _) -> 
+--             isPg p'
+--         ==. True
+--         *** QED
+-- 
+-- 
+-- safeProgramEvalsToNonHole p@(Pg _ _ _ _) = 
+--     let p'@(Pg _ _ _ _) = evalProgram p in
+--         isPg p'
+--     ==. True
+--     *** QED
 
 -- JP: Move to Simulations.Language
 {-@ propagateErasePropagates 
@@ -257,4 +258,12 @@ propagateErasePropagates l t@(TToLabeled t1 t2) =
 --         propagateException (εTerm l t)
 --     ==! propagateException (TLabel (TVLabel l') (εTerm l t2))
 propagateErasePropagates l t = unreachable
+
+-- {-@ erasedStarCanFlowTo
+--  :: p : Program
+--  -> l : Label
+--  -> {canFlowTo (pLabel (evalProgramStar (Pg (pLabel p) (pClearance p) (pMemory p) (εTerm l (pTerm p))))) (pLabel (evalProgramStar p))}
+--  @-}
+-- erasedStarCanFlowTo :: Program -> Label -> Proof
+-- erasedStarCanFlowTo p l = ()
 

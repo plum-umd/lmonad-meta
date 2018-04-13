@@ -18,7 +18,6 @@ type Var   = Integer
 -------------------------------------------------------------------------------
 
 -- JP: Separate values from terms?
-
 data Term 
   = THole
   | TLam {lamVar :: Var, lamTerm :: Term}
@@ -92,12 +91,13 @@ size (TToLabeled t1 t2) = 1 + size t1 + size t2
 size TException     = 1
 
 isValue :: Term -> Bool 
-{-@ reflect isValue @-}
+{-@ measure isValue @-}
 isValue (TLam _ _)        = True  -- TLam :: _ -> _ -> {v:Term | isValue v}
 isValue TUnit             = True  -- TUnit :: {v:Term | isValue v}
 isValue TTrue             = True 
 isValue TFalse            = True 
 isValue (TVLabel _)       = True 
+isValue (TVar _)          = True 
 isValue TException        = True
 isValue THole             = True
 isValue (TLabeledTCB _ _) = True
