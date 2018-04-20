@@ -57,9 +57,9 @@ data DBValue = DBValue Term
     -- | Option types, bools, unit, ints
     deriving (Eq, Show)
 
-data DBLabelFunction = DBLabelFunction Term -- (PrimaryKey -> Row -> Label)
+data DBLabelFunction = DBLabelFunction (PrimaryKey -> Row -> Label) -- Term
     -- | Function that takes columns from a row and returns that column's label.
-    deriving (Eq, Show)
+    -- deriving (Eq, Show)
 
 newtype Row = Row (Map ColumnName DBValue)
     deriving (Eq, Show)
@@ -68,7 +68,12 @@ data Table = Table {
       tableRows :: Map PrimaryKey Row
     , tableLabelFunctions :: Map ColumnName DBLabelFunction
     }
-    deriving (Eq, Show)
+
+instance Eq Table where
+    (Table a _) == (Table b _) = a == b
+
+instance Show Table where
+    show (Table t _) = "Table " ++ show t
 
 -- data Database = Database (Map TableName Table) 
 --     deriving (Eq, Show)
@@ -132,17 +137,63 @@ evalProgram (Pg l c m (TToLabeled (TVLabel ll) t)) | l `canFlowTo` ll && ll `can
             
 evalProgram (Pg l c m (TToLabeled (TVLabel _) _)) = Pg l c m TException
 
+evalProgram (Pg l c m (TInsert n rs)) | Just rs' <- evalRow rs = 
+    Pg l c m (TInsert n rs')
+
 evalProgram (Pg l c m (TInsert n rs)) | Map.lookup n m == Nothing = 
     Pg l c m TException
 
-evalProgram (Pg l c m t@(TInsert n rs)) | Just table <- Map.lookup n m =
-    undefined
+evalProgram (Pg l c m t@(TInsert n rs)) | Just Table{..} <- Map.lookup n m =
+    -- Get fresh key.
+    let k = freshKey tableRows in
 
-    -- let t = Map.lookup 
-    -- let (. t') = insert
+    -- Convert row.
+    let rs' = Row (Map.fromList (convertRow rs)) in
+
+    -- Check label for each field.
+    let checks = Map.foldl (checkLabel k rs') True tableLabelFunctions in
+
+    -- Insert row.
+    let tableRows' = Map.insert k rs' tableRows in
+
+    -- Update table.
+    let m' = Map.insert n (Table tableRows' tableLabelFunctions) m in
+
+    Pg l c m' TUnit
+
+    where
+        freshKey :: Map PrimaryKey Row -> PrimaryKey
+        freshKey m = maybe 0 (\(k, _) -> k + 1) (Map.lookupMax m)
+
+        checkLabel _ _ False _ = False
+        checkLabel k rs True (DBLabelFunction labelF) = 
+            let l' = labelF k rs in
+            l `canFlowTo` l' && l' `canFlowTo` c
+
+        convertRow :: Term -> [(PrimaryKey, DBValue)]
+        convertRow TNil = []
+        convertRow (TCons (TPair (TInt c) v) t) = (c, DBValue v):(convertRow t)
+        convertRow _ = error "unreachable"
 
 evalProgram (Pg l c m t) = Pg l c m (eval t)
 
+-- Take one step in the row. Returns Nothing if there are no more steps to take.
+evalRow :: Term -> Maybe Term
+evalRow TNil = Nothing
+evalRow (TCons h@(TPair (TInt _) v) t) | isDatabaseValue v = fmap (TCons h) (evalRow t)
+evalRow (TCons (TPair c@(TInt _) v) t) = Just (TCons (TPair c (eval v)) t)
+evalRow (TCons (TPair c v) t) = Just (TCons (TPair (eval c) v) t)
+evalRow (TCons h t) = Just (TCons (eval h) t)
+evalRow t = Just (eval t)
+
+isDatabaseValue :: Term -> Bool
+isDatabaseValue TUnit = True
+isDatabaseValue TTrue = True
+isDatabaseValue TFalse = True
+isDatabaseValue (TInt _) = True
+isDatabaseValue (TVLabel _) = True
+-- isDatabaseValue THole = True -- THole?
+isDatabaseValue _ = False
 
 -- JP: Can we drop evalProgramStar and evaluate with small steps?
 

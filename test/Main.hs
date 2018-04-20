@@ -1,12 +1,12 @@
 module Main where
 
-import qualified Data.Map.Strict as Map
+import qualified Data.Map as Map
 
 import Label
 import Language
 import Programs
 
-emptyDatabase = Database Map.empty
+emptyDatabase = Map.empty
 
 main :: IO ()
 main = do

@@ -20,6 +20,7 @@ library
                        Language
                        Programs
                        ProofCombinators
+                       Data.Map
                        Determinacy
                        MetaFunctions
                        Termination
@@ -35,15 +36,15 @@ library
                        containers
   hs-source-dirs:      src     
   default-language:    Haskell98
-  extensions:          PatternGuards
-  ghc-options:         -Wall -Werror -Wno-missing-signatures -Wno-unused-matches
+  extensions:          PatternGuards, RecordWildCards
+--   ghc-options:         -Wall -Werror -Wno-missing-signatures -Wno-unused-matches
 
 executable lmonad-meta-exe
   hs-source-dirs:      test
   build-depends:       base >=4.9 && <5,
                        liquidhaskell,
-                       llio,
-                       containers
+                       llio
+                       --, containers
   main-is:             Main.hs
   default-language:    Haskell98
 
