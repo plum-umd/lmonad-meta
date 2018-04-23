@@ -1,4 +1,6 @@
-{-# LANGUAGE NoImplicitPrelude #-}
+{-@ LIQUID "--exactdc"                                  @-}
+
+{- LANGUAGE NoImplicitPrelude #-}
 
 module Data.Map where
 

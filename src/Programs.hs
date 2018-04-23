@@ -57,7 +57,7 @@ data DBValue = DBValue Term
     -- | Option types, bools, unit, ints
     deriving (Eq, Show)
 
-data DBLabelFunction = DBLabelFunction (PrimaryKey -> Row -> Label) -- Term
+newtype DBLabelFunction = DBLabelFunction (PrimaryKey -> Row -> Label) -- Term
     -- | Function that takes columns from a row and returns that column's label.
     -- deriving (Eq, Show)
 
@@ -174,6 +174,8 @@ evalProgram (Pg l c m t@(TInsert n rs)) | Just Table{..} <- Map.lookup n m =
         convertRow TNil = []
         convertRow (TCons (TPair (TInt c) v) t) = (c, DBValue v):(convertRow t)
         convertRow _ = error "unreachable"
+
+evalProgram (Pg l c m (TSelect n fs)) = undefined
 
 evalProgram (Pg l c m t) = Pg l c m (eval t)
 

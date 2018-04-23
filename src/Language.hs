@@ -40,6 +40,7 @@ data Term
   | TFst Term
   | TSnd Term
 
+  -- TODO: head, tail XXX
   | TCons Term Term
   | TNil
 
@@ -68,6 +69,7 @@ data Term
 
   -- Database functions.
   | TInsert TableName Term
+  | TSelect TableName Term
   deriving (Eq, Show)
 
 
