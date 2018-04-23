@@ -67,13 +67,14 @@ newtype Row = Row (Map ColumnName DBValue)
 data Table = Table {
       tableRows :: Map PrimaryKey Row
     , tableLabelFunctions :: Map ColumnName DBLabelFunction
+    , tableLabel :: Label
     }
 
 instance Eq Table where
-    (Table a _) == (Table b _) = a == b
+    (Table a _ l) == (Table b _ l') = a == b && l == l'
 
 instance Show Table where
-    show (Table t _) = "Table " ++ show t
+    show (Table t _ _) = "Table " ++ show t
 
 -- data Database = Database (Map TableName Table) 
 --     deriving (Eq, Show)
@@ -151,13 +152,14 @@ evalProgram (Pg l c m t@(TInsert n rs)) | Just Table{..} <- Map.lookup n m =
     let rs' = Row (Map.fromList (convertRow rs)) in
 
     -- Check label for each field.
-    let checks = Map.foldl (checkLabel k rs') True tableLabelFunctions in
+    let tableCheck = l `canFlowTo` tableLabel && tableLabel `canFlowTo` c in
+    let checks = Map.foldl (checkLabel k rs') tableCheck tableLabelFunctions in
 
     -- Insert row.
     let tableRows' = Map.insert k rs' tableRows in
 
     -- Update table.
-    let m' = Map.insert n (Table tableRows' tableLabelFunctions) m in
+    let m' = Map.insert n (Table tableRows' tableLabelFunctions tableLabel) m in
 
     Pg l c m' TUnit
 
