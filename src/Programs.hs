@@ -138,6 +138,56 @@ evalProgram (Pg l c m (TToLabeled (TVLabel ll) t)) | l `canFlowTo` ll && ll `can
             
 evalProgram (Pg l c m (TToLabeled (TVLabel _) _)) = Pg l c m TException
 
+evalProgram (Pg l c m (TPInsert n rs)) | Just rs' <- evalPRow rs = 
+    Pg l c m (TInsert n rs')
+
+evalProgram (Pg l c m (TPInsert n rs)) | Map.lookup n m == Nothing =
+    Pg l c m TException
+
+evalProgram (Pg l c m (TPInsert n rs)) | Just Table{..} <- Map.lookup n m =
+    -- Get fresh key.
+    let k = freshKey tableRows in
+
+    -- Convert row.
+    let (ls', rs') = convertRow rs in
+    let rs'' = Row (Map.fromList rs') in
+    let ls'' = Map.fromList ls' in
+
+    -- Check label for each field.
+    let tableCheck = l `canFlowTo` tableLabel && tableLabel `canFlowTo` c in
+    let checks = Map.foldlWithKey (checkLabel k ls'' rs'') tableCheck tableLabelFunctions in
+    -- JP: What about the check for the old clearance used to create the Labeled? I guess this doesn't impact NI
+    if checks then
+        -- Insert row.
+        let tableRows' = Map.insert k rs'' tableRows in
+
+        -- Update table.
+        let m' = Map.insert n (Table tableRows' tableLabelFunctions tableLabel) m in
+
+        Pg l c m' TUnit
+
+    else
+        Pg l c m TException
+
+    where
+        checkLabel _ _ _ False _ _ = False
+        checkLabel k ls rs True k' (DBLabelFunction labelF) = 
+            case Map.lookup k' ls of
+                Nothing ->
+                    -- Label not found, so return exception. This is impossible w/ Haskell's type system.
+                    False
+                Just l -> 
+                    let l' = labelF k rs in
+                    l `canFlowTo` l' && l' `canFlowTo` c
+        
+        convertRow :: Term -> ([(PrimaryKey, Label)], [(PrimaryKey, DBValue)])
+        convertRow TNil = ([], [])
+        convertRow (TCons (TPair (TInt c) (TLabeledTCB l v)) t) =
+            let (ls, rs) = convertRow t in
+            ( (c, l):ls, (c, DBValue v):rs)
+        convertRow _ = error "unreachable"
+
+
 evalProgram (Pg l c m (TInsert n rs)) | Just rs' <- evalRow rs = 
     Pg l c m (TInsert n rs')
 
@@ -154,19 +204,20 @@ evalProgram (Pg l c m t@(TInsert n rs)) | Just Table{..} <- Map.lookup n m =
     -- Check label for each field.
     let tableCheck = l `canFlowTo` tableLabel && tableLabel `canFlowTo` c in
     let checks = Map.foldl (checkLabel k rs') tableCheck tableLabelFunctions in
+    if checks then
 
-    -- Insert row.
-    let tableRows' = Map.insert k rs' tableRows in
+        -- Insert row.
+        let tableRows' = Map.insert k rs' tableRows in
 
-    -- Update table.
-    let m' = Map.insert n (Table tableRows' tableLabelFunctions tableLabel) m in
+        -- Update table.
+        let m' = Map.insert n (Table tableRows' tableLabelFunctions tableLabel) m in
 
-    Pg l c m' TUnit
+        Pg l c m' TUnit
+
+    else
+        Pg l c m TException
 
     where
-        freshKey :: Map PrimaryKey Row -> PrimaryKey
-        freshKey m = maybe 0 (\(k, _) -> k + 1) (Map.lookupMax m)
-
         checkLabel _ _ False _ = False
         checkLabel k rs True (DBLabelFunction labelF) = 
             let l' = labelF k rs in
@@ -180,6 +231,20 @@ evalProgram (Pg l c m t@(TInsert n rs)) | Just Table{..} <- Map.lookup n m =
 evalProgram (Pg l c m (TSelect n fs)) = undefined
 
 evalProgram (Pg l c m t) = Pg l c m (eval t)
+
+-- Get a fresh key for the table.
+freshKey :: Map PrimaryKey Row -> PrimaryKey
+freshKey m = maybe 0 (\(k, _) -> k + 1) (Map.lookupMax m)
+
+-- Take one step in a protected row. Returns Nothing if there are no more steps to take.
+evalPRow :: Term -> Maybe Term
+evalPRow TNil = Nothing
+evalPRow (TCons h@(TPair (TInt _) (TLabeledTCB l v)) t) | isDatabaseValue v = fmap (TCons h) (evalRow t)
+evalPRow (TCons (TPair c@(TInt _) (TLabeledTCB l v)) t) = Just (TCons (TPair c (TLabeledTCB l (eval v))) t)
+evalPRow (TCons (TPair c@(TInt _) l) t) = Just (TCons (TPair c (eval l)) t)
+evalPRow (TCons (TPair c l) t) = Just (TCons (TPair (eval c) l) t)
+evalPRow (TCons h t) = Just (TCons (eval h) t)
+evalPRow t = Just (eval t)
 
 -- Take one step in the row. Returns Nothing if there are no more steps to take.
 evalRow :: Term -> Maybe Term

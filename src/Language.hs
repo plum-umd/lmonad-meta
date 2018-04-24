@@ -69,6 +69,7 @@ data Term
 
   -- Database functions.
   | TInsert TableName Term
+  | TPInsert TableName Term
   | TSelect TableName Term
   deriving (Eq, Show)
 

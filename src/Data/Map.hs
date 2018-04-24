@@ -35,6 +35,9 @@ lookupMax = undefined
 foldl :: (a -> b -> a) -> a -> Map k b -> a
 foldl = undefined
 
+foldlWithKey :: (a -> k -> b -> a) -> a -> Map k b -> a
+foldlWithKey = undefined
+
 insert :: Ord k => k -> a -> Map k a -> Map k a
 insert = undefined
 
