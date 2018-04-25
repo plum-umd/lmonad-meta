@@ -164,7 +164,7 @@ evalProgram (Pg l c m (TPInsert n rs)) | Just Table{..} <- Map.lookup n m =
         -- Update table.
         let m' = Map.insert n (Table tableRows' tableLabelFunctions tableLabel) m in
 
-        Pg l c m' TUnit
+        Pg l c m' (TInt k)
 
     else
         Pg l c m TException
@@ -212,7 +212,7 @@ evalProgram (Pg l c m t@(TInsert n rs)) | Just Table{..} <- Map.lookup n m =
         -- Update table.
         let m' = Map.insert n (Table tableRows' tableLabelFunctions tableLabel) m in
 
-        Pg l c m' TUnit
+        Pg l c m' (TInt k)
 
     else
         Pg l c m TException
