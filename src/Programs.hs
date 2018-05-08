@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 {-@ LIQUID "--exactdc"                                  @-}
 {-@ LIQUID "--higherorder"                              @-}
 {-@ LIQUID "--trustinternals"                           @-}
@@ -53,8 +54,12 @@ data Program =
 -- newtype Map k v = Map [(k,v)]
 --     deriving (Show)
 
+
+-- Invariants:
+-- - If a column is part of another column's label function, the column's label must be bottom (or can flow to the table label?).
+
 data DBValue = DBValue Term
-    -- | Option types, bools, unit, ints
+    -- | Option types, bools, unit, ints. Satisfies `isDatabaseValue t`
     deriving (Eq, Show)
 
 newtype DBLabelFunction = DBLabelFunction (PrimaryKey -> Row -> Label) -- Term
@@ -67,6 +72,7 @@ newtype Row = Row (Map ColumnName DBValue)
 data Table = Table {
       tableRows :: Map PrimaryKey Row
     , tableLabelFunctions :: Map ColumnName DBLabelFunction
+    -- , tableLabelFunctions :: Map ColumnName (DBLabelFunction, Bool) -- Label function and whether it is constant. 
     , tableLabel :: Label
     }
 
