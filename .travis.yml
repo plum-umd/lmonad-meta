@@ -31,37 +31,31 @@ jobs:
   include: 
     - stage: verify toLabeled 
       script:
-        - cd POPL19/
         - stack install
         - stack --skip-ghc-check test lmonad-lh:toLabeled
 
     - stage: verify all 
       script:
-        - cd POPL19/
         - stack install
         - stack --skip-ghc-check test lmonad-lh:all
 
     - stage: verify update 
       script:
-        - cd POPL19/
         - stack install
         - stack --skip-ghc-check test lmonad-lh:update
 
     - stage: verify select 
       script:
-        - cd POPL19/
         - stack install
         - stack --skip-ghc-check test lmonad-lh:update
 
     - stage: verify delete 
       script:
-        - cd POPL19/
         - stack install
         - stack --skip-ghc-check test lmonad-lh:delete
 
     - stage: verify insert 
       script:
-        - cd POPL19/
         - stack install
         - stack --skip-ghc-check test lmonad-lh:insert
         

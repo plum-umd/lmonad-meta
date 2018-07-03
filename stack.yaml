@@ -1,0 +1,20 @@
+resolver: lts-10.0
+
+packages:
+- '.'
+
+
+extra-deps:
+- csv-table-0.1.0.1
+- dotgen-0.4.2
+- fgl-visualize-0.1.0.1
+- intern-0.9.1.4
+- located-base-0.1.1.1
+
+- git: https://github.com/ucsd-progsys/liquid-fixpoint
+  commit: 342ebc329b6e6dced80a8bc2079983b4ab02dc8f
+
+- git: https://github.com/ucsd-progsys/liquidhaskell
+  commit: a6adb743be89954ed2111242a660440ab66d0241
+
+extra-package-dbs: []

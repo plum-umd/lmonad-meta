@@ -1,0 +1,73 @@
+name:                lmonad-lh
+version:             0.1.0.0
+synopsis:            Proof of non-interference of lmonad
+homepage:            nikivazou.github.io
+license:             MIT
+author:              James Parker & Niki Vazou
+maintainer:          nikivazou@gmail.com
+build-type:          Simple
+extra-source-files:  ChangeLog.md
+cabal-version:       >=1.10
+
+
+executable lmonad-lh
+  main-is:             Main.hs
+  build-depends:       base >=4.9 && <5
+  hs-source-dirs:      src
+  other-modules :      Labels, Predicates, Programs, ProofCombinators, LabelInstance
+  -- ghc-options:         -W -Werror
+  default-language:    Haskell2010
+
+test-suite all
+  default-language:  Haskell98
+  build-depends:     base >=4.9 && <5, process, liquidhaskell >=0.8 && <0.9
+  type:              exitcode-stdio-1.0
+  other-modules :    RunLiquid
+  hs-source-dirs:    tests
+  ghc-options:       -W -Werror
+  main-is:           Test.hs
+
+test-suite toLabeled
+  default-language:  Haskell98
+  build-depends:     base >=4.9 && <5, process, liquidhaskell >=0.8 && <0.9
+  type:              exitcode-stdio-1.0
+  hs-source-dirs:    tests
+  other-modules :    RunLiquid
+  ghc-options:       -W -Werror
+  main-is:           ToLabeled.hs 
+
+test-suite update
+  default-language:  Haskell98
+  build-depends:     base >=4.9 && <5, process, liquidhaskell >=0.8 && <0.9
+  type:              exitcode-stdio-1.0
+  hs-source-dirs:    tests
+  other-modules :    RunLiquid
+  ghc-options:       -W -Werror
+  main-is:           Update.hs
+
+test-suite delete
+  default-language:  Haskell98
+  build-depends:     base >=4.9 && <5, process, liquidhaskell >=0.8 && <0.9
+  type:              exitcode-stdio-1.0
+  hs-source-dirs:    tests
+  other-modules :    RunLiquid
+  ghc-options:       -W -Werror
+  main-is:           Delete.hs  
+
+test-suite insert
+  default-language:  Haskell98
+  build-depends:     base >=4.9 && <5, process, liquidhaskell >=0.8 && <0.9
+  type:              exitcode-stdio-1.0
+  hs-source-dirs:    tests
+  other-modules :    RunLiquid
+  ghc-options:       -W -Werror
+  main-is:           Insert.hs  
+
+test-suite select
+  default-language:  Haskell98
+  build-depends:     base >=4.9 && <5, process, liquidhaskell >=0.8 && <0.9
+  type:              exitcode-stdio-1.0
+  hs-source-dirs:    tests
+  other-modules :    RunLiquid
+  ghc-options:       -W -Werror
+  main-is:           Select.hs    
