@@ -7,7 +7,7 @@ import System.Process
 
 liquid :: [String] -> IO ()
 liquid files 
-  = runCommand' "cd db && make clean" >> runAllLiquid files >>= exitWith
+  = runCommand' "cd src && make clean" >> runAllLiquid files >>= exitWith
 
 
 definitions :: [String]
