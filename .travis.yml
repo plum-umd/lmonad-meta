@@ -29,34 +29,40 @@ addons:
 
 jobs: 
   include: 
+
+    - stage: verify basic 
+      script:
+        - stack install
+        - stack --skip-ghc-check test lmonad-lh:basic
+
     - stage: verify toLabeled 
       script:
         - stack install
         - stack --skip-ghc-check test lmonad-lh:toLabeled
 
-    - stage: verify all 
-      script:
-        - stack install
-        - stack --skip-ghc-check test lmonad-lh:all
 
-    - stage: verify update 
+    - stage: verify insert 
       script:
         - stack install
-        - stack --skip-ghc-check test lmonad-lh:update
-
-    - stage: verify select 
-      script:
-        - stack install
-        - stack --skip-ghc-check test lmonad-lh:update
+        - stack --skip-ghc-check test lmonad-lh:insert
 
     - stage: verify delete 
       script:
         - stack install
         - stack --skip-ghc-check test lmonad-lh:delete
 
-    - stage: verify insert 
+    - stage: verify select 
       script:
         - stack install
-        - stack --skip-ghc-check test lmonad-lh:insert
+        - stack --skip-ghc-check test lmonad-lh:select
+
+    - stage: verify update 
+      script:
+        - stack install
+        - stack --skip-ghc-check test lmonad-lh:update
         
 
+    - stage: verify everything 
+      script:
+        - stack install
+        - stack --skip-ghc-check test lmonad-lh:all

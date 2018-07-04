@@ -18,7 +18,17 @@ executable lmonad-lh
   -- ghc-options:         -W -Werror
   default-language:    Haskell2010
 
-test-suite all
+test-suite everything
+  default-language:  Haskell98
+  build-depends:     base >=4.9 && <5, process, liquidhaskell >=0.8 && <0.9
+  type:              exitcode-stdio-1.0
+  other-modules :    RunLiquid
+  hs-source-dirs:    tests
+  ghc-options:       -W -Werror
+  main-is:           All.hs
+
+
+test-suite basic
   default-language:  Haskell98
   build-depends:     base >=4.9 && <5, process, liquidhaskell >=0.8 && <0.9
   type:              exitcode-stdio-1.0
