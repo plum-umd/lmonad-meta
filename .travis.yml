@@ -65,4 +65,4 @@ jobs:
     - stage: verify everything 
       script:
         - stack install
-        - stack --skip-ghc-check test lmonad-lh:all
+        - stack --skip-ghc-check test lmonad-lh:everything
