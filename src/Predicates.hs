@@ -15,5 +15,5 @@ data Pred = Pred { pDependOn1 :: Bool, pDependOn2 :: Bool, pValue :: Bool}
 
 {-@ assume evalPredicate :: p:Pred -> x:a -> {v:Bool | v == Predicates.evalPredicate p x } @-} 
 evalPredicate :: Pred -> a -> Bool 
-evalPredicate _ _ = undefined   
+evalPredicate p _ = pValue p   
 
