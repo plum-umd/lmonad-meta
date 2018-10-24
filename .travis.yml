@@ -4,27 +4,27 @@ group: deprecated-2017Q4
 
 sudo: required
 
-cache:
-  directories:
-    - $HOME/.stack
-
-before_install:
-  # Download and unpack the stack executable
-  - sudo rm /etc/apt/sources.list.d/mongodb-3.2.list
-  - mkdir -p ${HOME}/.local/bin
-  - export PATH=${HOME}/.local/bin:${PATH}
-  - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ${HOME}/.local/bin '*/stack'
-  - stack --version
-  - stack setup
-
-  # Install Z3
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:hvr/z3 -y > /dev/null; sudo apt-key -qq update /dev/null; sudo apt-get -qq update; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -qq install z3 -y --force-yes; fi
-
-addons:
-  apt:
-    sources:
-    - hvr-ghc
+# cache:
+#   directories:
+#     - $HOME/.stack
+# 
+# before_install:
+#   # Download and unpack the stack executable
+#   - sudo rm /etc/apt/sources.list.d/mongodb-3.2.list
+#   - mkdir -p ${HOME}/.local/bin
+#   - export PATH=${HOME}/.local/bin:${PATH}
+#   - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ${HOME}/.local/bin '*/stack'
+#   - stack --version
+#   - stack setup
+# 
+#   # Install Z3
+#   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:hvr/z3 -y > /dev/null; sudo apt-key -qq update /dev/null; sudo apt-get -qq update; fi
+#   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -qq install z3 -y --force-yes; fi
+# 
+# addons:
+#   apt:
+#     sources:
+#     - hvr-ghc
 
 
 jobs: 
@@ -32,33 +32,4 @@ jobs:
 
     - stage: verify basic 
       script:
-        - stack install
-        - stack --skip-ghc-check test lmonad-lh:basic
-
-    - stage: verify toLabeled 
-      script:
-        - stack install
-        - stack --skip-ghc-check test lmonad-lh:toLabeled
-
-
-    - stage: verify insert 
-      script:
-        - stack install
-        - stack --skip-ghc-check test lmonad-lh:insert
-
-    - stage: verify delete 
-      script:
-        - stack install
-        - stack --skip-ghc-check test lmonad-lh:delete
-
-    - stage: verify select 
-      script:
-        - stack install
-        - stack --skip-ghc-check test lmonad-lh:select
-
-    - stage: verify update 
-      script:
-        - stack install
-        - stack --skip-ghc-check test lmonad-lh:update
-        
-
+        - echo "TEST"
