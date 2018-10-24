@@ -4,6 +4,7 @@ data Pred = Pred { pDependOn1 :: Bool, pDependOn2 :: Bool, pValue :: Bool}
   deriving Eq 
 
 
+
 {-@ measure Predicates.pDependOn1 :: Pred -> Bool @-}
 {-@ measure Predicates.pDependOn2 :: Pred -> Bool @-}
 {-@ measure Predicates.pValue     :: Pred -> Bool @-}
