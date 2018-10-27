@@ -81,3 +81,13 @@ test-suite select
   other-modules :    RunLiquid
   ghc-options:       -W -Werror
   main-is:           Select.hs    
+
+
+test-suite final
+  default-language:  Haskell98
+  build-depends:     base >=4.9 && <5, process, liquidhaskell >=0.8 && <0.9
+  type:              exitcode-stdio-1.0
+  hs-source-dirs:    tests
+  other-modules :    RunLiquid
+  ghc-options:       -W -Werror
+  main-is:           Final.hs   

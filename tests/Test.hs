@@ -25,12 +25,11 @@ main = liquid [
   -- Specific Simulations 
   , "Simulations/Terms.hs"
   , "Simulations/Pure.hs"
---   , "Simulations/Predicates.hs"
 
   -- Simulations 
-  , "Simulations/Simulations.hs"
+--   , "Simulations/Simulations.hs"
 
   -- Finally, 
-  , "NonInterference.hs"
+--   , "NonInterference.hs"
   ]
 
