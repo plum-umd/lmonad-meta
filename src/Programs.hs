@@ -3,7 +3,6 @@
 module Programs where
 
 import Labels 
-import Predicates 
 
 import Prelude hiding (Maybe(..), fromJust, isJust)
  
@@ -21,7 +20,6 @@ import ProofCombinators
 #include "Terms/Erasure.hs" 
 #include "Terms/Evaluation.hs" 
 #include "DataBase/DataBase.hs" 
-
 
 data Program l = PgHole {pHDB :: DB l}     | Pg {pLabel :: l, pgDB :: DB l, pTerm :: Term l }
 {-@ data Program l = PgHole {pHDB :: DB l} | Pg {pLabel :: l, pgDB :: DB l, pTerm :: Term l } @-}
@@ -41,12 +39,6 @@ isPg (PgHole _) = False
 isJust :: Maybe a -> Bool 
 isJust (Just _) = True 
 isJust _        = False 
-
-{-@ measure fromJust @-}
-{-@ fromJust :: {v:Maybe a | isJust v} -> a @-}
-fromJust :: Maybe a -> a 
-fromJust (Just x) = x 
-
 
 {-@ reflect lookupTableInfo @-}
 lookupTableInfo :: TName -> DB l -> Maybe (TInfo l)
@@ -68,8 +60,8 @@ lookupTable n ((Pair n' t):xs)
 
 
 {-@ reflect selectDB @-}
-selectDB :: (Eq l, Label l) => DB l -> TName -> Pred -> Term l 
-{-@ selectDB :: (Eq l, Label l) => DB l -> TName -> Pred -> STerm l @-}
+selectDB :: (Eq l, Label l) => DB l -> TName -> Pred l -> Term l 
+{-@ selectDB :: (Eq l, Label l) => DB l -> TName -> Pred l -> STerm l @-}
 selectDB [] n r = TNil  
 selectDB ((Pair n' (Table tinfo rs)):xs) n p
   | n == n' 
@@ -78,8 +70,8 @@ selectDB ((Pair n' (Table tinfo rs)):xs) n p
   = selectDB xs n p 
 
 {-@ reflect selectRows @-}
-{-@ selectRows :: (Eq l, Label l) => Pred -> TInfo l -> [Row l] -> STerm l @-} 
-selectRows :: (Eq l, Label l) => Pred -> TInfo l -> [Row l] -> Term l 
+{-@ selectRows :: (Eq l, Label l) => Pred l -> TInfo l -> [Row l] -> STerm l @-} 
+selectRows :: (Eq l, Label l) => Pred l -> TInfo l -> [Row l] -> Term l 
 selectRows p _ [] = TNil 
 selectRows p tinfo (r@(Row k v1 v2):rs)
   | evalPred p r
@@ -97,22 +89,21 @@ rowToTerm tinfo (Row k v1 v2)
           (TCons (TLabeled (makeValLabel tinfo v1) v2) TNil) 
 
 {-@ reflect evalPred @-}
-evalPred :: Pred -> Row l -> Bool 
-evalPred p (Row k v1 v2)
-  | pDep1 p && pDep2 p
-  = evalPredicate p (Pair v1 v2)
-  | pDep1 p 
-  = evalPredicate p v1
-  | otherwise 
-  = pVal p 
+evalPred :: Eq l => Pred l -> Row l -> Bool 
+evalPred (Pred2 p) r
+  = p (rowField1 r) (rowField2 r) -- evalPredicate p (Pair v1 v2)
+evalPred (Pred1 p) r
+  = p (rowField1 r)
+evalPred (Pred0 p) _
+  = p 
 
 
 {-@ reflect updateDB @-}
-updateDB :: DB l -> TName -> Pred -> Term l -> Term l -> DB l 
+updateDB :: Eq l => DB l -> TName -> Pred l -> Term l -> Term l -> DB l 
 {-@ updateDB 
   :: DB l 
   -> TName 
-  -> Pred 
+  -> Pred l
   -> SDBTerm l 
   -> SDBTerm l  
   -> DB l @-} 
@@ -124,9 +115,9 @@ updateDB ((Pair n' t@(Table ti rs)):ts) n p v1 v2
   = Pair n' t:updateDB ts n p v1 v2  
 
 {-@ reflect updateRows @-}
-updateRows :: Pred -> Term l -> Term l -> [Row l] -> [Row l] 
+updateRows :: Eq l => Pred l -> Term l -> Term l -> [Row l] -> [Row l] 
 {-@ updateRows 
-  :: Pred 
+  :: Pred l
   -> SDBTerm l 
   -> SDBTerm l 
   -> rs:[Row l] 
@@ -138,9 +129,9 @@ updateRows p v1 v2 (r@(Row k _ _):rs)
 
 
 {-@ reflect updateRow @-}
-updateRow :: Pred -> Term l -> Term l -> Row l -> Row l 
+updateRow :: Eq l => Pred l -> Term l -> Term l -> Row l -> Row l 
 {-@ updateRow 
-  :: Pred 
+  :: Pred l
   -> SDBTerm l 
   -> SDBTerm l 
   -> rs:Row l 
@@ -148,7 +139,7 @@ updateRow :: Pred -> Term l -> Term l -> Row l -> Row l
 updateRow p v1 v2 r@(Row k _ _) = if evalPred p r then Row k v1 v2 else r 
 
 {-@ reflect deleteDB @-}
-deleteDB :: DB l -> TName -> Pred -> DB l 
+deleteDB :: Eq l => DB l -> TName -> Pred l -> DB l 
 deleteDB [] n p = [] 
 deleteDB ((Pair n' t@(Table ti rs)):ts) n p
   | n == n' 
@@ -157,7 +148,7 @@ deleteDB ((Pair n' t@(Table ti rs)):ts) n p
   = Pair n' t:deleteDB ts n p
 
 {-@ reflect deleteRaws @-}
-deleteRaws :: Pred -> [Row l] -> [Row l] 
+deleteRaws :: Eq l => Pred l -> [Row l] -> [Row l] 
 deleteRaws _ [] = [] 
 deleteRaws p (r:rs)
   | evalPred p r 
@@ -166,19 +157,19 @@ deleteRaws p (r:rs)
   = r:deleteRaws p rs  
 
 {-@ reflect labelReadTable @-}
-labelReadTable :: (Eq l, Label l) => Pred -> TInfo l ->  l 
-labelReadTable p ti | not (pDep1 p)   -- select rows does not work with this   
+labelReadTable :: (Eq l, Label l) => Pred l -> TInfo l ->  l 
+labelReadTable p ti | not (pDep1 p)
   = tableLabel ti
 labelReadTable p ti  
   = tableLabel ti `join` field1Label ti 
 
 
 {-@ reflect labelSelectTable @-}
-labelSelectTable :: (Eq l, Label l) => Pred -> Table l -> l 
+labelSelectTable :: (Eq l, Label l) => Pred l -> Table l -> l 
 labelSelectTable p (Table ti rs) = labelSelectRows p ti rs 
 
 {-@ reflect labelSelectRows @-}
-labelSelectRows :: (Eq l, Label l) => Pred -> TInfo l -> [Row l] -> l 
+labelSelectRows :: (Eq l, Label l) => Pred l -> TInfo l -> [Row l] -> l 
 labelSelectRows p ti []
   = tableLabel ti `join` field1Label ti
 labelSelectRows p ti (r:rs) 
@@ -187,21 +178,21 @@ labelSelectRows p ti (r:rs)
 
 
 {-@ reflect updateLabelCheck @-}
-updateLabelCheck :: (Label l, Eq l) => l -> Table l -> Pred -> l -> Term l -> l -> Term l -> Bool 
+updateLabelCheck :: (Label l, Eq l) => l -> Table l -> Pred l -> l -> Term l -> l -> Term l -> Bool 
 updateLabelCheck lc t@(Table ti rs) p l1 v1 l2 v2  
   = updateRowsCheck lc (lfTable p t) ti p l1 v1 l2 v2 rs 
 
 
 {-@ reflect updateRowsCheck @-}
-updateRowsCheck :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> [Row l] -> Bool 
-{-@ updateRowsCheck :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> rs:[Row l] -> Bool / [len rs] @-}
+updateRowsCheck :: (Label l, Eq l) => l -> l -> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> [Row l] -> Bool 
+{-@ updateRowsCheck :: (Label l, Eq l) => l -> l -> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> rs:[Row l] -> Bool / [len rs] @-}
 updateRowsCheck _ _ _ _ _ _ _ _ []            = True 
 updateRowsCheck lc lφ ti p l1 v1 l2 v2 (r:rs) = updateRowCheck lc lφ ti p l1 v1 l2 v2 r && updateRowsCheck lc lφ ti p l1 v1 l2 v2 rs
 -- XXX: now updateRowCheck does not depend on the row r
 -- XXX: do the check even if the table is empty: then I do not need to raise to the table label
 
 {-@ reflect updateRowCheck @-}
-updateRowCheck :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> Row l -> Bool 
+updateRowCheck :: (Label l, Eq l) => l -> l -> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> Row l -> Bool 
 updateRowCheck lc lφ ti p l1 v1 l2 v2 r 
   =  (updateRowLabel1 lc lφ ti p l1 v1 l2 v2 r)
    && (updateRowLabel2 lc lφ ti p l1 v1 l2 v2 r)
@@ -210,7 +201,7 @@ updateRowCheck lc lφ ti p l1 v1 l2 v2 r
 {-@ reflect updateRowLabel1 @-}
 updateRowLabel1
   :: (Label l, Eq l)   
-  => l -> l ->  TInfo l -> Pred -> l -> Term l -> l -> Term l -> Row l 
+  => l -> l ->  TInfo l -> Pred l -> l -> Term l -> l -> Term l -> Row l 
   -> Bool  
 updateRowLabel1 lc lφ ti p l1 v1 l2 v2 r -- @(Row _ o1 o2) 
   = if True {- (o1 /= v1) -} then 
@@ -221,7 +212,7 @@ updateRowLabel1 lc lφ ti p l1 v1 l2 v2 r -- @(Row _ o1 o2)
 {-@ reflect updateRowLabel2 @-}
 updateRowLabel2
   :: (Label l, Eq l)   
-  => l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> Row l 
+  => l -> l -> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> Row l 
   -> Bool 
 updateRowLabel2 lc lφ ti p l1 v1 l2 v2 r -- @(Row _ o1 o2)   
   = if True {- o2 /= v2-}  then 
@@ -231,34 +222,34 @@ updateRowLabel2 lc lφ ti p l1 v1 l2 v2 r -- @(Row _ o1 o2)
 
 
 {-@ reflect lfTable @-}
-lfTable  :: (Eq l, Label l) => Pred -> Table l -> l 
+lfTable  :: (Eq l, Label l) => Pred l -> Table l -> l 
 lfTable p (Table ti rs) = lfRows p ti rs  
 
 {-@ reflect lfRows @-}
-lfRows  :: (Eq l, Label l) => Pred -> TInfo l -> [Row l] -> l 
+lfRows  :: (Eq l, Label l) => Pred l -> TInfo l -> [Row l] -> l 
 lfRows p ti []     = bot 
 lfRows p ti (r:rs) = lfRow p ti r `join` lfRows p ti rs 
 
 
 {-@ reflect lfRow @-}
-lfRow  :: (Eq l, Label l) => Pred -> TInfo l -> Row l -> l 
+lfRow  :: (Eq l, Label l) => Pred l -> TInfo l -> Row l -> l 
 lfRow p ti r 
   | pDep2 p 
   = makeValLabel ti (rowField1 r)
   | pDep1 p 
   = field1Label ti
-  | otherwise 
+  | otherwise
   = bot 
 
 {-@ reflect labelPredTable @-}
-labelPredTable :: (Eq l, Label l) => Pred -> Table l -> l 
+labelPredTable :: (Eq l, Label l) => Pred l -> Table l -> l 
 labelPredTable p (Table ti rs) = labelPredRows p ti rs 
 
 
  
 
 {-@ reflect labelPredRows @-}
-labelPredRows :: (Eq l, Label l) => Pred -> TInfo l -> [Row l] -> l 
+labelPredRows :: (Eq l, Label l) => Pred l -> TInfo l -> [Row l] -> l 
 
 labelPredRows p ti rs
   | not (pDep1 p)      
@@ -269,15 +260,15 @@ labelPredRows p ti (r:rs)
   = (tableLabel ti `join` labelPredRow p ti r) `join` labelPredRows p ti rs
 
 {-@ reflect labelPredRow @-}
-labelPredRow :: (Eq l, Label l) => Pred -> TInfo l -> Row l -> l 
+labelPredRow :: (Eq l, Label l) => Pred l -> TInfo l -> Row l -> l 
 labelPredRow p ti r 
   | pDep2 p 
   = field1Label ti `join` makeValLabel ti (rowField1 r)
-  | otherwise 
+labelPredRow _         ti r 
   = field1Label ti 
 
 
-
+{-
 {-@ reflect pDep2 @-}
 pDep2 :: Pred -> Bool 
 pDep2 p = pDependOn2 p 
@@ -290,6 +281,7 @@ pDep1 p = pDependOn1 p
 {-@ reflect pVal @-}
 pVal :: Pred -> Bool 
 pVal p = pValue p 
+-}
 
 {-@ reflect insertDB @-}
 insertDB :: DB l -> TName -> Row l -> DB l 
@@ -452,4 +444,3 @@ evalStar p@(Pg lc db t)
   = PgHole (εDB l db) 
 ε l (Pg lc db t) 
   = Pg lc (εDB l db) (εTerm l t) 
-

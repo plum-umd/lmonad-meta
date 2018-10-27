@@ -14,7 +14,7 @@ definitions :: [String]
 definitions = [
     "ProofCombinators.hs"
   , "Labels.hs"
-  , "Predicates.hs"
+--   , "Predicates.hs"
   , "Programs.hs"
   ]
 

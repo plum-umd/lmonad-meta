@@ -1,3 +1,36 @@
+{- 
+{-@ LIQUID "--reflection"  @-}
+{-# LANGUAGE CPP #-}
+
+module Terms.Terms where 
+
+import Prelude hiding (Maybe(..), fromJust, isJust)
+
+#include "IsDBValue.hs" 
+
+-}
+
+
+data Pred l 
+  = Pred0 Bool 
+  | Pred1 (Term l -> Bool)
+  | Pred2 (Term l -> Term l -> Bool)
+
+
+instance Eq l => Eq (Pred l) where
+ _ == _ = False   
+
+{-@ measure pDep2 @-}
+pDep2 :: Pred l -> Bool 
+pDep2 (Pred2 _) = True 
+pDep2 _         = False  
+
+
+{-@ measure pDep1 @-}
+pDep1 :: Pred l -> Bool 
+pDep1 (Pred2 _) = True 
+pDep1 (Pred1 _) = True 
+pDep1 _         = False  
 
 
 type Var = String 
@@ -13,7 +46,8 @@ data Term l
   | TUnit 
   | THole 
   | TException
-  | TPred Pred 
+  | TPred (Pred l) 
+--   | TPred (Pred (Term l))
   | TNil 
   | TCons (Term l) (Term l)
   | TTrue 
@@ -54,10 +88,9 @@ isTLIO (TLIO _) = True
 isTLIO _        = False 
 
 {-@ measure fromTLIO @-}
-{-@ fromTLIO :: {t:Term l | isTLIO t} -> {o:Term | t == TLIO o} @-} 
+{-@ fromTLIO :: {t:Term l | isTLIO t} -> {o:Term l | t == TLIO o} @-} 
 fromTLIO :: Term l -> Term l 
 fromTLIO (TLIO t) = t
-
 
 
 data TName = TName Int

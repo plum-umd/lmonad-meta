@@ -5,7 +5,7 @@
 -- 2. substitution on a isDBValue is also a isDBValue
 
 {-@ type DBTerm l  = {t:Term l | isDBValue t } @-}
-{-@ type SDBTerm l = {t:Term l | isDBValue t && ςTerm t } @-}
+{-@	type SDBTerm l = {t:Term l | isDBValue t && ςTerm t } @-}
 
 {-@ measure isDBValue @-}
 isDBValue :: Term l -> Bool 

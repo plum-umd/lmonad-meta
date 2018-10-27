@@ -6,7 +6,6 @@ module Main where
 import Labels
 import qualified LabelInstance as LI
 import LabelInstance (low, high)
-import Predicates
 import Programs 
 
 import Prelude hiding (Just)
@@ -86,7 +85,7 @@ dbUp2' = [Pair tname1 (Table tinfoUp' [Row (TInt 3) (TInt 32) (TInt 42)])]
 tinfoUp' :: TInfo LI.Label
 tinfoUp' = TInfo high {-!!!-} low low (Fun low []) 1
 termUp' :: Term LI.Label 
-termUp' = TUpdate tname1 (TPred (Pred False False True)) (TLabeled low (TInt 42)) (TLabeled high (TInt 42))
+termUp' = TUpdate tname1 (TPred (Pred0 True)) (TLabeled low (TInt 42)) (TLabeled high (TInt 42))
 
 
 pgUp2 :: Program LI.Label
@@ -107,7 +106,7 @@ dbUp :: DB LI.Label
 dbUp = [Pair tname1 (Table tinfoUp [Row (TInt 3) (TInt 32) THole])]
 
 termUp :: Term LI.Label 
-termUp = TUpdate tname1 (TPred (Pred False False True)) (TLabeled low (TInt 42)) (TLabeled high (TInt 42))
+termUp = TUpdate tname1 (TPred (Pred0 True)) (TLabeled low (TInt 42)) (TLabeled high (TInt 42))
 tinfoUp :: TInfo LI.Label
 tinfoUp = TInfo low low low (Fun low []) 1
 
@@ -146,7 +145,7 @@ term v =
   let t = TBind (TUnlabel (TLabeled high v)) 
           (TLam secret (
             TIf (TVar secret) 
-              (TDelete tname1 (TPred (Pred False False True))) 
+              (TDelete tname1 (TPred (Pred0 True))) 
               (TReturn TUnit)
           ))
   in
@@ -180,8 +179,6 @@ instance Label LI.Label where
 -- | Printing -----------------------------------------------------------------
 -------------------------------------------------------------------------------
 
-instance Show Pred where 
-  show _ = "Pred"
 
 instance Show l => Show (Program l) where 
   show (PgHole _)  = "PgHole"
@@ -193,6 +190,9 @@ deriving instance Show l => Show (TInfo   l)
 deriving instance Show l => Show (Row     l)
 deriving instance Eq l   => Eq (Program l)
 deriving instance Show l => Show (Fun (Term l) l)
+
+instance Show (Pred l) where 
+  show _ = "Pred!!!"
 
 instance (Show a, Show b) => Show (Pair a b) where 
   show (Pair x y) = "(" ++ show x ++ "," ++ show y ++ ")"

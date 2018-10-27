@@ -8,10 +8,10 @@ main :: IO ()
 main = liquid [
   -- General Theorems
     "Monotonicity.hs"
+  , "DBValueErase.hs"
   , "Idempotence.hs"
   , "HomomorphicSubst.hs"
   , "TableInfoErase.hs"
-  , "DBValueErase.hs"
   , "Purity.hs"
   , "SafeErase.hs"
   , "SafeDBValues.hs"
@@ -24,7 +24,7 @@ main = liquid [
   -- Specific Simulations 
   , "Simulations/Terms.hs"
   , "Simulations/Pure.hs"
-  , "Simulations/Predicates.hs"
+--   , "Simulations/Predicates.hs"
 
   -- Simulations 
   , "Simulations/Simulations.hs"

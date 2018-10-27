@@ -1,3 +1,5 @@
+
+
 data Pair a b = Pair a b 
   deriving Eq 
 data Maybe a = Nothing | Just a 
@@ -12,13 +14,16 @@ applyFun (Fun d []) _ = d
 applyFun (Fun d (Pair k v:kvs)) k' 
   | k == k' = v
   | otherwise = applyFun (Fun d kvs) k' 
+
+
+
  
 
 type DB l  = [Pair TName (Table l)]
 data Row l = Row { rowKey :: Term l, rowField1 :: Term l, rowField2 :: Term l}
-{-@ data Row l = Row { rowKey    :: SDBTerm l 
-                     , rowField1 :: SDBTerm l 
-                     , rowField2 :: SDBTerm l } @-}
+{-@ data Row l = Row { rowKey    :: {t:Term l | isDBValue t && ςTerm t } 
+                     , rowField1 :: {t:Term l | isDBValue t && ςTerm t } 
+                     , rowField2 :: {t:Term l | isDBValue t && ςTerm t } } @-}
 -- {-@ data Row l = Row { rowKey    :: {t:Term l | isDBValue t || t == THole}
 --                      , rowField1 :: {t:Term l | isDBValue t || t == THole}
 --                      , rowField2 :: {t:Term l | isDBValue t || t == THole} } @-}

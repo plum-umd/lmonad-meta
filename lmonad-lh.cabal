@@ -12,7 +12,7 @@ cabal-version:       >=1.10
 
 executable lmonad-lh
   main-is:             Main.hs
-  build-depends:       base >=4.9 && <5
+  build-depends:       base
   hs-source-dirs:      src
   other-modules :      Labels, Predicates, Programs, ProofCombinators, LabelInstance
   -- ghc-options:         -W -Werror
@@ -20,7 +20,7 @@ executable lmonad-lh
 
 test-suite everything
   default-language:  Haskell98
-  build-depends:     base >=4.9 && <5, process, liquidhaskell >=0.8 && <0.9
+  build-depends:     base, process, liquidhaskell
   type:              exitcode-stdio-1.0
   other-modules :    RunLiquid
   hs-source-dirs:    tests
@@ -30,7 +30,7 @@ test-suite everything
 
 test-suite basic
   default-language:  Haskell98
-  build-depends:     base >=4.9 && <5, process, liquidhaskell >=0.8 && <0.9
+  build-depends:     base, process, liquidhaskell
   type:              exitcode-stdio-1.0
   other-modules :    RunLiquid
   hs-source-dirs:    tests
