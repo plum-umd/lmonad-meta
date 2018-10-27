@@ -32,7 +32,7 @@ simulationsTDeleteFound :: (Label l, Eq l)
 
 
 simulationsTDeleteFound l lc db n p t εt
-  | a, c, b, εb
+  | a && c && b && εb
   =   ε l (eval (ε l (Pg lc db (TDelete n (TPred p))))) 
   ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TDelete n (TPred p))))) 
   ==. ε l (eval (Pg lc (εDB l db) (TDelete n (εTerm l (TPred p))))) 
@@ -91,7 +91,7 @@ simulationsTDeleteFound l lc db n p t εt
   ==. ε l (eval (Pg lc db (TDelete n (TPred p))))   
   *** QED 
 
-  | not c && not (lt `canFlowTo` l), b, not εb 
+  | not c && not (lt `canFlowTo` l) && b && not εb 
   =   ε l (eval (ε l (Pg lc db (TDelete n (TPred p))))) 
   ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TDelete n (TPred p))))) 
   ==. ε l (eval (Pg lc (εDB l db) (TDelete n (εTerm l (TPred p))))) 
@@ -109,7 +109,7 @@ simulationsTDeleteFound l lc db n p t εt
   ==. ε l (eval (Pg lc db (TDelete n (TPred p))))   
   *** QED 
 
-  | not c && not (lt `canFlowTo` l), not b, εb 
+  | not c && not (lt `canFlowTo` l) && not b && εb 
   =   ε l (eval (ε l (Pg lc db (TDelete n (TPred p))))) 
   ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TDelete n (TPred p))))) 
   ==. ε l (eval (Pg lc (εDB l db) (TDelete n (εTerm l (TPred p))))) 

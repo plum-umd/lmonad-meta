@@ -92,7 +92,7 @@ simulationsTDeleteFound :: (Label l, Eq l)
   => l -> l -> DB l -> TName -> Pred l -> Table l -> Table l -> Proof
 
 simulationsTDeleteFound l lc db n p t εt
-  | a, c, b, εb
+  | a && c && b && εb
   =   ε l (eval (ε l (Pg lc db (TDelete n (TPred p))))) 
   ==. ε l (eval (PgHole (εDB l db))) 
   ==. ε l (PgHole (εDB l db))
@@ -139,7 +139,7 @@ simulationsTDeleteFound l lc db n p t εt
   ==. ε l (eval (Pg lc db (TDelete n (TPred p))))   
   *** QED 
 
-  | not c && not (lt `canFlowTo` l), b, not εb 
+  | not c && not (lt `canFlowTo` l) && b && not εb 
   =   ε l (eval (ε l (Pg lc db (TDelete n (TPred p))))) 
   ==. ε l (eval (PgHole (εDB l db))) 
   ==. ε l (PgHole (εDB l db)) 
@@ -155,7 +155,7 @@ simulationsTDeleteFound l lc db n p t εt
   ==. ε l (eval (Pg lc db (TDelete n (TPred p))))   
   *** QED 
 
-  | not c && not (lt `canFlowTo` l), not b, εb 
+  | not c && not (lt `canFlowTo` l) && not b && εb 
   =   ε l (eval (ε l (Pg lc db (TDelete n (TPred p))))) 
   ==. ε l (eval (PgHole (εDB l db))) 
   ==. ε l (PgHole (εDB l db)) 
