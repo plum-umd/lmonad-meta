@@ -6,7 +6,6 @@ module Simulations.UpdateRowBySMT where
 import ProofCombinators
 import Labels 
 import Programs 
-import Predicates 
 
 import Idempotence 
 import Simulations.Terms 

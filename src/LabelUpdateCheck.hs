@@ -3,7 +3,6 @@
 module LabelUpdateCheck where
 
 import Labels 
-import Predicates 
 import Prelude hiding (Maybe(..), fromJust, isJust)
 import Programs 
 

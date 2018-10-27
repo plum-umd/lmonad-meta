@@ -5,7 +5,6 @@ module Simulations.TSelect (simulationsTSelect) where
 import ProofCombinators
 import Labels 
 import Programs 
-import Predicates 
 
 import Idempotence 
 import LookupTableErase 

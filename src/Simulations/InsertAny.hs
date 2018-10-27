@@ -6,7 +6,6 @@ module Simulations.InsertAny where
 import ProofCombinators
 import Labels 
 import Programs 
-import Predicates 
 
 import Idempotence 
 

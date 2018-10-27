@@ -5,7 +5,6 @@ module Simulations.UpdateOne where
 import ProofCombinators
 import Labels 
 import Programs 
-import Predicates 
 
 import Idempotence 
 import LabelUpdateCheck 

@@ -5,7 +5,6 @@ module Simulations.Predicates where
 import ProofCombinators
 import Labels 
 import Programs 
-import Predicates 
 
 import Idempotence 
 import Simulations.Terms 
