@@ -98,6 +98,7 @@ data TName = TName Int
 {-@ data Term [tsize] @-}
 
 
+{-@ invariant {t:Term l | tsize t >= 0 } @-}
 {-@ measure tsize @-}
 tsize :: Term l -> Int
 {-@ tsize :: Term l -> Nat @-}
