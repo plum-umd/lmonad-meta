@@ -20,6 +20,7 @@ main = liquid [
   , "LookupTableErase.hs"
   , "LabelPredErase.hs"
   , "LabelPredEraseEqual.hs"
+  , "LabelUpdateCheck.hs"
 
   -- Specific Simulations 
   , "Simulations/Terms.hs"
