@@ -32,8 +32,10 @@ runCommand' str =
      putStrLn ("\nCommand `" ++ str ++ "` exited with " ++ show ec)
      return ec
 
+instance Semigroup ExitCode where
+  ExitFailure i <> _ = ExitFailure i 
+  ExitSuccess   <> e = e 
+
 
 instance Monoid ExitCode where
   mempty = ExitSuccess
-  mappend (ExitFailure i) _ = ExitFailure i 
-  mappend ExitSuccess e     = e 
