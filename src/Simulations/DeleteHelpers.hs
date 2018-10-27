@@ -12,7 +12,7 @@ import ProofCombinators
 
 lookupTableErase :: (Label l, Eq l) => l -> DB l -> TName -> Table l -> Proof 
 {-@ lookupTableErase :: (Label l, Eq l) 
-  => l:l -> db:DB l -> n:{TName | isJust (lookupTable n db)} 
+  => l:l -> db:DB l -> n:{TName | Programs.isJust (lookupTable n db)} 
   -> t:{Table l | Just t == lookupTable n db }
   -> { lookupTable n (εDB l db) == Just (εTable l t) } @-}
 lookupTableErase l [] n t 
@@ -44,13 +44,13 @@ lookupTableErase l (Pair n' t:ts) n t'
 labelPredTableErase 
   :: (Label l, Eq l)
   => l:l
-  -> p:Pred
+  -> p:Pred l
   -> t:Table l
   -> { (canFlowTo (tableLabel (tableInfo t)) l && canFlowTo (labelPredTable p t) (tableLabel (tableInfo t))) 
        => canFlowTo (labelReadTable p (tableInfo t)) l}
   @-}
 
-labelPredTableErase :: (Label l, Eq l) => l -> Pred -> Table l -> Proof 
+labelPredTableErase :: (Label l, Eq l) => l -> Pred l -> Table l -> Proof 
 labelPredTableErase l p t@(Table ti rs) 
   | canFlowTo (tableLabel ti) l
   , canFlowTo (labelPredTable p t) (tableLabel ti) 
@@ -63,13 +63,13 @@ labelPredTableErase l p t@(Table ti rs)
 {-@ 
 readCanFlowToPred 
   :: (Label l, Eq l)
-  => p:Pred
+  => p:Pred l
   -> t:Table l
   -> { canFlowTo (labelReadTable p (tableInfo t)) (labelPredTable p t)}
   / [len (tableRows t)]
   @-}
 
-readCanFlowToPred :: (Label l, Eq l) => Pred -> Table l -> Proof 
+readCanFlowToPred :: (Label l, Eq l) => Pred l -> Table l -> Proof 
 readCanFlowToPred p t@(Table ti rs) | not (pDep1 p)      
   =   labelPredTable p t
   ==. labelPredRows p ti rs
@@ -116,12 +116,12 @@ readCanFlowToPred p t@(Table ti (r:rs))
 labelReadFlowsToTableLabel 
   :: (Label l, Eq l)
   => l:l
-  -> p:Pred
+  -> p:Pred l
   -> ti:TInfo l
   -> { canFlowTo (labelReadTable p ti) l => canFlowTo (tableLabel ti) l }
   @-}
 
-labelReadFlowsToTableLabel :: (Label l, Eq l) => l -> Pred -> TInfo l -> Proof 
+labelReadFlowsToTableLabel :: (Label l, Eq l) => l -> Pred l -> TInfo l -> Proof 
 labelReadFlowsToTableLabel l p ti 
   =   labelReadTable p ti 
   ==. (if not (pDep1 p) then tableLabel ti else (tableLabel ti `join` field1Label ti))
@@ -134,12 +134,12 @@ labelReadFlowsToTableLabel l p ti
 labelPredTableEraseEq 
   :: (Label l, Eq l)
   => l:l
-  -> p:Pred
+  -> p:Pred l
   -> t:{Table l | canFlowTo (labelReadTable p (tableInfo t)) l }
   -> { labelPredTable p t == labelPredTable p (εTable l t) }
   @-}
 
-labelPredTableEraseEq :: (Label l, Eq l) => l -> Pred -> Table l -> Proof 
+labelPredTableEraseEq :: (Label l, Eq l) => l -> Pred l -> Table l -> Proof 
 
 labelPredTableEraseEq l p (Table ti r)
   | not (tableLabel ti `canFlowTo` l)
@@ -164,13 +164,13 @@ labelPredTableEraseEq l p (Table ti r)
 labelPredRowsErase 
   :: (Label l, Eq l)
   => l:l
-  -> p:Pred
+  -> p:Pred l
   -> ti: TInfo l
   -> rs: {[Row l] | ((0 < len rs) && pDep1 p )=> (canFlowTo (field1Label ti) l)}
   -> { labelPredRows p ti rs == labelPredRows p ti (εRows l ti rs) }
   @-}
 
-labelPredRowsErase :: (Label l, Eq l) => l -> Pred -> TInfo l -> [Row l] -> Proof 
+labelPredRowsErase :: (Label l, Eq l) => l -> Pred l -> TInfo l -> [Row l] -> Proof 
 labelPredRowsErase l p ti [] 
   =   labelPredRows p ti [] 
   ==. labelPredRows p ti (εRows l ti []) 
@@ -198,13 +198,13 @@ labelPredRowsErase l p ti (r@(Row k v1 v2):rs)
 labelPredRowErase 
   :: (Label l, Eq l)
   => l:l
-  -> p:Pred
+  -> p:Pred l
   -> ti: {TInfo l | canFlowTo (field1Label ti) l }
   -> r: Row l 
   -> { labelPredRow p ti r == labelPredRow p ti (εRow l ti r) }
   @-}
 
-labelPredRowErase :: (Label l, Eq l) => l -> Pred -> TInfo l -> Row l -> Proof 
+labelPredRowErase :: (Label l, Eq l) => l -> Pred l -> TInfo l -> Row l -> Proof 
 labelPredRowErase l p ti r@(Row k v1 v2) 
   | not (canFlowTo (field1Label ti) l)
   = ()

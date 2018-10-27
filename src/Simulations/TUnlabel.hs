@@ -15,4 +15,4 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
 @-}
 simulationsTUnlabel :: Label l => l -> l -> DB l -> Term l -> Proof
 
-simulationsTUnlabel l lc m t = () 
+simulationsTUnlabel l lc m t = undefined  

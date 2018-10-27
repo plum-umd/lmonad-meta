@@ -1,3 +1,10 @@
+- added undefined to 
+	- Simulations/Delete.hs
+	- Simulations/TBind.hs
+
+
+
+
 - [ ] Fix current files
 
 - [ ] Add `Select`

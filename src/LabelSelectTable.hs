@@ -8,12 +8,12 @@ import Programs
 import ProofCombinators 
  
 
-labelSelectErase :: (Eq l, Label l) => l -> Pred -> TName -> DB l -> Proof
-{-@ labelSelectErase :: Label l => l:l -> p:Pred -> n:TName 
-  -> db:{DB l | isJust (lookupTable n db) && isJust (lookupTable n (εDB l db)) && 
-    ((canFlowTo (field1Label (tableInfo (fromJust (lookupTable n (εDB l db))))) l) 
-  &&  canFlowTo (tableLabel (tableInfo (fromJust (lookupTable n (εDB l db))))) l )} 
-  -> { labelSelectTable p (fromJust (lookupTable n db)) ==  labelSelectTable p (fromJust (lookupTable n (εDB l db))) }
+labelSelectErase :: (Eq l, Label l) => l -> Pred l -> TName -> DB l -> Proof
+{-@ labelSelectErase :: Label l => l:l -> p:Pred l -> n:TName 
+  -> db:{DB l | Programs.isJust (lookupTable n db) && Programs.isJust (lookupTable n (εDB l db)) && 
+    ((canFlowTo (field1Label (tableInfo (Programs.fromJust (lookupTable n (εDB l db))))) l) 
+  &&  canFlowTo (tableLabel (tableInfo (Programs.fromJust (lookupTable n (εDB l db))))) l )} 
+  -> { labelSelectTable p (Programs.fromJust (lookupTable n db)) ==  labelSelectTable p (Programs.fromJust (lookupTable n (εDB l db))) }
  @-} 
 labelSelectErase l p n [] 
   = assert (isJust (lookupTable n (εDB l []))) 
@@ -63,8 +63,8 @@ labelSelectErase l p n' (Pair n t:db)
   *** QED 
 
 
-labelSelectEraseRows :: (Eq l, Label l) => l -> Pred -> TInfo l -> [Row l] -> Proof
-{-@ labelSelectEraseRows :: Label l => l:l -> p:Pred 
+labelSelectEraseRows :: (Eq l, Label l) => l -> Pred l -> TInfo l -> [Row l] -> Proof
+{-@ labelSelectEraseRows :: Label l => l:l -> p:Pred l
   -> ti:{TInfo l | canFlowTo (field1Label ti) l && canFlowTo (tableLabel ti) l }
   -> rs:[Row l]
   -> { labelSelectRows p ti rs ==  labelSelectRows p ti (εRows l ti rs) }
@@ -89,11 +89,11 @@ labelSelectEraseRows l p ti (r@(Row k v1 v2):rs)
     v1' = εTerm l v1
     v2' = if makeValLabel ti v1 `canFlowTo` l then εTerm l v2 else THole 
 
-labelSelectTableImplies :: (Label l, Eq l) => l -> Pred -> Table l -> Proof 
+labelSelectTableImplies :: (Label l, Eq l) => l -> Pred l -> Table l -> Proof 
 {-@ labelSelectTableImplies 
   :: Label l 
   => l:l 
-  -> p:Pred 
+  -> p:Pred l
   -> t:Table l
   -> { canFlowTo (labelSelectTable p t) l => 
        (canFlowTo (field1Label (tableInfo t)) l &&  canFlowTo (tableLabel (tableInfo t)) l )} @-}
@@ -101,11 +101,11 @@ labelSelectTableImplies l p t@(Table ti rs)
   = tableLabelDep l p ti rs 
   ? assert (labelSelectRows p ti rs == labelSelectTable p t)
 
-tableLabelDep :: (Eq l, Label l) => l -> Pred -> TInfo l -> [Row l] -> Proof 
+tableLabelDep :: (Eq l, Label l) => l -> Pred l -> TInfo l -> [Row l] -> Proof 
 {-@ tableLabelDep 
   :: (Eq l, Label l) 
   => l:l 
-  -> p:Pred 
+  -> p:Pred l
   -> ti:TInfo l 
   -> rs:[Row l] 
   -> { (canFlowTo (labelSelectRows p ti rs) l) 

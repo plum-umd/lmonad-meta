@@ -16,4 +16,4 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
 @-}
 simulationsBind 
   :: Label l => l -> l -> DB l -> Term l -> Term l -> Proof
-simulationsBind l lc m t1 t2  = () 
+simulationsBind l lc m t1 t2  = undefined 

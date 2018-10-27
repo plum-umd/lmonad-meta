@@ -16,12 +16,12 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
   :: Label l => l:l 
   -> db:DB l 
   -> n:TName
-  -> p:Pred
+  -> p:Pred l
   -> t:{Table l | canFlowTo (labelPredTable p t) l && Just t == lookupTable n db} 
   -> { εDB l (deleteDB (εDB l db) n p) == εDB l (deleteDB db n p) } 
   @-}
 simulationsDelete :: (Label l, Eq l) 
-  => l -> DB l -> TName -> Pred -> Table l  -> Proof
+  => l -> DB l -> TName -> Pred l -> Table l  -> Proof
 
 simulationsDelete l [] n p _ 
   =   εDB l (deleteDB (εDB l []) n p) 
@@ -91,16 +91,18 @@ simulationsDelete l ((Pair n' t@(Table ti rs)):ts) n p ti'
   ==. εDB l (deleteDB (Pair n' t:ts) n p) 
   *** QED 
 
-simulationsDeleteRows :: (Eq l, Label l) => l -> Pred -> TInfo l -> [Row l] -> Proof 
+simulationsDeleteRows :: (Eq l, Label l) => l -> Pred l -> TInfo l -> [Row l] -> Proof 
 {-@ simulationsDeleteRows 
   :: (Eq l, Label l) 
   => l:l 
-  -> p:Pred 
+  -> p:Pred l
   -> ti:TInfo l
   -> rs:{ [Row l] | canFlowTo (labelPredTable p (Table ti rs)) l } 
   -> { εRows l ti (deleteRaws p (εRows l ti rs)) == εRows l ti (deleteRaws p rs) } @-}
 
-
+simulationsDeleteRows l p ti rs 
+  = undefined 
+{- 
 simulationsDeleteRows l p ti rs 
   | not (tableLabel ti `canFlowTo` l)
   = labelPredTableImplies l p (Table ti rs)
@@ -147,8 +149,10 @@ simulationsDeleteRows l p ti (r@(Row k v1 v2):rs)
        ? assert (εTerm l v1 == v1)
        ? assert (εTerm l v2 == v2)
        ? (    evalPred p (εRow l ti r) 
-          ==. evalPredicate p (Pair (εTerm l v1) (εTerm l v2))
-          ==. evalPredicate p (Pair v1 v2)
+          ==. p (rowField1 (εRow l ti r)) (rowField2 (εRow l ti r))
+          ==. p (rowField1 (εRow l ti (Row k v1 v2))) (rowField2 (εRow l ti (Row k v1 v2)))
+          ==. p (rowField1 (Row k (εTerm l v1) (εTerm l v2))) (rowField2 (εRow l ti (Row k v1 v2)))
+          ==. p (εTerm l v1) (εTerm l v1)
           ==. evalPred p r
           *** QED)
        ? (    labelPredTable p (Table ti (r:rs))
@@ -254,18 +258,18 @@ simulationsDeleteRows l p ti (r@(Row k v1 v2):rs)
   ==. εRows l ti (deleteRaws p (r:rs))
   *** QED 
 
+-}
 
-
-recursiveCall :: (Eq l, Label l) => l -> TInfo l -> Pred -> Row l -> [Row l] -> Proof  
-{-@ recursiveCall :: (Eq l, Label l) => l:l -> ti:TInfo l -> p:Pred -> r:Row l -> rs:[Row l] -> 
+recursiveCall :: (Eq l, Label l) => l -> TInfo l -> Pred l -> Row l -> [Row l] -> Proof  
+{-@ recursiveCall :: (Eq l, Label l) => l:l -> ti:TInfo l -> p:Pred l -> r:Row l -> rs:[Row l] -> 
   {canFlowTo (labelPredTable p (Table ti (r:rs))) l  => canFlowTo (labelPredTable p (Table ti rs)) l } @-}   
 recursiveCall l ti p r rs
   =  recursiveCallTrans ti p r rs &&& 
      lawFlowTransitivity (labelPredTable p (Table ti rs)) (labelPredTable p (Table ti (r:rs))) l
 
 
-recursiveCallTrans :: (Eq l, Label l) => TInfo l -> Pred -> Row l -> [Row l] -> Proof  
-{-@ recursiveCallTrans :: (Eq l, Label l) => ti:TInfo l -> p:Pred -> r:Row l -> rs:[Row l] -> 
+recursiveCallTrans :: (Eq l, Label l) => TInfo l -> Pred l -> Row l -> [Row l] -> Proof  
+{-@ recursiveCallTrans :: (Eq l, Label l) => ti:TInfo l -> p:Pred l -> r:Row l -> rs:[Row l] -> 
   {canFlowTo (labelPredTable p (Table ti rs)) (labelPredTable p (Table ti (r:rs)))} @-}   
 recursiveCallTrans ti p r rs 
   | not (pDep1 p)

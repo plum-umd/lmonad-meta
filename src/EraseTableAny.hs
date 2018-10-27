@@ -12,12 +12,12 @@ import ProofCombinators
   :: (Label l, Eq l) 
   => l:l 
   -> n:TName 
-  -> db:{DB l |  (isJust (lookupTable n db)) && not (canFlowTo (tableLabel (tableInfo (fromJust (lookupTable n db)))) l)}
-  -> p:Pred -> v1:SDBTerm l -> v2:SDBTerm l
+  -> db:{DB l |  (Programs.isJust (lookupTable n db)) && not (canFlowTo (tableLabel (tableInfo (Programs.fromJust (lookupTable n db)))) l)}
+  -> p:Pred l -> v1:{t:Term l | isDBValue t && ςTerm t } -> v2:{t:Term l | isDBValue t && ςTerm t }
   -> {εDB l (updateDB db n p v1 v2) == εDB l db }
 @-}
 
-εTableAny :: (Eq l, Label l) => l -> TName -> DB l -> Pred -> Term l -> Term l -> Proof 
+εTableAny :: (Eq l, Label l) => l -> TName -> DB l -> Pred l -> Term l -> Term l -> Proof 
 εTableAny l n [] p v1 v2
   =   εDB l (updateDB [] n p v1 v2) 
   ==. εDB l []

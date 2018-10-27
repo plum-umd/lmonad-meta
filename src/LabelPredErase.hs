@@ -8,10 +8,10 @@ import Programs
 import ProofCombinators 
 import LabelPredImplies
 
-labelPredErase :: (Eq l, Label l) => l -> Pred -> TName -> DB l -> Proof
-{-@ labelPredErase :: Label l => l:l -> p:Pred -> n:TName 
-  -> db:{DB l | isJust (lookupTable n db) && isJust (lookupTable n (εDB l db)) } 
-  -> { not (canFlowTo (labelPredTable p (fromJust (lookupTable n db))) l) <=> not (canFlowTo (labelPredTable p (fromJust (lookupTable n (εDB l db)))) l) }
+labelPredErase :: (Eq l, Label l) => l -> Pred l -> TName -> DB l -> Proof
+{-@ labelPredErase :: Label l => l:l -> p:Pred l -> n:TName 
+  -> db:{DB l | Programs.isJust (lookupTable n db) && Programs.isJust (lookupTable n (εDB l db)) } 
+  -> { not (canFlowTo (labelPredTable p (Programs.fromJust (lookupTable n db))) l) <=> not (canFlowTo (labelPredTable p (Programs.fromJust (lookupTable n (εDB l db)))) l) }
  @-}
 labelPredErase l p n [] 
   = assert (isJust (lookupTable n (εDB l []))) 
@@ -60,11 +60,11 @@ labelPredErase l p n' (Pair n t:db)
   ==. labelPredTable p (fromJust (lookupTable n' (Pair n t:db)))
   *** QED 
 
-labelPredRowsErase :: (Eq l, Label l) => l -> Pred -> TInfo l -> [Row l] -> Proof
+labelPredRowsErase :: (Eq l, Label l) => l -> Pred l -> TInfo l -> [Row l] -> Proof
 {-@ labelPredRowsErase 
   :: Label l 
   => l:l 
-  -> p:Pred 
+  -> p:Pred l
   -> ti:{TInfo l | canFlowTo (tableLabel ti) l } 
   -> rs:[Row l]
   -> { not (canFlowTo (labelPredRows p ti rs) l) <=> not (canFlowTo (labelPredRows p ti (εRows l ti rs)) l) }

@@ -15,17 +15,17 @@ updateRowsCheckEq
   => lc:l 
   -> l:l
   -> ti:TInfo l 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:l
-  -> v1:SDBTerm l 
+  -> v1:{t:Term l | isDBValue t && ςTerm t } 
   -> l2:l
-  -> v2:SDBTerm l
+  -> v2:{t:Term l | isDBValue t && ςTerm t }
   -> r:Row l
   -> rs:{[Row l] | 0 < len rs }
   -> { (updateRowsCheck lc l ti p l1 v1 l2 v2 (r:rs) == updateRowsCheck lc l ti p l1 v1 l2 v2 rs) && 
        (updateRowsCheck lc l ti p l1 v1 l2 v2 (r:rs) == updateRowCheck  lc l ti p l1 v1 l2 v2 r)}
   / [len rs] @-}
-updateRowsCheckEq :: (Eq l, Label l) => l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> Row l -> [Row l] -> Proof 
+updateRowsCheckEq :: (Eq l, Label l) => l -> l -> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> Row l -> [Row l] -> Proof 
 updateRowsCheckEq lc lφ ti p l1 v1 l2 v2 r [] = () 
 updateRowsCheckEq lc lφ ti p l1 v1 l2 v2 r [r'] 
   =   updateRowsCheck lc lφ ti p l1 v1 l2 v2 (r:[r'])
@@ -58,16 +58,16 @@ updateRowCheckSame
   => lc:l 
   -> l:l
   -> ti:TInfo l 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:l
-  -> v1:SDBTerm l 
+  -> v1:{t:Term l | isDBValue t && ςTerm t } 
   -> l2:l
-  -> v2:SDBTerm l
+  -> v2:{t:Term l | isDBValue t && ςTerm t }
   -> x:Row l
   -> y:Row l
   -> { updateRowCheck lc l ti p l1 v1 l2 v2 x == updateRowCheck lc l ti p l1 v1 l2 v2 y }
 @-}
-updateRowCheckSame :: (Eq l, Label l) => l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> Row l -> Row l -> Proof 
+updateRowCheckSame :: (Eq l, Label l) => l -> l -> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> Row l -> Row l -> Proof 
 updateRowCheckSame lc lφ ti p l1 v1 l2 v2 x y 
   =   updateRowCheck lc lφ ti p l1 v1 l2 v2 x 
   ==. ((updateRowLabel1 lc lφ ti p l1 v1 l2 v2 x)
@@ -87,16 +87,16 @@ labelUpdateCheckEq
   :: (Eq l, Label l)
   => l:l 
   -> lc:{l | canFlowTo lc l }
-  -> p:Pred 
+  -> p:Pred l
   -> l1:l
-  -> v1:SDBTerm l 
+  -> v1:{t:Term l | isDBValue t && ςTerm t } 
   -> l2:l
-  -> v2:SDBTerm l
+  -> v2:{t:Term l | isDBValue t && ςTerm t }
   -> t:{Table l | canFlowTo (tableLabel (tableInfo t)) l }
   -> { (canFlowTo (join (field1Label (tableInfo t)) l1) l) 
   => updateLabelCheck lc t p l1 v1 l2 v2 == updateLabelCheck lc (εTable l t) p l1 (if (canFlowTo l1 l) then (εTerm l v1) else THole) l2 (if (canFlowTo l2 l) then (εTerm l v2) else THole) }
 @-}
-labelUpdateCheckEq :: (Eq l, Label l) => l -> l -> Pred -> l -> Term l -> l -> Term l -> Table l -> Proof 
+labelUpdateCheckEq :: (Eq l, Label l) => l -> l -> Pred l -> l -> Term l -> l -> Term l -> Table l -> Proof 
 labelUpdateCheckEq l lc p l1 v1 l2 v2 t@(Table ti@(TInfo lt _ lf1 _ _) rs)
    | canFlowTo (tableLabel ti) l && canFlowTo (join (field1Label (tableInfo t)) l1) l
   =   updateLabelCheck lc (εTable l (Table ti rs)) p l1 εv1 l2 εv2
@@ -124,12 +124,12 @@ labelUpdateCheckEq l lc p l1 v1 l2 v2 t@(Table ti@(TInfo lt _ lf1 _ _) rs)
 lfRowsEq 
   :: (Eq l, Label l)
   => l:l 
-  -> p:Pred 
+  -> p:Pred l
   -> ti:{TInfo l | canFlowTo (field1Label ti) l }
   -> rs:[Row l] 
   -> { lfRows p ti rs == lfRows p ti (εRows l ti rs) }
   / [len rs] @-}
-lfRowsEq :: (Eq l, Label l) => l -> Pred -> TInfo l -> [Row l] -> Proof 
+lfRowsEq :: (Eq l, Label l) => l -> Pred l -> TInfo l -> [Row l] -> Proof 
 lfRowsEq l p ti []
   =   lfRows p ti (εRows l ti []) 
   ==. bot 
@@ -155,16 +155,16 @@ labelUpdateCheckEqRows
   :: (Eq l, Label l)
   => l:l 
   -> lc:{l | canFlowTo lc l } -> lf:l 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:l
-  -> v1:SDBTerm l 
+  -> v1:{t:Term l | isDBValue t && ςTerm t } 
   -> l2:l
-  -> v2:SDBTerm l
+  -> v2:{t:Term l | isDBValue t && ςTerm t }
   -> ti:{TInfo l | canFlowTo (join (field1Label ti) l1) l }
   -> rs:[Row l] 
   -> { updateRowsCheck lc lf ti p l1 v1 l2 v2 rs == updateRowsCheck lc lf ti p l1 (if (canFlowTo l1 l) then (εTerm l v1) else THole) l2 (if (canFlowTo l2 l) then (εTerm l v2) else THole) (εRows l ti rs) }
   / [len rs] @-}
-labelUpdateCheckEqRows :: (Eq l, Label l) => l -> l -> l -> Pred -> l -> Term l -> l -> Term l -> TInfo l -> [Row l] -> Proof 
+labelUpdateCheckEqRows :: (Eq l, Label l) => l -> l -> l -> Pred l -> l -> Term l -> l -> Term l -> TInfo l -> [Row l] -> Proof 
 labelUpdateCheckEqRows l lc lφ p l1 v1 l2 v2 ti []
   =   updateRowsCheck lc lφ ti p l1 εv1 l2 εv2 (εRows l ti []) 
   ==. updateRowsCheck lc lφ ti p l1 εv1 l2 εv2 [] 

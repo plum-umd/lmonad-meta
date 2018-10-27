@@ -10,9 +10,9 @@ import ProofCombinators
 
 lookupTableErase :: (Eq l, Label l) => l -> TName -> DB l -> Proof 
 {-@ lookupTableErase :: Label l => l:l -> n:TName -> db:DB l 
-  -> { (isJust (lookupTable n db) <=> isJust (lookupTable n (εDB l db))) 
-  && (isJust (lookupTable n db) => 
-      (tableInfo (fromJust (lookupTable n db)) == tableInfo (fromJust (lookupTable n (εDB l db))))) } @-}
+  -> { (Programs.isJust (lookupTable n db) <=> Programs.isJust (lookupTable n (εDB l db))) 
+  && (Programs.isJust (lookupTable n db) => 
+      (tableInfo (Programs.fromJust (lookupTable n db)) == tableInfo (Programs.fromJust (lookupTable n (εDB l db))))) } @-}
 lookupTableErase l n [] 
   =   isJust (lookupTable n (εDB l []))
   *** QED 

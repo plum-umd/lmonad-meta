@@ -35,10 +35,19 @@ isPg :: Program l -> Bool
 isPg (Pg _ _ _) = True 
 isPg (PgHole _) = False 
 
+
+
 {-@ measure isJust @-}
 isJust :: Maybe a -> Bool 
 isJust (Just _) = True 
 isJust _        = False 
+
+
+{-@ measure fromJust @-}
+{-@ fromJust :: {x:Maybe a | Programs.isJust x } -> a @-}
+fromJust :: Maybe a -> a 
+fromJust (Just a) = a 
+
 
 {-@ reflect lookupTableInfo @-}
 lookupTableInfo :: TName -> DB l -> Maybe (TInfo l)

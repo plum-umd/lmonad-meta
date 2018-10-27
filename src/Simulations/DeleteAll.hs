@@ -17,14 +17,14 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
   :: Label l => l:l 
   -> db:DB l 
   -> n:TName
-  -> p:Pred
+  -> p:Pred l
   -> t:{Table l | (not (canFlowTo (tableLabel (tableInfo t)) l)) && (Just t == lookupTable n db)} 
   -> { εDB l (deleteDB (εDB l db) n p) == εDB l (deleteDB db n p) 
     && εDB l db == εDB l (deleteDB db n p) 
     && εDB l db == εDB l (deleteDB (εDB l db) n p)} 
   @-}
 simulationsDeleteAll :: (Label l, Eq l) 
-  => l -> DB l -> TName -> Pred -> Table l  -> Proof
+  => l -> DB l -> TName -> Pred l -> Table l  -> Proof
 
 simulationsDeleteAll l [] n p _ 
   =   εDB l (deleteDB (εDB l []) n p) 

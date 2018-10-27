@@ -11,11 +11,11 @@ import LookupTableErase
 import qualified LabelPredErase as LPE 
 
 
-labelPredEraseEqual :: (Eq l, Label l) => l -> Pred -> TName -> DB l -> Proof
-{-@ labelPredEraseEqual :: Label l => l:l -> p:Pred -> n:TName 
-  -> db:{DB l | isJust (lookupTable n db) && isJust (lookupTable n (εDB l db)) && 
-    (canFlowTo (labelPredTable p (fromJust (lookupTable n db))) l) } 
-  -> { labelPredTable p (fromJust (lookupTable n db)) ==  labelPredTable p (fromJust (lookupTable n (εDB l db))) }
+labelPredEraseEqual :: (Eq l, Label l) => l -> Pred l -> TName -> DB l -> Proof
+{-@ labelPredEraseEqual :: Label l => l:l -> p:Pred l -> n:TName 
+  -> db:{DB l | Programs.isJust (lookupTable n db) && Programs.isJust (lookupTable n (εDB l db)) && 
+    (canFlowTo (labelPredTable p (Programs.fromJust (lookupTable n db))) l) } 
+  -> { labelPredTable p (Programs.fromJust (lookupTable n db)) ==  labelPredTable p (Programs.fromJust (lookupTable n (εDB l db))) }
  @-} 
 labelPredEraseEqual l p n db 
   = assert (isJust t )
@@ -29,12 +29,12 @@ labelPredEraseEqual l p n db
     t  = lookupTable n db
     εt = lookupTable n (εDB l db)
 
-labelPredErase :: (Eq l, Label l) => l -> Pred -> TName -> DB l -> Proof
-{-@ labelPredErase :: Label l => l:l -> p:Pred -> n:TName 
-  -> db:{DB l | (isJust (lookupTable n db)) && (isJust (lookupTable n (εDB l db))) && 
-    (  (0 < len (tableRows (fromJust (lookupTable n (εDB l db)))) && pDep1 p) => canFlowTo (field1Label (tableInfo (fromJust (lookupTable n (εDB l db))))) l) 
-  && (canFlowTo (tableLabel (tableInfo (fromJust (lookupTable n (εDB l db))))) l) } 
-  -> { labelPredTable p (fromJust (lookupTable n db)) ==  labelPredTable p (fromJust (lookupTable n (εDB l db))) }
+labelPredErase :: (Eq l, Label l) => l -> Pred l -> TName -> DB l -> Proof
+{-@ labelPredErase :: Label l => l:l -> p:Pred l -> n:TName 
+  -> db:{DB l | (Programs.isJust (lookupTable n db)) && (Programs.isJust (lookupTable n (εDB l db))) && 
+    (  (0 < len (tableRows (Programs.fromJust (lookupTable n (εDB l db)))) && pDep1 p) => canFlowTo (field1Label (tableInfo (Programs.fromJust (lookupTable n (εDB l db))))) l) 
+  && (canFlowTo (tableLabel (tableInfo (Programs.fromJust (lookupTable n (εDB l db))))) l) } 
+  -> { labelPredTable p (Programs.fromJust (lookupTable n db)) ==  labelPredTable p (Programs.fromJust (lookupTable n (εDB l db))) }
  @-} 
 labelPredErase l p n [] 
   = assert (isJust (lookupTable n (εDB l []))) 
@@ -88,8 +88,8 @@ labelPredErase l p n' (Pair n t:db)
   *** QED 
 
 
-labelSelectEraseRows :: (Eq l, Label l) => l -> Pred -> [Row l] -> TInfo l -> Proof
-{-@ labelSelectEraseRows :: Label l => l:l -> p:Pred 
+labelSelectEraseRows :: (Eq l, Label l) => l -> Pred l -> [Row l] -> TInfo l -> Proof
+{-@ labelSelectEraseRows :: Label l => l:l -> p:Pred l
   -> rs:[Row l]
   -> ti:{TInfo l | ((0 < len (εRows l ti rs) && pDep1 p) => canFlowTo (field1Label ti) l) && canFlowTo (tableLabel ti) l }
   -> { labelPredRows p ti rs ==  labelPredRows p ti (εRows l ti rs) }

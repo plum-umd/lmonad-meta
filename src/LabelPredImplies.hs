@@ -9,11 +9,11 @@ import Programs
 import ProofCombinators 
 
 
-labelPredTableImplies :: (Label l, Eq l) => l -> Pred -> Table l -> Proof 
+labelPredTableImplies :: (Label l, Eq l) => l -> Pred l -> Table l -> Proof 
 {-@ labelPredTableImplies 
   :: Label l 
   => l:l 
-  -> p:Pred 
+  -> p:Pred l
   -> t:Table l
   -> { canFlowTo (labelPredTable p t) l => 
        ( ((0 < len (tableRows t) && pDep1 p )=> canFlowTo (field1Label (tableInfo t)) l) && 
@@ -52,11 +52,11 @@ labelPredTableImplies l p t
   = () 
 
 
-tableLabelDep :: (Eq l, Label l) => l -> Pred -> TInfo l -> [Row l] -> Proof 
+tableLabelDep :: (Eq l, Label l) => l -> Pred l -> TInfo l -> [Row l] -> Proof 
 {-@ tableLabelDep 
   :: (Eq l, Label l) 
   => l:l 
-  -> p:Pred 
+  -> p:Pred l
   -> ti:TInfo l 
   -> rs:[Row l] 
   -> { (canFlowTo (labelPredRows p ti rs) l) => (canFlowTo (tableLabel ti) l) } @-}
