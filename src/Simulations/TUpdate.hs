@@ -46,15 +46,15 @@ simulationsTUpdate _ lc db n p t1 t2
   -> lc:{l | canFlowTo lc l }
   -> db:DB l 
   -> n:TName 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:l
-  -> v1:SDBTerm l 
+  -> v1:{t:Term l | isDBValue t && ςTerm t } 
   -> l2:l
-  -> v2:SDBTerm l 
+  -> v2:{t:Term l | isDBValue t && ςTerm t } 
   -> { ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) == ε l (eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2)))) } 
   @-}
 simulationsUpdateFlows :: (Label l, Eq l) 
-  => l -> l -> DB l -> TName -> Pred -> l -> Term l -> l -> Term l -> Proof
+  => l -> l -> DB l -> TName -> Pred l -> l -> Term l -> l -> Term l -> Proof
 simulationsUpdateFlows l lc db n p l1 v1 l2 v2 
   | Just t  <- lookupTable n db
   , Just εt <- lookupTable n (εDB l db)
@@ -85,15 +85,15 @@ simulationsUpdateFlows l lc db n p l1 v1 l2 v2
   -> lc:{l | not (canFlowTo lc l) }
   -> db:DB l 
   -> n:TName 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:l
-  -> v1:SDBTerm l 
+  -> v1:{t:Term l | isDBValue t && ςTerm t } 
   -> l2:l
-  -> v2:{SDBTerm l | ς (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2)))} 
+  -> v2:{Term l | isDBValue v2 && ςTerm v2 && ς (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2)))} 
   -> { ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) == ε l (eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2)))) } 
   @-}
 simulationsUpdateDoesNotFlow :: (Label l, Eq l) 
-  => l -> l -> DB l -> TName -> Pred -> l -> Term l ->  l -> Term l -> Proof
+  => l -> l -> DB l -> TName -> Pred l -> l -> Term l ->  l -> Term l -> Proof
 
 simulationsUpdateDoesNotFlow l lc db n p l1 v1 l2 v2 
   | Just t <- lookupTable n db

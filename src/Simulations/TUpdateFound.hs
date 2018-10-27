@@ -22,17 +22,17 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
   -> lc:{l | canFlowTo lc l }
   -> db:DB l 
   -> n:TName 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:l
-  -> v1:SDBTerm l 
+  -> v1:{t:Term l | isDBValue t && ςTerm t } 
   -> l2:l
-  -> v2:SDBTerm l
+  -> v2:{t:Term l | isDBValue t && ςTerm t }
   -> t:{Table l  | Just t == lookupTable n db } 
   -> εt:{Table l | (Just εt == lookupTable n (εDB l db)) && (tableInfo t == tableInfo εt) } 
   -> { ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) == ε l (eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2)))) } 
   @-}
 simulationsUpdateFlowsFound :: (Label l, Eq l) 
-  => l -> l -> DB l -> TName -> Pred -> l -> Term l -> l -> Term l -> Table l -> Table l -> Proof
+  => l -> l -> DB l -> TName -> Pred l -> l -> Term l -> l -> Term l -> Table l -> Table l -> Proof
 
 simulationsUpdateFlowsFound l lc db n p l1 v1 l2 v2 t εt
   | a && εa  

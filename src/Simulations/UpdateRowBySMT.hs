@@ -16,16 +16,16 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
   :: (Label l, Eq l)
   => l:l -> lc:{l | canFlowTo lc l } -> lf:l -> elf:l
   -> ti:TInfo l 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:{l | not (canFlowTo (field1Label ti) l && canFlowTo l1 l)}
-  -> v1: SDBTerm l 
+  -> v1: {t:Term l | isDBValue t && ςTerm t } 
   -> l2:l 
-  -> v2: SDBTerm l 
+  -> v2: {t:Term l | isDBValue t && ςTerm t } 
   -> r: {Row l | (canFlowTo (lfRow p ti r) lf) && (canFlowTo (lfRow p ti (εRow l ti r)) elf) && (not (updateRowCheck lc lf ti p l1 v1 l2 v2 r)) && (updateRowCheck lc elf ti p l1 (if (canFlowTo l1 l) then v1 else THole) l2 (if (canFlowTo l2 l) then v2 else THole) (εRow l ti r)) } 
   -> { εRow l ti r = εRow l ti (updateRow p (if (canFlowTo l1 l) then v1 else THole) (if (canFlowTo l2 l) then v2 else THole) (εRow l ti r)) } @-}
 simulationsUpdateRowOneErased 
   :: (Label l, Eq l)
-  => l -> l -> l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> Row l -> Proof 
+  => l -> l -> l -> l -> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> Row l -> Proof 
 simulationsUpdateRowOneErased l lc lφ εlφ ti p l1 v1 l2 v2 r@(Row k o1 o2) 
   =   εRow l ti r 
       ? globals
@@ -100,16 +100,16 @@ simulationsUpdateRowOneErased l lc lφ εlφ ti p l1 v1 l2 v2 r@(Row k o1 o2)
   :: (Label l, Eq l)
   => l:l -> lc:{l | canFlowTo lc l } -> lf:l -> elf:l
   -> ti:TInfo l 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:{l | not (canFlowTo (field1Label ti) l && canFlowTo l1 l)}
-  -> v1: SDBTerm l 
+  -> v1: {t:Term l | isDBValue t && ςTerm t }
   -> l2:l 
-  -> v2: SDBTerm l 
+  -> v2: {t:Term l | isDBValue t && ςTerm t } 
   -> r: {Row l | (canFlowTo (lfRow p ti r) lf) && (canFlowTo (lfRow p ti (εRow l ti r)) elf) && (updateRowCheck lc lf ti p l1 v1 l2 v2 r) && (not (updateRowCheck lc elf ti p l1 (if (canFlowTo l1 l) then v1 else THole) l2 (if (canFlowTo l2 l) then v2 else THole) (εRow l ti r))) } 
   -> { εRow l ti r = εRow l ti (updateRow p v1 v2 r) } @-}
 simulationsUpdateRowOne 
   :: (Label l, Eq l)
-  => l -> l -> l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> Row l -> Proof 
+  => l -> l -> l -> l -> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> Row l -> Proof 
 simulationsUpdateRowOne l lc lφ εlφ ti p l1 v1 l2 v2 r@(Row k o1 o2) 
   =   εRow l ti r 
       ? globals

@@ -17,17 +17,17 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
   => l:l -> lc:{l | not (canFlowTo lc l) } 
   -> db:DB l 
   -> n:{TName | isJust (lookupTable n db) }
-  -> p:Pred
+  -> p:Pred l
   -> l1:l 
-  -> v1:SDBTerm l
+  -> v1:{t:Term l | isDBValue t && ςTerm t }
   -> l2:l  
-  -> v2:SDBTerm l 
+  -> v2:{t:Term l | isDBValue t && ςTerm t } 
   -> t:{Table l | (Just t == lookupTable n db) && updateLabelCheck lc t p l1 v1 l2 v2} 
   -> { εDB l db == εDB l (updateDB db n p v1 v2) } 
   @-}
   
 simulationsUpdateAny :: (Label l, Eq l) 
-  => l -> l -> DB l -> TName -> Pred -> l -> Term l -> l -> Term l -> Table l  -> Proof
+  => l -> l -> DB l -> TName -> Pred l -> l -> Term l -> l -> Term l -> Table l  -> Proof
 simulationsUpdateAny l lc [] n p l1 v1 l2 v2 ti 
   = εDB l [] == εDB l (updateDB [] n p v1 v2) *** QED 
 
@@ -65,16 +65,16 @@ simulationsUpdateAny l lc (Pair n' t:ts) n p l1 v1 l2 v2 t'
   :: (Label l, Eq l)
   => l:l -> lc:{l | not (canFlowTo lc l) } -> lf:l
   -> ti:TInfo l 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:l 
-  -> v1: SDBTerm l 
+  -> v1: {t:Term l | isDBValue t && ςTerm t } 
   -> l2:l 
-  -> v2: SDBTerm l 
+  -> v2: {t:Term l | isDBValue t && ςTerm t } 
   -> rs:{[Row l] | (updateRowsCheck lc lf ti p l1 v1 l2 v2 rs) } 
   -> { ( εRows l ti rs = εRows l ti (updateRows p v1 v2 rs)) } / [len rs] @-}
 simulationsUpdateRows
   :: (Label l, Eq l)
-  => l -> l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> [Row l] -> Proof 
+  => l -> l -> l -> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> [Row l] -> Proof 
 simulationsUpdateRows l lc lφ ti p l1 v1 l2 v2 [] 
   =   εRows l ti (updateRows p v1 v2 [])
   ==. εRows l ti []
@@ -95,16 +95,16 @@ simulationsUpdateRows l lc lφ ti p l1 v1 l2 v2 (r:rs)
   :: (Label l, Eq l)
   => l:l -> lc:{l | not (canFlowTo lc l) } -> lf:l 
   -> ti:TInfo l 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:l 
-  -> v1: SDBTerm l 
+  -> v1: {t:Term l | isDBValue t && ςTerm t }
   -> l2:l 
-  -> v2: SDBTerm l 
+  -> v2: {t:Term l | isDBValue t && ςTerm t } 
   -> r: {Row l | (updateRowCheck lc lf ti p l1 v1 l2 v2 r) } 
   -> { ( εRow l ti r = εRow l ti (updateRow p v1 v2 r)) } @-}
 simulationsUpdateRow
   :: (Label l, Eq l)
-  => l -> l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> Row l -> Proof 
+  => l -> l -> l -> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> Row l -> Proof 
 simulationsUpdateRow l lc lφ ti p l1 v1 l2 v2 r@(Row k o1 o2) 
   =   εRow l ti r 
       ? assert (updateRowCheck lc lφ ti p l1 v1 l2 v2 r) 

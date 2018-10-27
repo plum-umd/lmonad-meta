@@ -15,16 +15,16 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
   :: Label l => l:l -> lc:{l | canFlowTo lc l } 
   -> db:DB l 
   -> n:{TName | isJust (lookupTable n db) }
-  -> p:Pred
+  -> p:Pred l
   -> l1:l 
-  -> v1:SDBTerm l
+  -> v1:{t:Term l | isDBValue t && ςTerm t }
   -> l2:l  
-  -> v2:SDBTerm l 
+  -> v2:{t:Term l | isDBValue t && ςTerm t } 
   -> t: {Table l | (Just t == lookupTable n db) && (updateLabelCheck lc t p l1 v1 l2 v2)}
   -> εt:{Table l | (Just εt == lookupTable n (εDB l db)) && (updateLabelCheck lc εt p l1 (if (canFlowTo l1 l) then v1 else THole) l2 (if (canFlowTo l2 l) then v2 else THole)) } 
   -> { εDB l (updateDB (εDB l db) n p (if (canFlowTo l1 l) then v1 else THole) (if (canFlowTo l2 l) then v2 else THole)) == εDB l (updateDB db n p v1 v2) } @-}
 simulationsUpdate :: (Label l, Eq l) 
-  => l -> l -> DB l -> TName -> Pred -> l -> Term l -> l -> Term l -> Table l -> Table l  -> Proof
+  => l -> l -> DB l -> TName -> Pred l -> l -> Term l -> l -> Term l -> Table l -> Table l  -> Proof
 simulationsUpdate l lc [] n p l1 v1 l2 v2 _ _
   =   εDB l (updateDB [] n p v1 v2) 
   ==. εDB l [] 
@@ -109,17 +109,17 @@ simulationsUpdate l lc ((Pair n' t@(Table ti rs)):ts) n p l1 v1 l2 v2 t' εt'
   => l:l -> lc:{l | canFlowTo lc l }
   -> lf:l -> elf:l 
   -> ti:TInfo l 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:l 
-  -> v1: SDBTerm l 
+  -> v1: {t:Term l | isDBValue t && ςTerm t } 
   -> l2:l 
-  -> v2: SDBTerm l 
+  -> v2: {t:Term l | isDBValue t && ςTerm t } 
   -> rs:{[Row l] | (canFlowTo (lfRows p ti rs) lf) && (canFlowTo (lfRows p ti (εRows l ti rs)) elf) && (updateRowsCheck lc lf ti p l1 v1 l2 v2 rs) && (updateRowsCheck lc elf ti p l1 (if (canFlowTo l1 l) then v1 else THole) l2 (if (canFlowTo l2 l) then v2 else THole) (εRows l ti rs))} 
   -> { (εRows l ti (updateRows p (if (canFlowTo l1 l) then v1 else THole) (if (canFlowTo l2 l) then v2 else THole) (εRows l ti rs)) = εRows l ti (updateRows p v1 v2 rs)) } 
    / [len rs] @-}
 simulationsUpdateRows
   :: (Label l, Eq l)
-  => l -> l -> l -> l-> TInfo l -> Pred -> l -> Term l -> l -> Term l -> [Row l] -> Proof 
+  => l -> l -> l -> l-> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> [Row l] -> Proof 
 simulationsUpdateRows l lc _ _ ti p l1 v1 l2 v2 [] 
   =   εRows l ti (updateRows p εv1 εv2 (εRows l ti []))
   ==. εRows l ti (updateRows p v1 v2 [])
@@ -164,16 +164,16 @@ simulationsUpdateRows l lc lφ εlφ ti p l1 v1 l2 v2 (r:rs)
   :: (Label l, Eq l)
   => l:l -> lc:{l | canFlowTo lc l } -> lf:l -> elf:l
   -> ti:TInfo l 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:l 
-  -> v1: SDBTerm l 
+  -> v1: {t:Term l | isDBValue t && ςTerm t } 
   -> l2:l 
-  -> v2: SDBTerm l 
+  -> v2: {t:Term l | isDBValue t && ςTerm t } 
   -> r: {Row l | (canFlowTo (lfRow p ti r) lf) && (canFlowTo (lfRow p ti (εRow l ti r)) elf) && (updateRowCheck lc lf ti p l1 v1 l2 v2 r) && (updateRowCheck lc elf ti p l1 (if (canFlowTo l1 l) then v1 else THole) l2 (if (canFlowTo l2 l) then v2 else THole) (εRow l ti r)) } 
   -> { εRow l ti (updateRow p (if (canFlowTo l1 l) then v1 else THole) (if (canFlowTo l2 l) then v2 else THole) (εRow l ti r)) = εRow l ti (updateRow p v1 v2 r) } @-}
 simulationsUpdateRow 
   :: (Label l, Eq l)
-  => l -> l -> l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> Row l -> Proof 
+  => l -> l -> l -> l -> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> Row l -> Proof 
 simulationsUpdateRow l lc lφ εlφ ti p l1 v1 l2 v2 r@(Row k o1 o2)
   =   εRow l ti (updateRow p εv1 εv2 (εRow l ti (Row k o1 o2))) 
       ? globals

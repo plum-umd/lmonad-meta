@@ -80,7 +80,7 @@ simulationsTDelete l lc db n t
   -> lc:{l | not (canFlowTo lc l) }
   -> db:DB l 
   -> n:TName 
-  -> p:{Pred | terminates (Pg lc db (TDelete n (TPred p)))}
+  -> p:{Pred l | terminates (Pg lc db (TDelete n (TPred p)))}
   -> t :{Table l | Just  t == lookupTable n db }
   -> εt:{Table l |  (Just εt == lookupTable n (εDB l db)) 
                  && (tableInfo t == tableInfo εt)
@@ -89,7 +89,7 @@ simulationsTDelete l lc db n t
   -> { ε l (eval (ε l (Pg lc db (TDelete n (TPred p))))) == ε l (eval (Pg lc db (TDelete n (TPred p)))) } 
   @-}
 simulationsTDeleteFound :: (Label l, Eq l) 
-  => l -> l -> DB l -> TName -> Pred -> Table l -> Table l -> Proof
+  => l -> l -> DB l -> TName -> Pred l -> Table l -> Table l -> Proof
 
 simulationsTDeleteFound l lc db n p t εt
   | a, c, b, εb

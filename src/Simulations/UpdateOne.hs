@@ -17,16 +17,16 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
   :: Label l => l:l -> lc:{l | canFlowTo lc l } 
   -> db:DB l 
   -> n:{TName | isJust (lookupTable n db) && isJust (lookupTable n (εDB l db))}
-  -> p:Pred
+  -> p:Pred l
   -> l1:l 
-  -> v1:SDBTerm l
+  -> v1:{t:Term l | isDBValue t && ςTerm t }
   -> l2:l  
-  -> v2:SDBTerm l 
+  -> v2:{t:Term l | isDBValue t && ςTerm t } 
   -> t:{Table l  | (not (canFlowTo (field1Label (tableInfo t)) l && canFlowTo l1 l)) && (Just t == lookupTable n db) && not (updateLabelCheck lc t p l1 v1 l2 v2) } 
   -> εt:{Table l | (Just εt == lookupTable n (εDB l db)) && (updateLabelCheck lc εt p l1 (if (canFlowTo l1 l) then v1 else THole) l2 (if (canFlowTo l2 l) then v2 else THole)) } 
   -> { εDB l (updateDB (εDB l db) n p (if (canFlowTo l1 l) then v1 else THole) (if (canFlowTo l2 l) then v2 else THole)) == εDB l db } @-}
 simulationsUpdateOneErased :: (Label l, Eq l) 
-  => l -> l -> DB l -> TName -> Pred -> l -> Term l -> l -> Term l -> Table l -> Table l -> Proof
+  => l -> l -> DB l -> TName -> Pred l -> l -> Term l -> l -> Term l -> Table l -> Table l -> Proof
 simulationsUpdateOneErased l lc [] n p l1 v1 l2 v2 _ _ 
   =   εDB l [] 
   ==. εDB l (updateDB (εDB l []) n p εv1 εv2) 
@@ -114,16 +114,16 @@ simulationsUpdateOneErased l lc ((Pair n' t@(Table ti rs)):ts) n p l1 v1 l2 v2 t
   => l:l -> lc:{l | canFlowTo lc l } 
   -> lf:l -> elf:l 
   -> ti:TInfo l 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:{l | not (canFlowTo (field1Label ti) l && canFlowTo l1 l)}
-  -> v1: SDBTerm l 
+  -> v1: {t:Term l | isDBValue t && ςTerm t } 
   -> l2:l 
-  -> v2: SDBTerm l 
+  -> v2: {t:Term l | isDBValue t && ςTerm t } 
   -> rs: {[Row l] | (canFlowTo (lfRows p ti rs) lf) && (canFlowTo (lfRows p ti (εRows l ti rs)) elf) && (not (updateRowsCheck lc lf ti p l1 v1 l2 v2 rs)) && (updateRowsCheck lc elf ti p l1 (if (canFlowTo l1 l) then v1 else THole) l2 (if (canFlowTo l2 l) then v2 else THole) (εRows l ti rs)) } 
   -> { εRows l ti rs = εRows l ti (updateRows p (if (canFlowTo l1 l) then v1 else THole) (if (canFlowTo l2 l) then v2 else THole) (εRows l ti rs)) } / [len rs] @-}
 simulationsUpdateRowsErased 
   :: (Label l, Eq l)
-  => l -> l -> l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> [Row l] -> Proof 
+  => l -> l -> l -> l -> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> [Row l] -> Proof 
 simulationsUpdateRowsErased l lc _ _ ti p l1 v1 l2 v2 []
   =   εRows l ti (updateRows p εv1 εv2 (εRows l ti []))
   ==. εRows l ti []
@@ -194,16 +194,16 @@ simulationsUpdateRowsErased l lc lφ εlφ ti p l1 v1 l2 v2 (r:rs)
   :: Label l => l:l -> lc:{l | canFlowTo lc l } 
   -> db:DB l 
   -> n:{TName | isJust (lookupTable n db) && isJust (lookupTable n (εDB l db))}
-  -> p:Pred
+  -> p:Pred l
   -> l1:l 
-  -> v1:SDBTerm l
+  -> v1:{t:Term l | isDBValue t && ςTerm t }
   -> l2:l  
-  -> v2:SDBTerm l 
+  -> v2:{t:Term l | isDBValue t && ςTerm t } 
   -> t:{Table l | (not (canFlowTo (field1Label (tableInfo t)) l && canFlowTo l1 l)) && (Just t == lookupTable n db) && (updateLabelCheck lc t p l1 v1 l2 v2)  } 
   -> εt:{Table l | (Just εt == lookupTable n (εDB l db)) && not (updateLabelCheck lc εt p l1 (if (canFlowTo l1 l) then v1 else THole) l2 (if (canFlowTo l2 l) then v2 else THole)) } 
   -> { εDB l db == εDB l (updateDB db n p v1 v2) } @-}
 simulationsUpdateOne :: (Label l, Eq l) 
-  => l -> l -> DB l -> TName -> Pred -> l -> Term l -> l -> Term l -> Table l -> Table l  -> Proof
+  => l -> l -> DB l -> TName -> Pred l -> l -> Term l -> l -> Term l -> Table l -> Table l  -> Proof
 simulationsUpdateOne l lc [] n p l1 v1 l2 v2 _ _ 
   =   εDB l [] 
   ==. εDB l (updateDB [] n p v1 v2) 
@@ -282,16 +282,16 @@ simulationsUpdateOne l lc ((Pair n' t@(Table ti rs)):ts) n p l1 v1 l2 v2 t' εt'
   => l:l -> lc:{l | canFlowTo lc l } 
   -> lf:l -> elf:l 
   -> ti:TInfo l 
-  -> p:Pred 
+  -> p:Pred l
   -> l1:{l | not (canFlowTo (field1Label ti) l && canFlowTo l1 l)}
-  -> v1: SDBTerm l 
+  -> v1: {t:Term l | isDBValue t && ςTerm t } 
   -> l2:l 
-  -> v2: SDBTerm l 
+  -> v2: {t:Term l | isDBValue t && ςTerm t } 
   -> rs: {[Row l] | (canFlowTo (lfRows p ti rs) lf) && (canFlowTo (lfRows p ti (εRows l ti rs)) elf) && (updateRowsCheck lc lf ti p l1 v1 l2 v2 rs) && (not (updateRowsCheck lc elf ti p l1 (if (canFlowTo l1 l) then v1 else THole) l2 (if (canFlowTo l2 l) then v2 else THole) (εRows l ti rs))) } 
   -> { εRows l ti rs = εRows l ti (updateRows p v1 v2 rs) } / [len rs] @-}
 simulationsUpdateRows 
   :: (Label l, Eq l)
-  => l -> l -> l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> [Row l] -> Proof 
+  => l -> l -> l -> l -> TInfo l -> Pred l -> l -> Term l -> l -> Term l -> [Row l] -> Proof 
 simulationsUpdateRows l lc _ _ ti p l1 v1 l2 v2 []
   =   εRows l ti (updateRows p v1 v2 [])
   ==. εRows l ti []
