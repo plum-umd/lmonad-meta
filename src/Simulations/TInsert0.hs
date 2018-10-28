@@ -21,9 +21,9 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
   -> db:DB l 
   -> n:TName 
   -> l1:l 
-  -> v1:SDBTerm l
+  -> v1:{t:Term l | isDBValue t && ςTerm t }
   -> l2:l 
-  -> v2:{SDBTerm l | terminates (Pg lc db (TInsert n (TLabeled l1 v1) (TLabeled l2 v2)))}
+  -> v2:{SDBTerm l | isDBValue v2 && ςTerm v2 && terminates (Pg lc db (TInsert n (TLabeled l1 v1) (TLabeled l2 v2)))}
   -> tinfo:{TInfo l | (Just tinfo == lookupTableInfo n (εDB l db)) &&  (Just tinfo == lookupTableInfo n db) 
                     && (tinfo == fromJust (lookupTableInfo n (εDB l db))) && (isJust (lookupTableInfo n (εDB l db)))
                     && (tinfo == fromJust (lookupTableInfo n db)) && (isJust (lookupTableInfo n db)) }
