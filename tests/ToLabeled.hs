@@ -4,7 +4,8 @@ import RunLiquid
 
 main :: IO ()
 main = liquid  [
-    "Simulations/TToLabeledTVLabel.hs"
+    "DBValueErase.hs"
+  , "Simulations/TToLabeledTVLabel.hs"
   , "Simulations/TToLabeled.hs"
   ]
 
