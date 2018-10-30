@@ -4,7 +4,7 @@
 module LabelInstance where
 
 import ProofCombinators
-data Label = Low | High 
+data Label = Low | Medium | High 
   deriving (Eq, Show)
 
 low, high :: Label
@@ -14,23 +14,32 @@ high = High
 {-@ reflect canFlowTo @-}
 canFlowTo :: Label -> Label -> Bool
 canFlowTo Low High  = True 
+canFlowTo Low Medium  = True 
 canFlowTo Low Low   = True
 canFlowTo High High = True 
+canFlowTo High Medium = False
 canFlowTo High Low  = False 
+canFlowTo Medium High = True 
+canFlowTo Medium Medium = True 
+canFlowTo Medium Low  = False 
 
 {-@ reflect meet @-}
 meet :: Label -> Label -> Label 
-meet Low High  = Low 
-meet Low Low   = Low
-meet High High = High 
-meet High Low  = Low 
+meet a b = if a `canFlowTo` b then a else b
+
+-- meet Low High  = Low 
+-- meet Low Low   = Low
+-- meet High High = High 
+-- meet High Low  = Low 
 
 {-@ reflect join @-}
 join :: Label -> Label -> Label 
-join Low High  = High 
-join Low Low   = Low
-join High High = High 
-join High Low  = High 
+join a b = if a `canFlowTo` b then b else a
+
+-- join Low High  = High 
+-- join Low Low   = Low
+-- join High High = High 
+-- join High Low  = High 
 
 {-@ reflect bot @-}
 bot :: Label 

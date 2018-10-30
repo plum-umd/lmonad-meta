@@ -14,9 +14,11 @@ import Prelude hiding (Just)
 
 main :: IO () 
 main = do
+    let p = pgToLabeled -- pgUp'
     putStrLn "p = "
-    putStrLn $ show $ pgUp'
-    putStrLn $ show $ checkSimulations low pgUp'
+    putStrLn $ show p
+    putStrLn $ show $ eval p
+    putStrLn $ show $ checkSimulations low p
 
 
 {- FIXED  
@@ -72,6 +74,11 @@ checkSimulations l p
       else error "assumption broken"
 
 --- Update Failing Example: checkSimulations low pgUp
+
+-- Reviewer's example.
+pgToLabeled = Pg LI.Low [] t
+    where
+        t = TToLabeled (TVLabel LI.Medium) $ TBind (TUnlabel (TLabeled LI.Medium TTrue)) $ TLam "secret" $ TIf (TVar "secret") TException $ TReturn TUnit
 
 -- l = low
 -- This example run with l = low presents why we need to raise with the label table
