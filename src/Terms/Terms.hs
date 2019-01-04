@@ -54,7 +54,7 @@ isTLIO (TLIO _) = True
 isTLIO _        = False 
 
 {-@ measure fromTLIO @-}
-{-@ fromTLIO :: {t:Term l | isTLIO t} -> {o:Term | t == TLIO o} @-} 
+{-@ fromTLIO :: {t:Term l | isTLIO t} -> {o:Term l | t == TLIO o} @-} 
 fromTLIO :: Term l -> Term l 
 fromTLIO (TLIO t) = t
 

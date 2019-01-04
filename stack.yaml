@@ -10,6 +10,8 @@ extra-deps:
 - fgl-visualize-0.1.0.1
 - intern-0.9.1.4
 - located-base-0.1.1.1
+- transformers-0.5.5.0
+- util-0.1.11.0
 
 - git: https://github.com/ucsd-progsys/liquid-fixpoint
   commit: 342ebc329b6e6dced80a8bc2079983b4ab02dc8f
