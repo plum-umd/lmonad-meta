@@ -371,18 +371,18 @@ eval (Pg lc db (TSelect n t))
 eval p@(Pg lc db (TUpdate _ _ _ _))   
   | not (ς p)
   = Pg lc db TException
-eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2)))   
+eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))   
   | Just t <- lookupTable n db 
   , updateLabelCheck lc t p l1 v1 l2 v2 
   = let lc' = lc `join` ((field1Label (tableInfo t) `join` l1) -- this is for TUpdateFound.C1
                          `join` tableLabel (tableInfo t))      -- this is for TUpdateFound.C2
     in 
     Pg lc' (updateDB db n p v1 v2) (TReturn TUnit)
-eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2)))   
+eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))   
   | Just t <- lookupTable n db 
   = let lc' = lc `join` ((field1Label (tableInfo t) `join` l1) `join` tableLabel (tableInfo t))  in 
     Pg lc' db (TReturn TException)
-eval (Pg lc db (TUpdate n (TPred p) (TLabeled _ _) (TLabeled _ _)))   
+eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled _ _)) (TJust (TLabeled _ _))))   
   = Pg lc db TException
 
 eval (Pg lc db (TUnlabel (TLabeled l t)))

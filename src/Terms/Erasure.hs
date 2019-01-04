@@ -63,8 +63,10 @@
   = TToLabeled (εTerm l t1) (εTerm l t2)
 εTerm l t@(TVLabel _) 
   = t
-
-
+εTerm l (TJust t)
+  = TJust (εTerm l t)
+εTerm l TNothing
+  = TNothing
 
 
 

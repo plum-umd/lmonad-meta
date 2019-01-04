@@ -33,3 +33,5 @@ isDBValue (TApp _ _)        = False
 isDBValue (TLam _ _)        = False  
 isDBValue (TVar _)          = False  
 isDBValue (TToLabeled _ _)  = False
+isDBValue (TJust _)         = False
+isDBValue TNothing          = False

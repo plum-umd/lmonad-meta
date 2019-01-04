@@ -28,6 +28,10 @@ data Term l
   | TVar Var
   | TToLabeled (Term l) (Term l)
   | TVLabel l
+  -- | optional parameter
+  | TJust (Term l)
+  -- | optional parameter (omitted)
+  | TNothing
   deriving Eq 
 
 {-@ reflect tInt @-}
@@ -92,5 +96,5 @@ tsize (TApp t1 t2)         = 1 + tsize t1 + tsize t2
 tsize (TVar _)             = 0 
 tsize (TVLabel _)          = 0 
 tsize (TLam _ t)           = 1 + tsize t 
-
-
+tsize (TJust t)            = 1 + tsize t
+tsize TNothing             = 0
