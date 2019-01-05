@@ -35,3 +35,4 @@ isDBValue (TVar _)          = False
 isDBValue (TToLabeled _ _)  = False
 isDBValue (TJust _)         = False
 isDBValue TNothing          = False
+isDBValue (TCase _ _ _)     = False

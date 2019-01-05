@@ -41,5 +41,6 @@
 ςTerm (TLam _ t)         = ςTerm t  
 ςTerm (TVar _)           = True  
 ςTerm (TToLabeled t1 t2) = ςTerm t1 && ςTerm t2
-ςTerm (TJust t)          = False
-ςTerm TNothing           = False
+ςTerm (TJust t)          = ςTerm t
+ςTerm TNothing           = True
+ςTerm (TCase t1 t2 t3)   = ςTerm t1 && ςTerm t2 && ςTerm t3

@@ -67,6 +67,7 @@
   = TJust (εTerm l t)
 εTerm l TNothing
   = TNothing
-
+εTerm l (TCase t1 t2 t3)
+  = TCase (εTerm l t1) (εTerm l t2) (εTerm l t3)
 
 

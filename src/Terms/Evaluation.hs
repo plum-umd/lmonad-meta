@@ -8,6 +8,9 @@ evalTerm (TIf TTrue  t1 t2)   = t1
 evalTerm (TIf TFalse t1 t2)   = t2
 evalTerm (TIf THole t1 t2)    = THole 
 evalTerm (TIf t t1 t2)        = TIf (evalTerm t) t1 t2
+evalTerm (TCase (TJust t0) just@(TLam x t1) _) = evalTerm (TApp just t0)
+evalTerm (TCase TNothing _ t1)= t1
+evalTerm (TCase t0 t1 t2)     = TCase (evalTerm t0) (evalTerm t1) t2
 evalTerm t                    = t 
 
 
@@ -119,6 +122,12 @@ substProp x tx (TJust t)
   = subst x tx (TJust t) ==. TJust (subst x tx t)
   ? substProp x tx t
   *** QED
+substProp x tx (TCase t1 t2 t3)
+  = subst x tx (TCase t1 t2 t3) ==. TCase (subst x tx t1) (subst x tx t2) (subst x tx t3)
+  ? substProp x tx t1
+  ? substProp x tx t2
+  ? substProp x tx t3
+  *** QED
 substProp x tx t 
   = subst x tx t ==. t *** QED 
 
@@ -164,6 +173,10 @@ subst x tx (TDelete n t)
   = TDelete n (subst x tx t)
 subst x tx (TToLabeled t1 t2)  
   = TToLabeled (subst x tx t1) (subst x tx t2)
+subst x tx (TJust t1)
+  = TJust (subst x tx t1)
+subst x tx (TCase t1 t2 t3)
+  = TCase (subst x tx t1) (subst x tx t2) (subst x tx t3)
 -- subst x tx (TJust t)
 --   = TJust (subst x tx t)
 subst _ _ t 
