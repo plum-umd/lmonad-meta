@@ -203,12 +203,34 @@ homomorphicSubst l x tx (TPred p)
   ==. εTerm l (subst x tx (TPred p))
   *** QED 
 
-homomorphicSubst l x tx TNil 
-  =   subst x (εTerm l tx) (εTerm l TNil) 
-  ==. subst x (εTerm l tx) TNil 
-  ==. TNil
-  ==. εTerm l TNil
-  ==. εTerm l (subst x tx TNil)
+homomorphicSubst l x tx TNothing 
+  =   subst x (εTerm l tx) (εTerm l TNothing) 
+  ==. subst x (εTerm l tx) TNothing 
+  ==. TNothing
+  ==. εTerm l TNothing
+  ==. εTerm l (subst x tx TNothing)
+  *** QED
+
+homomorphicSubst l x tx (TJust t) 
+  =   subst x (εTerm l tx) (εTerm l (TJust t)) 
+  ==. subst x (εTerm l tx) (TJust (εTerm l t)) 
+  ==. TJust (subst x (εTerm l tx) (εTerm l t))
+      ? homomorphicSubst l x tx t
+  ==. TJust (εTerm l (subst x tx t))
+  ==. εTerm l (subst x tx (TJust t))
+  *** QED   
+
+homomorphicSubst l x tx (TCase t1 t2 t3)
+  =   subst x (εTerm l tx) (εTerm l (TCase t1 t2 t3)) 
+  ==. subst x (εTerm l tx) (TCase (εTerm l t1) (εTerm l t2) (εTerm l t3)) 
+  ==. TCase (subst x (εTerm l tx) (εTerm l t1))
+          (subst x (εTerm l tx) (εTerm l t2)) 
+          (subst x (εTerm l tx) (εTerm l t3)) 
+      ? homomorphicSubst l x tx t1 
+      ? homomorphicSubst l x tx t2
+      ? homomorphicSubst l x tx t3
+  ==. TCase (εTerm l (subst x tx t1)) (εTerm l (subst x tx t2)) (εTerm l (subst x tx t3))  
+  ==. εTerm l (subst x tx (TCase t1 t2 t3))
   *** QED 
 
 homomorphicSubst l x tx THole 

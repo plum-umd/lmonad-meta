@@ -10,6 +10,7 @@ evalTerm (TIf THole t1 t2)    = THole
 evalTerm (TIf t t1 t2)        = TIf (evalTerm t) t1 t2
 evalTerm (TCase (TJust t0) just@(TLam x t1) _) = evalTerm (TApp just t0)
 evalTerm (TCase TNothing _ t1)= t1
+evalTerm (TCase THole t1 t2)  = THole
 evalTerm (TCase t0 t1 t2)     = TCase (evalTerm t0) (evalTerm t1) t2
 evalTerm t                    = t 
 
