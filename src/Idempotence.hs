@@ -35,6 +35,10 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
   =   εTerm l (εTerm l t) 
   ==. εTerm l t 
   *** QED
+εTermIdempotent l t@TNothing
+  =   εTerm l (εTerm l t) 
+  ==. εTerm l t 
+  *** QED
 εTermIdempotent l (TCons h t) 
   =   εTerm l (εTerm l (TCons h t)) 
   ==. εTerm l (TCons (εTerm l h) (εTerm l t)) 
@@ -189,6 +193,28 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
   =   εTerm l (εTerm l (TVLabel x)) 
   ==. εTerm l (TVLabel x)
   *** QED
+
+εTermIdempotent l (TCase t1 t2 t3) 
+  =   εTerm l (εTerm l (TCase t1 t2 t3)) 
+  ==. εTerm l (TCase (εTerm l t1) (εTerm l t2) (εTerm l t3)) 
+  ==. TCase (εTerm l (εTerm l t1)) (εTerm l (εTerm l t2)) (εTerm l (εTerm l t3)) 
+      ? εTermIdempotent l t1
+      ? εTermIdempotent l t2
+      ? εTermIdempotent l t3
+  ==. TCase (εTerm l t1) (εTerm l t2) (εTerm l t3) 
+  ==. εTerm l (TCase t1 t2 t3)
+  *** QED
+
+εTermIdempotent l (TJust t) 
+  =   εTerm l (εTerm l (TJust t)) 
+  ==. εTerm l (TJust (εTerm l t)) 
+  ==. TJust (εTerm l (εTerm l t))
+      ? εTermIdempotent l t
+  ==. TJust (εTerm l t) 
+  ==. εTerm l (TJust t)
+  *** QED  
+
+
   
 {-@ εDBIdempotent
  :: (Eq l, Label l)
