@@ -275,21 +275,15 @@ simulationsTerm l (TCase TNothing t1 t2)
   ==. εTerm l (evalTerm (TCase TNothing t1 t2))
   *** QED
 
-simulationsTerm l (TCase (TJust a) (TLam x t1) t2)
-  =   εTerm l (evalTerm (εTerm l (TCase (TJust a) (TLam x t1) t2)))
-  ==. εTerm l (evalTerm (TCase (εTerm l (TJust a)) (εTerm l (TLam x t1)) (εTerm l t2)))
-  ==. εTerm l (evalTerm (TCase (TJust (εTerm l a)) (TLam x (εTerm l t1)) (εTerm l t2)))
-  ==. εTerm l (evalTerm (TApp (TLam x (εTerm l t1)) (εTerm l a)))
-  ==. εTerm l (subst x (εTerm l a) (εTerm l t1))
-      ? homomorphicSubst l x (εTerm l a) (εTerm l t1)
-  ==. subst x (εTerm l (εTerm l a)) (εTerm l (εTerm l t1))
-  ==. subst x (εTerm l a) (εTerm l t1)
-      ? εTermIdempotent l a
-      ? εTermIdempotent l t1
-  ==. εTerm l (subst x a t1)
-      ? homomorphicSubst l x a t1
-  ==. εTerm l (evalTerm (TApp (TLam x t1) a))
-  ==. εTerm l (evalTerm (TCase (TJust a) (TLam x t1) t2))
+simulationsTerm l (TCase (TJust a) t1 t2)
+  =   εTerm l (evalTerm (εTerm l (TCase (TJust a) t1 t2)))
+  ==. εTerm l (evalTerm (TCase (εTerm l (TJust a)) (εTerm l t1) (εTerm l t2)))
+  ==. εTerm l (evalTerm (TCase (TJust (εTerm l a)) (εTerm l t1) (εTerm l t2)))
+  ==. εTerm l (evalTerm (TApp (εTerm l t1) (εTerm l a)))
+  ==. εTerm l (evalTerm (εTerm l (TApp t1 a)))
+  ==. εTerm l (evalTerm (TApp t1 a))
+      ? simulationsTerm l (TApp t1 a)
+  ==. εTerm l (evalTerm (TCase (TJust a) t1 t2))
   *** QED
 
 
@@ -308,11 +302,11 @@ simulationsTerm l (TCase t t1 t2)
   ==. εTerm l (evalTerm (TCase (εTerm l t) (εTerm l t1) (εTerm l t2))) 
   ==. εTerm l (TCase (evalTerm (εTerm l t)) (εTerm l t1) (εTerm l t2)) 
   ==. TCase (εTerm l (evalTerm (εTerm l t))) (εTerm l (εTerm l t1)) (εTerm l (εTerm l t2))
+  ==. TCase (evalTerm (εTerm l (εTerm l t))) (εTerm l (εTerm l t1)) (εTerm l (εTerm l t2))
       ? εTermIdempotent l t1 
       ? εTermIdempotent l t2 
       ? simulationsTerm l t
-      ? simulationsTerm l t1
-  ==. TCase (εTerm l (evalTerm t)) (evalTerm (εTerm l t1)) (εTerm l t2) 
+  ==. TCase (εTerm l (evalTerm t)) (εTerm l t1) (εTerm l t2) 
   ==. εTerm l (TCase (evalTerm t) t1 t2) 
   ==. εTerm l (evalTerm (TCase t t1 t2)) 
   *** QED
