@@ -1,0 +1,80 @@
+- add bibifi - performance
+- close tradeoff loop
+- comparison to coq
+- 4 minutes extra
+- more in the paper: slide of extra stuff i didnt talk about at the end
+- selective declassification
+
+- related work
+
+Robert
+- spend more time on contributions slide
+- don't add too much
+- diagram of lattice
+
+- explain label annotation example more
+- tweak friends example to something else (Bank + account?)
+
+(Some already discussed)
+
+Is it really pronounced yes-id? (Hebrew: yi-SODE, don’t know what Haskellers say.)
+I’d clarify “first type theoretic result in liquid Haskell” (if that's what you said).
+
+Is flow just subset or are you eliding a connection?
+
+Talk through examples on slide! (For database policies in particular.)
+
+Why is meet “or”? [Alice or Bob] (Typically meet = and, join = or.)
+
+Database policies: Maybe give user1 and user2 non-bottom labels?
+
+It would be nice to see something that looks like a database, and step through the process of labelling it.
+
+
+Mike
+
+1:35pm
+==
+General:
+- Too much text and bullets. Think about how to add pictures, etc.
+- Put code examples at the top. Otherwise might not be visible to people in the back
+- Add slide numbers
+- Slide of stuff that’s in the paper that you didn’t talk about
+- Backup slide on related work
+- Need to mention somewhere that we support selective declassification
+
+Slide 2 (Motivation): I wouldn’t elaborate on the bullets at the bottom; just say them. Details will come later.
+
+Slide 3 (Contributions):
+- Say that BIBIFI site is > 11.5K LOC with 40 tables and handles hundreds of users
+
+Slide (LIO):
+- It’s not a lattice, but a join semi-lattice, or something like that. Figure out the right technical term.
+
+Slide (LIO) again:
+- Have a different title for each of the LIO slides (It can be LIO: XXX where XXX is the topic on the slide)
+- Typo: “noninteference”
+
+Slide (LIO) again (with LIO current label example)
+- Can you animate this?
+- Need to explain current label better (per my comment during your talk)
+- Change the example to have a real information flow
+[2 minute delay to answer question]
+
+Yesod (second slide)
+- Show example Esqeleto query. Should only add 10 seconds to your talk, but will be cool
+
+Database policies
+- Highlight the policy for Alice and Bob at the bottom when showing the example (make Field … parts red, say)
+- Try to point out how these policies might differ from related work, at this point? E.g., this is the first system that XXX
+
+Semantics slide
+- Point out that you are basically doing this by making an interpreter. I.e., you are not setting them up as inference rules. Perhaps show a whole function, to illustrate, but don’t go into the details.
+- For the example: Lots of syntax people will not understand here. You will need to walk them through it more. Maybe gray out the uninteresting parts?
+
+Noninterference slide
+- put the p1 and p2 parts on separate lines to make it easier to read
+
+1:50pm.
+
+Should have stuff about the implementation, BIBIFI (e.g., changes to the application required — annotations etc. and also how often declassification needed), evaluation, LH vs. Coq … !
