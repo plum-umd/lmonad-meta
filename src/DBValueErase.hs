@@ -29,11 +29,15 @@ dbValueErase l t@THole
   = ()
 dbValueErase l t@TNil 
   = ()
+dbValueErase l t@TNothing
+  = ()
 dbValueErase l t@(TVLabel _) 
   = ()
 dbValueErase l (TCons t1 t2) 
   =   dbValueErase l t1 
   &&& dbValueErase l t2 
+dbValueErase l (TJust t)
+  =   dbValueErase l t
 dbValueErase l t 
   = assert (not (isDBValue t)) 
 
