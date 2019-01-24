@@ -11,7 +11,7 @@
 ςTerm (TInsert _ (TLabeled _ v1) (TLabeled _ v2)) 
   =  isDBValue v1 && isDBValue v2 
   && ςTerm v1 && ςTerm v2
-ςTerm (TUpdate _ (TPred _) (TLabeled _ v1) (TLabeled _ v2)) 
+ςTerm (TUpdate _ (TPred _) (TJust (TLabeled _ v1)) (TJust (TLabeled _ v2))) 
   =  isDBValue v1 && isDBValue v2 
   && ςTerm v1 && ςTerm v2
 -- This is too strong as 1. it rejects insertion on expressions
@@ -41,3 +41,6 @@
 ςTerm (TLam _ t)         = ςTerm t  
 ςTerm (TVar _)           = True  
 ςTerm (TToLabeled t1 t2) = ςTerm t1 && ςTerm t2
+ςTerm (TJust t)          = ςTerm t
+ςTerm TNothing           = True
+ςTerm (TCase t1 t2 t3)   = ςTerm t1 && ςTerm t2 && ςTerm t3

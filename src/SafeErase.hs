@@ -64,17 +64,22 @@ safeEraseTerm l (TInsert n t1 t2)
   *** QED
 
 
-safeEraseTerm l (TUpdate n p@(TPred _) (TLabeled l1 v1) (TLabeled l2 v2))
-  =   ςTerm (εTerm l (TUpdate n p (TLabeled l1 v1) (TLabeled l2 v2)))
-  ==. ςTerm (TUpdate n (εTerm l p) (εTerm l (TLabeled l1 v1)) (εTerm l (TLabeled l2 v2)))
-  ==. ςTerm (TUpdate n (εTerm l p) (εTerm l (TLabeled l1 v1)) (εTerm l (TLabeled l2 v2)))
-  ==. ςTerm (TUpdate n (εTerm l p) (TLabeled l1 v1') (TLabeled l2 v2'))
+safeEraseTerm l (TUpdate n p@(TPred _) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))
+  =   ςTerm (εTerm l (TUpdate n p (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))
+  ==. ςTerm (εTerm l (TUpdate n p (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))
+  ==. ςTerm (TUpdate n (εTerm l p) (εTerm l $ TJust (TLabeled l1 v1))
+             (εTerm l $ TJust (TLabeled l2 v2)))
+  ==. ςTerm (TUpdate n (εTerm l p) (TJust (εTerm l (TLabeled l1 v1)))
+             (TJust (εTerm l (TLabeled l2 v2))))
+  ==. ςTerm (TUpdate n (εTerm l p)
+             (TJust (TLabeled l1 v1'))
+             (TJust (TLabeled l2 v2')))
   <=. (isDBValue v1' && isDBValue v2')
   <=. (isDBValue (εTerm l v1) && isDBValue (εTerm l v2))
       ? safeEraseTerm l v1 
       ? safeEraseTerm l v2 
   ==. (εTerm l p == p && isDBValue v1 && isDBValue v2)
-  ==. ςTerm (TUpdate n p (TLabeled l1 v1) (TLabeled l2 v2))
+  ==. ςTerm (TUpdate n p (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))
   *** QED
   where 
     v1' = if l1 `canFlowTo` l then (εTerm l v1) else THole
@@ -87,6 +92,33 @@ safeEraseTerm l (TUpdate n t1 t2 t3)
   ==. ςTerm (TUpdate n t1 t2 t3)
   *** QED
 
+
+
+safeEraseTerm l (TJust t)
+  =   ςTerm (εTerm l (TJust t))
+  ==. ςTerm (TJust (εTerm l t))
+  ==. ςTerm (εTerm l t)
+      ? safeEraseTerm l t 
+  ==. ςTerm t
+  ==. ςTerm (TJust t)
+  *** QED
+
+safeEraseTerm l TNothing
+  =   ςTerm (εTerm l TNothing)
+  ==. ςTerm TNothing
+  *** QED
+
+
+safeEraseTerm l (TCase t1 t2 t3)
+  =   ςTerm (εTerm l (TCase t1 t2 t3))
+  ==. ςTerm (TCase (εTerm l t1) (εTerm l t2) (εTerm l t3))
+  ==. (ςTerm (εTerm l t1) && ςTerm (εTerm l t2) && ςTerm (εTerm l t3))
+      ? safeEraseTerm l t1 
+      ? safeEraseTerm l t2 
+      ? safeEraseTerm l t3 
+  ==. (ςTerm t1 && ςTerm t2 && ςTerm t3)
+  ==. ςTerm (TCase t1 t2 t3)
+  *** QED
 
 
 safeEraseTerm l (TInt i)

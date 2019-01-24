@@ -29,7 +29,7 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
   @-}
 simulationsTUpdate :: (Label l, Eq l) 
   => l -> l -> DB l -> TName -> Term l -> Term l -> Term l -> Proof
-simulationsTUpdate l lc db n t1@(TPred p) t2@(TLabeled l1 v1) t3@(TLabeled l2 v2)  
+simulationsTUpdate l lc db n t1@(TPred p) t2@(TJust (TLabeled l1 v1)) t3@(TJust (TLabeled l2 v2))  
   | lc `canFlowTo` l 
   = assert (ς (Pg lc db (TUpdate n t1 t2 t3))) &&& 
     simulationsUpdateFlows l lc db n p l1 v1 l2 v2  
@@ -52,7 +52,7 @@ simulationsTUpdate _ lc db n p t1 t2
   -> v1:SDBTerm l 
   -> l2:l
   -> v2:SDBTerm l 
-  -> { ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) == ε l (eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2)))) } 
+  -> { ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))))) == ε l (eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))) } 
   @-}
 simulationsUpdateFlows :: (Label l, Eq l) 
   => l -> l -> DB l -> TName -> Pred -> l -> Term l -> l -> Term l -> Proof
@@ -62,9 +62,10 @@ simulationsUpdateFlows l lc db n p l1 v1 l2 v2
   =   lookupTableErase l n db 
   &&& simulationsUpdateFlowsFound l lc db n p l1 v1 l2 v2 t εt
 simulationsUpdateFlows l lc db n p l1 v1 l2 v2 
-  =   ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (εTerm l (TLabeled l1 v1)) (εTerm l (TLabeled l2 v2))))) 
+  =   ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))))) 
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (εTerm l (TJust (TLabeled l1 v1))) (εTerm l (TJust (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (TJust (εTerm l (TLabeled l1 v1))) (TJust (εTerm l (TLabeled l2 v2))))))
       ? lookupTableErase l n db 
       ? (case lookupTable n (εDB l db) of 
           Just _ -> assert (isJust (lookupTable n db))
@@ -78,7 +79,7 @@ simulationsUpdateFlows l lc db n p l1 v1 l2 v2
   ==. Pg lc (εDB l db) (εTerm l TException) 
   ==. ε l (Pg lc db TException) 
       ? lookupTableErase l n db 
-  ==. ε l (eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2)))) 
+  ==. ε l (eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))) 
   *** QED 
 
 {-@ simulationsUpdateDoesNotFlow  
@@ -90,8 +91,8 @@ simulationsUpdateFlows l lc db n p l1 v1 l2 v2
   -> l1:l
   -> v1:SDBTerm l 
   -> l2:l
-  -> v2:{SDBTerm l | ς (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2)))} 
-  -> { ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) == ε l (eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2)))) } 
+  -> v2:{SDBTerm l | ς (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))} 
+  -> { ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))))) == ε l (eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))) } 
   @-}
 simulationsUpdateDoesNotFlow :: (Label l, Eq l) 
   => l -> l -> DB l -> TName -> Pred -> l -> Term l ->  l -> Term l -> Proof
@@ -120,8 +121,8 @@ simulationsUpdateDoesNotFlow l lc db n p l1 v1 l2 v2
   *** QED 
   where
     t1 = TPred p 
-    t2 = TLabeled l1 v1
-    t3 = TLabeled l2 v2
+    t2 = TJust (TLabeled l1 v1)
+    t3 = TJust (TLabeled l2 v2)
 
 simulationsUpdateDoesNotFlow l lc db n p l1 v1 l2 v2   
   | Just t <- lookupTable n db 
@@ -138,8 +139,8 @@ simulationsUpdateDoesNotFlow l lc db n p l1 v1 l2 v2
   *** QED 
   where
     t1 = TPred p 
-    t2 = TLabeled l1 v1
-    t3 = TLabeled l2 v2
+    t2 = TJust (TLabeled l1 v1)
+    t3 = TJust (TLabeled l2 v2)
 
 simulationsUpdateDoesNotFlow l lc db n p l1 v1 l2 v2  
   =   ε l (eval (ε l (Pg lc db (TUpdate n t1 t2 t3)))) 
@@ -153,5 +154,5 @@ simulationsUpdateDoesNotFlow l lc db n p l1 v1 l2 v2
   *** QED 
   where
     t1 = TPred p 
-    t2 = TLabeled l1 v1
-    t3 = TLabeled l2 v2
+    t2 = TJust (TLabeled l1 v1)
+    t3 = TJust (TLabeled l2 v2)

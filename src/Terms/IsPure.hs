@@ -26,3 +26,6 @@ isPure (TApp _ _)        = True
 isPure (TLam _ _)        = True  
 isPure (TVar _ )         = True  
 isPure (TVLabel _)       = True
+isPure (TJust _)         = True
+isPure TNothing          = True
+isPure (TCase _ _ _ )    = True

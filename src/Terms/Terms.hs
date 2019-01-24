@@ -28,6 +28,9 @@ data Term l
   | TVar Var
   | TToLabeled (Term l) (Term l)
   | TVLabel l
+  | TJust (Term l)
+  | TNothing
+  | TCase (Term l) (Term l) (Term l)
   deriving Eq 
 
 {-@ reflect tInt @-}
@@ -54,7 +57,7 @@ isTLIO (TLIO _) = True
 isTLIO _        = False 
 
 {-@ measure fromTLIO @-}
-{-@ fromTLIO :: {t:Term l | isTLIO t} -> {o:Term | t == TLIO o} @-} 
+{-@ fromTLIO :: {t:Term l | isTLIO t} -> {o:Term l | t == TLIO o} @-} 
 fromTLIO :: Term l -> Term l 
 fromTLIO (TLIO t) = t
 
@@ -92,5 +95,6 @@ tsize (TApp t1 t2)         = 1 + tsize t1 + tsize t2
 tsize (TVar _)             = 0 
 tsize (TVLabel _)          = 0 
 tsize (TLam _ t)           = 1 + tsize t 
-
-
+tsize (TJust t)            = 1 + tsize t
+tsize TNothing             = 0
+tsize (TCase t1 t2 t3)     = 1 + tsize t1 + tsize t2 + tsize t3

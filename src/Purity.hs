@@ -29,4 +29,7 @@ pureProp l db t@(TApp _ _)     = eval (Pg l db t) ==. Pg l db (evalTerm t)*** QE
 pureProp l db t@(TLam _ _)     = eval (Pg l db t) ==. Pg l db (evalTerm t)*** QED
 pureProp l db t@(TVar _ )      = eval (Pg l db t) ==. Pg l db (evalTerm t)*** QED
 pureProp l db t@(TVLabel _)    = eval (Pg l db t) ==. Pg l db (evalTerm t)*** QED
+pureProp l db t@(TJust _)      = eval (Pg l db t) ==. Pg l db (evalTerm t)*** QED
+pureProp l db t@TNothing       = eval (Pg l db t) ==. Pg l db (evalTerm t)*** QED
+pureProp l db t@(TCase _ _ _ ) = eval (Pg l db t) ==. Pg l db (evalTerm t)*** QED
 pureProp _ _  t                = assert (not (isPure t))

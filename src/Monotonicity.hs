@@ -12,7 +12,7 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
      / [evalSteps p, 0] @-}
 monotonicEval :: (Eq l, Label l) => Program l -> Proof
 
-monotonicEval pg@(Pg lc db (TUpdate n tp  (TLabeled l1 v1) _))
+monotonicEval pg@(Pg lc db (TUpdate n tp  (TJust (TLabeled l1 v1)) _))
   | Just t <- lookupTable n db
   , TPred p <- tp
   = let lc' = lc `join` ((field1Label (tableInfo t) `join` l1) `join` tableLabel (tableInfo t)) in 

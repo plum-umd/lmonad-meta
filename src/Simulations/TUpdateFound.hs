@@ -30,17 +30,31 @@ import Prelude hiding (Maybe(..), fromJust, isJust)
   -> v2:SDBTerm l
   -> t:{Table l  | Just t == lookupTable n db } 
   -> εt:{Table l | (Just εt == lookupTable n (εDB l db)) && (tableInfo t == tableInfo εt) } 
-  -> { ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) == ε l (eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2)))) } 
+  -> { ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))))) == ε l (eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))) } 
   @-}
 simulationsUpdateFlowsFound :: (Label l, Eq l) 
   => l -> l -> DB l -> TName -> Pred -> l -> Term l -> l -> Term l -> Table l -> Table l -> Proof
 
 simulationsUpdateFlowsFound l lc db n p l1 v1 l2 v2 t εt
   | a && εa  
-  =   ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (εTerm l (TLabeled l1 v1)) (εTerm l (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (TPred p) (TLabeled l1 εv1) (TLabeled l2 εv2)))) 
+  =   ε l (eval (ε l (Pg lc db (TUpdate n (TPred p)
+                                  (TJust (TLabeled l1 v1))
+                                  (TJust (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db)
+                  (εTerm l (TUpdate n (TPred p)
+                             (TJust (TLabeled l1 v1))
+                             (TJust (TLabeled l2 v2)))))) 
+  ==. ε l (eval (Pg lc (εDB l db)
+                  (TUpdate n (εTerm l (TPred p))
+                   (εTerm l (TJust (TLabeled l1 v1)))
+                   (εTerm l (TJust (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db)
+                  (TUpdate n (εTerm l (TPred p))
+                   (TJust (εTerm l  (TLabeled l1 v1)))
+                   (TJust (εTerm l  (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (TPred p)
+                                     (TJust (TLabeled l1 εv1))
+                                     (TJust (TLabeled l2 εv2)))))
   ==. ε l (Pg εlc' (updateDB (εDB l db) n p εv1 εv2) (TReturn TUnit))
   ==. (if εlc' `canFlowTo` l 
          then Pg εlc' (εDB l (updateDB (εDB l db) n p εv1 εv2)) (εTerm l (TReturn TUnit))
@@ -64,17 +78,18 @@ simulationsUpdateFlowsFound l lc db n p l1 v1 l2 v2 t εt
         then Pg lc' (εDB l (updateDB db n p v1 v2)) (εTerm l (TReturn TUnit))
         else PgHole (εDB l (updateDB db n p v1 v2)))
   ==. ε l (Pg lc' (updateDB db n p v1 v2) (TReturn TUnit))
-  ==. ε l (eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))
+  ==. ε l (eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))))
   *** QED
   | not (canFlowTo (tableLabel ti) l)
   -- TUpdateFound.C2: 
   {- The erased always succeds 
      The non erased can succed or fail depending on whether the table is empty or not
   -}
-  =   ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (εTerm l (TLabeled l1 v1)) (εTerm l (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (TPred p) (TLabeled l1 εv1) (TLabeled l2 εv2)))) 
+  =   ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))))) 
+  ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (εTerm l (TJust (TLabeled l1 v1))) (εTerm l (TJust (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (TJust (εTerm l (TLabeled l1 v1))) (TJust ((εTerm l (TLabeled l2 v2)))))))
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (TPred p) (TJust (TLabeled l1 εv1)) (TJust (TLabeled l2 εv2))))) 
   ==. ε l (if εa 
             then Pg εlc' (updateDB (εDB l db) n p εv1 εv2) (TReturn TUnit)
             else Pg εlc' (εDB l db) (TReturn TException))
@@ -96,15 +111,16 @@ simulationsUpdateFlowsFound l lc db n p l1 v1 l2 v2 t εt
   ==. ε l (if a 
             then Pg lc' (updateDB db n p v1 v2) (TReturn TUnit)
             else Pg lc' db (TReturn TException)) 
-  ==. ε l (eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))
+  ==. ε l (eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))))
   *** QED 
 
 
   | a && not εa  
-  =   ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (εTerm l (TLabeled l1 v1)) (εTerm l (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (TPred p) (TLabeled l1 εv1) (TLabeled l2 εv2)))) 
+  =   ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (εTerm l (TJust (TLabeled l1 v1))) (εTerm l (TJust (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (TJust (εTerm l (TLabeled l1 v1))) (TJust (εTerm l (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (TPred p) (TJust (TLabeled l1 εv1)) (TJust (TLabeled l2 εv2)))))
   ==. ε l (Pg εlc' (εDB l db) (TReturn TException)) 
   ==. (if εlc' `canFlowTo` l 
          then Pg εlc' (εDB l (εDB l db)) (εTerm l (TReturn TException))
@@ -133,13 +149,14 @@ simulationsUpdateFlowsFound l lc db n p l1 v1 l2 v2 t εt
         then Pg lc' (εDB l (updateDB db n p v1 v2)) (εTerm l (TReturn TUnit))
         else PgHole (εDB l (updateDB db n p v1 v2)))
   ==. ε l (Pg lc' (updateDB db n p v1 v2) (TReturn TUnit))
-  ==. ε l (eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))
+  ==. ε l (eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))))
   *** QED 
   | not a && εa 
-  =   ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (εTerm l (TLabeled l1 v1)) (εTerm l (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (TPred p) (TLabeled l1 εv1) (TLabeled l2 εv2)))) 
+  =   ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))))) 
+  ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))))) 
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (εTerm l (TJust (TLabeled l1 v1))) (εTerm l (TJust (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (TJust (εTerm l (TLabeled l1 v1))) (TJust (εTerm l (TLabeled l2 v2)))))) 
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (TPred p) (TJust (TLabeled l1 εv1)) (TJust (TLabeled l2 εv2))))) 
   ==. ε l (Pg εlc' (updateDB (εDB l db) n p εv1 εv2) (TReturn TUnit))
   ==. (if εlc' `canFlowTo` l 
          then Pg εlc' (εDB l (updateDB (εDB l db) n p εv1 εv2)) (εTerm l (TReturn TUnit))
@@ -161,13 +178,14 @@ simulationsUpdateFlowsFound l lc db n p l1 v1 l2 v2 t εt
       ? assert (not ((join (field1Label ti) l1) `canFlowTo` l))
       ? assert (not (lc' `canFlowTo` l))
   ==. ε l (Pg lc' db (TReturn TException))
-  ==. ε l (eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))
+  ==. ε l (eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))))
   *** QED 
   | not a && not εa 
-  =   ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (εTerm l (TLabeled l1 v1)) (εTerm l (TLabeled l2 v2))))) 
-  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (TPred p) (TLabeled l1 εv1) (TLabeled l2 εv2)))) 
+  =   ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))))) 
+  ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (εTerm l (TJust (TLabeled l1 v1))) (εTerm l (TJust (TLabeled l2 v2)))))) 
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (TJust (εTerm l (TLabeled l1 v1))) (TJust (εTerm l (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (TPred p) (TJust (TLabeled l1 εv1)) (TJust (TLabeled l2 εv2))))) 
   ==. ε l (Pg εlc' (εDB l db) (TReturn TException)) 
       ? assert (lc' == εlc') 
   ==. ε l (Pg lc' (εDB l db) (TReturn TException)) 
@@ -179,7 +197,7 @@ simulationsUpdateFlowsFound l lc db n p l1 v1 l2 v2 t εt
         then Pg lc' (εDB l db) (εTerm l (TReturn TException))
         else PgHole (εDB l db))
   ==. ε l (Pg lc' db (TReturn TException))
-  ==. ε l (eval (Pg lc db (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))))
+  ==. ε l (eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))))
   *** QED 
   where
     ti = tableInfo t

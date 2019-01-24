@@ -25,6 +25,16 @@ safeDBValue t@(TVLabel _)
   = assert (isDBValue t) &&& assert (ςTerm t)
 safeDBValue t@TNil 
   = assert (isDBValue t) &&& assert (ςTerm t)
+safeDBValue t@TNothing
+  = assert (isDBValue t) &&& assert (ςTerm t)
+
+safeDBValue t@(TJust t1) | isDBValue t
+  = assert (isDBValue t)
+  ? assert (isDBValue t1)
+  ? safeDBValue t1
+  ? assert (ςTerm t1)
+  ? assert (ςTerm t)
+
 safeDBValue t@(TCons t1 t2) |  isDBValue t  
   = assert (isDBValue t) 
   ? assert (isDBValue t1) ? assert (isDBValue t2)

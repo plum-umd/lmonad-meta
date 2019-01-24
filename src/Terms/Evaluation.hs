@@ -8,6 +8,10 @@ evalTerm (TIf TTrue  t1 t2)   = t1
 evalTerm (TIf TFalse t1 t2)   = t2
 evalTerm (TIf THole t1 t2)    = THole 
 evalTerm (TIf t t1 t2)        = TIf (evalTerm t) t1 t2
+evalTerm (TCase (TJust t0) t1 t2) = evalTerm (TApp t1 t0)
+evalTerm (TCase TNothing _ t1)= t1
+evalTerm (TCase THole t1 t2)  = THole
+evalTerm (TCase t0 t1 t2)     = TCase (evalTerm t0) t1 t2
 evalTerm t                    = t 
 
 
@@ -16,6 +20,8 @@ evalTerm t                    = t
                    && (isDBValue t => isDBValue (subst x tx t) ) 
                    && (isTPred t => isTPred (subst x tx t) )} / [tsize t] @-} 
 substProp :: Var -> Term l -> Term l -> ()
+
+
 substProp x tx (TVar y)
   | x == y 
   = subst x tx (TVar y) ==. tx *** QED  
@@ -39,8 +45,8 @@ substProp x tx (TLIO t)
 substProp x tx (TReturn t)
   = subst x tx (TReturn t) ==. TReturn (subst x tx t)
   ? substProp x tx t
-  *** QED 
-
+  *** QED
+  
 substProp x tx (TBind t1 t2)
   = subst x tx (TBind t1 t2) ==. TBind (subst x tx t1) (subst x tx t2)
   ? substProp x tx t1
@@ -69,10 +75,11 @@ substProp x tx (TLabeled l t)
   *** QED   
 
 
-substProp x tx (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2))
-  =   subst x tx (TUpdate n (TPred p) (TLabeled l1 v1) (TLabeled l2 v2)) 
-  ==. TUpdate n (subst x tx (TPred p)) (subst x tx (TLabeled l1 v1)) (subst x tx (TLabeled l2 v2))
-  ==. TUpdate n (TPred p) (TLabeled l1 (subst x tx v1)) (TLabeled l2 (subst x tx v2))
+substProp x tx (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))
+  =   subst x tx (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2)))
+  ==. TUpdate n (subst x tx (TPred p)) (subst x tx (TJust (TLabeled l1 v1))) (subst x tx (TJust (TLabeled l2 v2))) 
+  ==. TUpdate n (TPred p) (TJust (subst x tx (TLabeled l1 v1))) (TJust (subst x tx (TLabeled l2 v2)))
+  ==. TUpdate n (TPred p) (TJust (TLabeled l1 (subst x tx v1))) (TJust (TLabeled l2 (subst x tx v2)))
   ? substProp x tx v1
   ? substProp x tx v2
    *** QED 
@@ -111,9 +118,22 @@ substProp x tx (TToLabeled t1 t2)
   = subst x tx (TToLabeled t1 t2) ==. TToLabeled (subst x tx t1) (subst x tx t2)
   ? substProp x tx t1
   ? substProp x tx t2
-   *** QED 
+   *** QED
+substProp x tx (TJust t)
+  = subst x tx (TJust t) ==. TJust (subst x tx t)
+  ? substProp x tx t
+  *** QED
+substProp x tx (TCase t1 t2 t3)
+  = subst x tx (TCase t1 t2 t3) ==. TCase (subst x tx t1) (subst x tx t2) (subst x tx t3)
+  ? substProp x tx t1
+  ? substProp x tx t2
+  ? substProp x tx t3
+  *** QED
 substProp x tx t 
   = subst x tx t ==. t *** QED 
+
+
+
 
 {-@ reflect subst @-}
 {-@ subst :: Var -> Term l -> t:Term l -> Term l /[tsize t] @-}
@@ -154,6 +174,12 @@ subst x tx (TDelete n t)
   = TDelete n (subst x tx t)
 subst x tx (TToLabeled t1 t2)  
   = TToLabeled (subst x tx t1) (subst x tx t2)
+subst x tx (TJust t1)
+  = TJust (subst x tx t1)
+subst x tx (TCase t1 t2 t3)
+  = TCase (subst x tx t1) (subst x tx t2) (subst x tx t3)
+-- subst x tx (TJust t)
+--   = TJust (subst x tx t)
 subst _ _ t 
   = t 
 

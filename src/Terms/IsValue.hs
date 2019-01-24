@@ -26,3 +26,6 @@ isValue (TLam _ _)        = True
 isValue (TVar _ )         = True  
 isValue (TVLabel _)       = True
 isValue (TToLabeled _ _)  = False
+isValue (TJust _)         = True
+isValue TNothing          = True
+isValue (TCase _ _ _)     = False
