@@ -385,6 +385,12 @@ eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2
 eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled _ _)) (TJust (TLabeled _ _))))   
   = Pg lc db TException
 
+eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) TNothing))
+  | Just t <- lookupTable n db,
+    Pg lc' _ rs@(TCons _ _) <- eval (Pg lc db (TSelect n (TPred p)))
+    -- selected terms can be used for label check. but what about the actual update?
+  = undefined
+
 eval (Pg lc db (TUnlabel (TLabeled l t)))
   = Pg (lc `join` l) db (TReturn t)
 eval (Pg lc db (TUnlabel t))
