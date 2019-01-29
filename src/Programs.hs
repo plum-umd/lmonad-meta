@@ -147,6 +147,37 @@ updateRow :: Pred -> Term l -> Term l -> Row l -> Row l
   -> Row l @-} 
 updateRow p v1 v2 r@(Row k _ _) = if evalPred p r then Row k v1 v2 else r 
 
+
+{-@ reflect updateDBv2 @-}
+updateDBv2 :: DB l -> TName -> Pred -> Term l -> DB l 
+{-@ updateDBv2
+  :: DB l 
+  -> TName 
+  -> Pred 
+  -> SDBTerm l 
+  -> DB l @-} 
+updateDBv2 [] _ _ _ = []
+updateDBv2 ((Pair n' t@(Table ti rs)):ts) n p v2
+  | n == n'
+  = Pair n (Table ti (updateRowsv2 p v2 rs)):ts
+  | otherwise
+  = Pair n' t:updateDBv2 ts n p v2
+
+{-@ reflect updateRowsv2 @-}
+updateRowsv2 :: Pred -> Term l -> [Row l] -> [Row l] 
+{-@ updateRowsv2 
+  :: Pred 
+  -> SDBTerm l 
+  -> SDBTerm l 
+  -> rs:[Row l] 
+  -> [Row l] 
+  / [len rs] @-} 
+updateRowsv2 _ _ [] = [] 
+updateRowsv2 p v2 (r@(Row k v1 _):rs)
+  = updateRow p v1 v2 r :updateRowsv2 p v2 rs
+
+
+
 {-@ reflect deleteDB @-}
 deleteDB :: DB l -> TName -> Pred -> DB l 
 deleteDB [] n p = [] 
@@ -385,11 +416,10 @@ eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2
 eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled _ _)) (TJust (TLabeled _ _))))   
   = Pg lc db TException
 
-eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) TNothing))
-  | Just t <- lookupTable n db,
-    Pg lc' _ rs@(TCons _ _) <- eval (Pg lc db (TSelect n (TPred p)))
-    -- selected terms can be used for label check. but what about the actual update?
-  = undefined
+eval (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2))))
+  | Just t <- lookupTable n db
+  -- no need for label check since label info does not change
+  = Pg lc (updateDBv2 db n p v2) (TReturn TUnit)
 
 eval (Pg lc db (TUnlabel (TLabeled l t)))
   = Pg (lc `join` l) db (TReturn t)
