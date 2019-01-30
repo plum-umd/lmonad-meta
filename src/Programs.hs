@@ -215,6 +215,19 @@ labelSelectRows p ti []
 labelSelectRows p ti (r:rs) 
   = (tableLabel ti `join` labelPredRow p ti r) `join` labelSelectRows p ti rs
 
+{-@ reflect updateLabelCheckv2 @-}
+updateLabelCheckv2 :: (Label l, Eq l) => l -> Table l -> Pred -> l -> Term l -> Bool 
+updateLabelCheckv2 lc t@(Table ti rs) p l2 v2  
+  = updateRowsCheckv2 lc (lfTable p t) ti p l2 v2 rs 
+
+{-@ reflect updateRowsCheckv2 @-}
+updateRowsCheckv2 :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> [Row l] -> Bool 
+{-@ updateRowsCheckv2 :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> rs:[Row l] -> Bool / [len rs] @-}
+updateRowsCheckv2 _ _ _ _ _ _ []            = True 
+updateRowsCheckv2 lc lφ ti p l2 v2 (r@(Row _ v1 _):rs) =
+  updateRowCheck lc lφ ti p (field1Label ti) v1 l2 v2 r &&
+  updateRowsCheckv2 lc lφ ti p l2 v2 rs
+
 
 
 {-@ reflect updateLabelCheck @-}
@@ -418,8 +431,19 @@ eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled _ _)) (TJust (TLabeled _ _)
 
 eval (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2))))
   | Just t <- lookupTable n db
+  , updateLabelCheckv2 lc t p l2 v2
   -- no need for label check since label info does not change
-  = Pg lc (updateDBv2 db n p v2) (TReturn TUnit)
+  = let lc' = lc `join` (field1Label (tableInfo t)
+                         `join` tableLabel (tableInfo t))
+    in Pg lc' (updateDBv2 db n p v2) (TReturn TUnit)
+
+eval (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2))))
+  | Just t <- lookupTable n db
+  -- no need for label check since label info does not change
+  = let lc' = lc `join` (field1Label (tableInfo t)
+                         `join` tableLabel (tableInfo t))
+    in Pg lc' db (TReturn TException)
+
 
 eval (Pg lc db (TUnlabel (TLabeled l t)))
   = Pg (lc `join` l) db (TReturn t)
