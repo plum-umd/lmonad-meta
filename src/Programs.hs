@@ -225,7 +225,7 @@ updateRowsCheckv2 :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l
 {-@ updateRowsCheckv2 :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> rs:[Row l] -> Bool / [len rs] @-}
 updateRowsCheckv2 _ _ _ _ _ _ []            = True 
 updateRowsCheckv2 lc lφ ti p l2 v2 (r@(Row _ v1 _):rs) =
-  updateRowCheck lc lφ ti p (field1Label ti) v1 l2 v2 r &&
+  updateRowCheckv2 lc lφ ti p (field1Label ti) v1 l2 v2 &&
   updateRowsCheckv2 lc lφ ti p l2 v2 rs
 
 
@@ -249,7 +249,10 @@ updateRowCheck :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l ->
 updateRowCheck lc lφ ti p l1 v1 l2 v2 r 
   =  (updateRowLabel1 lc lφ ti p l1 v1 l2 v2 r)
    && (updateRowLabel2 lc lφ ti p l1 v1 l2 v2 r)
-
+{-@ reflect updateRowCheckv2 @-}
+updateRowCheckv2 :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> Bool 
+updateRowCheckv2 lc lφ ti p l1 v1 l2 v2 
+  =  updateRowLabel2 lc lφ ti p l1 v1 l2 v2
 
 {-@ reflect updateRowLabel1 @-}
 updateRowLabel1
