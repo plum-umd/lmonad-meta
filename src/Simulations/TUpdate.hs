@@ -37,6 +37,13 @@ simulationsTUpdate l lc db n t1@(TPred p) t2@(TJust (TLabeled l1 v1)) t3@(TJust 
   = assert (ς (Pg lc db (TUpdate n t1 t2 t3))) &&& 
     simulationsUpdateDoesNotFlow l lc db n p l1 v1 l2 v2
 
+
+simulationsTUpdate l lc db n t1@(TPred p) TNothing t3@(TJust (TLabeled l2 v2))  
+  | lc `canFlowTo` l
+  = undefined
+  | otherwise
+  = undefined
+
 simulationsTUpdate _ lc db n p t1 t2 
   = assert (ς (Pg lc db (TUpdate n p t1 t2)))
   ? assert False 
@@ -142,6 +149,11 @@ simulationsUpdateDoesNotFlow l lc db n p l1 v1 l2 v2
     t2 = TJust (TLabeled l1 v1)
     t3 = TJust (TLabeled l2 v2)
 
+-- a separate function
+-- todo: update label check success. nothing just.
+
+-- todo: update label check fail. table found. nothing just
+
 simulationsUpdateDoesNotFlow l lc db n p l1 v1 l2 v2  
   =   ε l (eval (ε l (Pg lc db (TUpdate n t1 t2 t3)))) 
   ==. ε l (eval (PgHole (εDB l db))) 
@@ -156,3 +168,5 @@ simulationsUpdateDoesNotFlow l lc db n p l1 v1 l2 v2
     t1 = TPred p 
     t2 = TJust (TLabeled l1 v1)
     t3 = TJust (TLabeled l2 v2)
+
+-- todo : table not found.
