@@ -148,23 +148,23 @@ updateRow :: Pred -> Term l -> Term l -> Row l -> Row l
 updateRow p v1 v2 r@(Row k _ _) = if evalPred p r then Row k v1 v2 else r 
 
 
-{-@ reflect updateDBv2 @-}
-updateDBv2 :: DB l -> TName -> Pred -> Term l -> DB l 
-{-@ updateDBv2
+{-@ reflect updateDBNothingJust @-}
+updateDBNothingJust :: DB l -> TName -> Pred -> Term l -> DB l 
+{-@ updateDBNothingJust
   :: DB l 
   -> TName 
   -> Pred 
   -> SDBTerm l 
   -> DB l @-} 
-updateDBv2 [] _ _ _ = []
-updateDBv2 ((Pair n' t@(Table ti rs)):ts) n p v2
+updateDBNothingJust [] _ _ _ = []
+updateDBNothingJust ((Pair n' t@(Table ti rs)):ts) n p v2
   | n == n'
-  = Pair n (Table ti (updateRowsv2 p v2 rs)):ts
+  = Pair n (Table ti (updateRowsNothingJust p v2 rs)):ts
   | otherwise
-  = Pair n' t:updateDBv2 ts n p v2
+  = Pair n' t:updateDBNothingJust ts n p v2
 
 {-@ reflect updateRowsv2 @-}
-updateRowsv2 :: Pred -> Term l -> [Row l] -> [Row l] 
+updateRowsNothingJust :: Pred -> Term l -> [Row l] -> [Row l] 
 {-@ updateRowsv2 
   :: Pred 
   -> SDBTerm l 
@@ -172,9 +172,9 @@ updateRowsv2 :: Pred -> Term l -> [Row l] -> [Row l]
   -> rs:[Row l] 
   -> [Row l] 
   / [len rs] @-} 
-updateRowsv2 _ _ [] = [] 
-updateRowsv2 p v2 (r@(Row k v1 _):rs)
-  = updateRow p v1 v2 r :updateRowsv2 p v2 rs
+updateRowsNothingJust _ _ [] = [] 
+updateRowsNothingJust p v2 (r@(Row k v1 _):rs)
+  = updateRow p v1 v2 r :updateRowsNothingJust p v2 rs
 
 
 
@@ -215,18 +215,19 @@ labelSelectRows p ti []
 labelSelectRows p ti (r:rs) 
   = (tableLabel ti `join` labelPredRow p ti r) `join` labelSelectRows p ti rs
 
-{-@ reflect updateLabelCheckv2 @-}
-updateLabelCheckv2 :: (Label l, Eq l) => l -> Table l -> Pred -> l -> Term l -> Bool 
-updateLabelCheckv2 lc t@(Table ti rs) p l2 v2  
-  = updateRowsCheckv2 lc (lfTable p t) ti p l2 v2 rs 
+{-@ reflect updateLabelCheckNothingJust @-}
+updateLabelCheckNothingJust :: (Label l, Eq l) => l -> Table l -> Pred -> l -> Term l -> Bool 
+updateLabelCheckNothingJust lc t@(Table ti rs) p l2 v2  
+  = updateRowsCheckNothingJust lc (lfTable p t) ti p l2 v2 rs 
 
-{-@ reflect updateRowsCheckv2 @-}
-updateRowsCheckv2 :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> [Row l] -> Bool 
-{-@ updateRowsCheckv2 :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> rs:[Row l] -> Bool / [len rs] @-}
-updateRowsCheckv2 _ _ _ _ _ _ []            = True 
-updateRowsCheckv2 lc lφ ti p l2 v2 (r@(Row _ v1 _):rs) =
-  updateRowCheckv2 lc lφ ti p (field1Label ti) v1 l2 v2 &&
-  updateRowsCheckv2 lc lφ ti p l2 v2 rs
+{-@ reflect updateRowsCheckNothingJust @-}
+updateRowsCheckNothingJust :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> [Row l] -> Bool 
+{-@ updateRowsCheckNothingJust :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> rs:[Row l] -> Bool / [len rs] @-}
+-- todo: restructure it so v1 is examined in updateRowCheckNothingJust
+updateRowsCheckNothingJust _ _ _ _ _ _ []            = True 
+updateRowsCheckNothingJust lc lφ ti p l2 v2 (r@(Row _ v1 _):rs) =
+  updateRowCheckNothingJust lc lφ ti p (field1Label ti) v1 l2 v2 r &&
+  updateRowsCheckNothingJust lc lφ ti p l2 v2 rs
 
 
 
@@ -249,10 +250,10 @@ updateRowCheck :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l ->
 updateRowCheck lc lφ ti p l1 v1 l2 v2 r 
   =  (updateRowLabel1 lc lφ ti p l1 v1 l2 v2 r)
    && (updateRowLabel2 lc lφ ti p l1 v1 l2 v2 r)
-{-@ reflect updateRowCheckv2 @-}
-updateRowCheckv2 :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> Bool 
-updateRowCheckv2 lc lφ ti p l1 v1 l2 v2 
-  =  updateRowLabel2 lc lφ ti p l1 v1 l2 v2
+{-@ reflect updateRowCheckNothingJust @-}
+updateRowCheckNothingJust :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> Row l -> Bool 
+updateRowCheckNothingJust lc lφ ti p l1 v1 l2 v2 r
+  =  updateRowLabel2 lc lφ ti p l1 v1 l2 v2 r
 
 {-@ reflect updateRowLabel1 @-}
 updateRowLabel1
@@ -434,11 +435,11 @@ eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled _ _)) (TJust (TLabeled _ _)
 
 eval (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2))))
   | Just t <- lookupTable n db
-  , updateLabelCheckv2 lc t p l2 v2
+  , updateLabelCheckNothingJust lc t p l2 v2
   -- no need for label check since label info does not change
   = let lc' = lc `join` (field1Label (tableInfo t)
                          `join` tableLabel (tableInfo t))
-    in Pg lc' (updateDBv2 db n p v2) (TReturn TUnit)
+    in Pg lc' (updateDBNothingJust db n p v2) (TReturn TUnit)
 
 eval (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2))))
   | Just t <- lookupTable n db
