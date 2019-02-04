@@ -225,8 +225,8 @@ updateRowsCheckNothingJust :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l 
 {-@ updateRowsCheckNothingJust :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> rs:[Row l] -> Bool / [len rs] @-}
 -- todo: restructure it so v1 is examined in updateRowCheckNothingJust
 updateRowsCheckNothingJust _ _ _ _ _ _ []            = True 
-updateRowsCheckNothingJust lc lφ ti p l2 v2 (r@(Row _ v1 _):rs) =
-  updateRowCheckNothingJust lc lφ ti p (field1Label ti) v1 l2 v2 r &&
+updateRowsCheckNothingJust lc lφ ti p l2 v2 (r:rs) =
+  updateRowCheckNothingJust lc lφ ti p l2 v2 r &&
   updateRowsCheckNothingJust lc lφ ti p l2 v2 rs
 
 
@@ -251,9 +251,9 @@ updateRowCheck lc lφ ti p l1 v1 l2 v2 r
   =  (updateRowLabel1 lc lφ ti p l1 v1 l2 v2 r)
    && (updateRowLabel2 lc lφ ti p l1 v1 l2 v2 r)
 {-@ reflect updateRowCheckNothingJust @-}
-updateRowCheckNothingJust :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> l -> Term l -> Row l -> Bool 
-updateRowCheckNothingJust lc lφ ti p l1 v1 l2 v2 r
-  =  updateRowLabel2 lc lφ ti p l1 v1 l2 v2 r
+updateRowCheckNothingJust :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> Row l -> Bool 
+updateRowCheckNothingJust lc lφ ti p l2 v2 r@(Row _ v1 _)
+  =  updateRowLabel2 lc lφ ti p (field1Label ti) v1 l2 v2 r
 
 {-@ reflect updateRowLabel1 @-}
 updateRowLabel1
