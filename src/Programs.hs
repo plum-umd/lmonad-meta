@@ -174,7 +174,18 @@ updateRowsNothingJust :: Pred -> Term l -> [Row l] -> [Row l]
   / [len rs] @-} 
 updateRowsNothingJust _ _ [] = [] 
 updateRowsNothingJust p v2 (r@(Row k v1 _):rs)
-  = updateRow p v1 v2 r :updateRowsNothingJust p v2 rs
+  = updateRowNothingJust p v1 v2 r :updateRowsNothingJust p v2 rs
+
+
+{-@ reflect updateRow @-}
+updateRowNothingJust :: Pred -> Term l -> Row l -> Row l 
+{-@ updateRow 
+  :: Pred 
+  -> SDBTerm l 
+  -> rs:Row l 
+  -> Row l @-} 
+updateRowNothingJust p v2 r@(Row k v1 _) = if evalPred p r then Row k v1 v2 else r 
+
 
 
 
