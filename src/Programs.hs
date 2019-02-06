@@ -163,23 +163,22 @@ updateDBNothingJust ((Pair n' t@(Table ti rs)):ts) n p v2
   | otherwise
   = Pair n' t:updateDBNothingJust ts n p v2
 
-{-@ reflect updateRowsv2 @-}
+{-@ reflect updateRowsNothingJust @-}
 updateRowsNothingJust :: Pred -> Term l -> [Row l] -> [Row l] 
-{-@ updateRowsv2 
+{-@ updateRowsNothingJust
   :: Pred 
-  -> SDBTerm l 
   -> SDBTerm l 
   -> rs:[Row l] 
   -> [Row l] 
   / [len rs] @-} 
 updateRowsNothingJust _ _ [] = [] 
-updateRowsNothingJust p v2 (r@(Row k v1 _):rs)
-  = updateRowNothingJust p v1 v2 r :updateRowsNothingJust p v2 rs
+updateRowsNothingJust p v2 (r:rs)
+  = updateRowNothingJust p v2 r :updateRowsNothingJust p v2 rs
 
 
-{-@ reflect updateRow @-}
+{-@ reflect updateRowNothingJust @-}
 updateRowNothingJust :: Pred -> Term l -> Row l -> Row l 
-{-@ updateRow 
+{-@ updateRowNothingJust
   :: Pred 
   -> SDBTerm l 
   -> rs:Row l 
