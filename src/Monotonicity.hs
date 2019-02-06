@@ -19,6 +19,14 @@ monotonicEval pg@(Pg lc db (TUpdate n tp  (TJust (TLabeled l1 v1)) _))
     if (pLabel (eval pg) == lc') 
      then lawJoin lc' lc ((field1Label (tableInfo t) `join` l1) `join` tableLabel (tableInfo t)) lc'
      else lawFlowReflexivity lc
+monotonicEval pg@(Pg lc db (TUpdate n tp  TNothing _))
+  | Just t <- lookupTable n db
+  , TPred p <- tp
+  = let lc' = lc `join` (field1Label (tableInfo t) `join` tableLabel (tableInfo t)) in
+    if (pLabel (eval pg) == lc')
+    then lawJoin lc' lc (field1Label (tableInfo t) `join` tableLabel (tableInfo t)) lc'
+    else lawFlowReflexivity lc
+          
 monotonicEval pg@(Pg lc db (TUpdate n _ _ _))
   =   assert (pLabel (eval pg) == lc) 
   &&& lawFlowReflexivity lc
