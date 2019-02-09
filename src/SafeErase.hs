@@ -85,6 +85,27 @@ safeEraseTerm l (TUpdate n p@(TPred _) (TJust (TLabeled l1 v1)) (TJust (TLabeled
     v1' = if l1 `canFlowTo` l then (εTerm l v1) else THole
     v2' = if l2 `canFlowTo` l then (εTerm l v2) else THole
 
+safeEraseTerm l (TUpdate n p@(TPred _) TNothing (TJust (TLabeled l2 v2)))
+  =   ςTerm (εTerm l (TUpdate n p TNothing (TJust (TLabeled l2 v2))))
+  ==. ςTerm (εTerm l (TUpdate n p TNothing (TJust (TLabeled l2 v2))))
+  ==. ςTerm (TUpdate n (εTerm l p) (εTerm l TNothing)
+             (εTerm l $ TJust (TLabeled l2 v2)))
+  ==. ςTerm (TUpdate n (εTerm l p) TNothing
+             (TJust (εTerm l (TLabeled l2 v2))))
+  ==. ςTerm (TUpdate n (εTerm l p) TNothing
+             (TJust (TLabeled l2 v2')))
+  <=. isDBValue v2'
+  <=. isDBValue (εTerm l v2)
+      ? safeEraseTerm l v2 
+  ==. (εTerm l p == p  && isDBValue v2)
+  ==. ςTerm (TUpdate n p TNothing (TJust (TLabeled l2 v2)))
+  *** QED
+  where 
+    v2' = if l2 `canFlowTo` l then (εTerm l v2) else THole
+
+
+
+
 safeEraseTerm l (TUpdate n t1 t2 t3)
   =   ςTerm (εTerm l (TUpdate n t1 t2 t3))
   ==. ςTerm (TUpdate n (εTerm l t1) (εTerm l t2) (εTerm l t3))
