@@ -14,6 +14,9 @@
 ςTerm (TUpdate _ (TPred _) (TJust (TLabeled _ v1)) (TJust (TLabeled _ v2))) 
   =  isDBValue v1 && isDBValue v2 
   && ςTerm v1 && ςTerm v2
+ςTerm (TUpdate _ (TPred _) TNothing (TJust (TLabeled _ v2)))
+  =  isDBValue v2
+  && ςTerm v2
 -- This is too strong as 1. it rejects insertion on expressions
 -- that are evaluated to isDBValues 2. predicate expressions that 
 -- are evaluated to predicates (pred expressions should satisfy erasure id)

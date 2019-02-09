@@ -82,7 +82,16 @@ substProp x tx (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2
   ==. TUpdate n (TPred p) (TJust (TLabeled l1 (subst x tx v1))) (TJust (TLabeled l2 (subst x tx v2)))
   ? substProp x tx v1
   ? substProp x tx v2
-   *** QED 
+  *** QED 
+
+substProp x tx (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2)))
+  =   subst x tx (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2)))
+  ==. TUpdate n (subst x tx (TPred p)) (subst x tx TNothing) (subst x tx (TJust (TLabeled l2 v2))) 
+  ==. TUpdate n (TPred p) TNothing (TJust (subst x tx (TLabeled l2 v2)))
+  ==. TUpdate n (TPred p) TNothing (TJust (TLabeled l2 (subst x tx v2)))
+  ? substProp x tx v2
+  *** QED 
+
 
 
 substProp x tx (TUpdate n t1 t2 t3)

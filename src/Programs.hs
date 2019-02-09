@@ -457,6 +457,9 @@ eval (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2))))
   = let lc' = lc `join` (field1Label (tableInfo t)
                          `join` tableLabel (tableInfo t))
     in Pg lc' db (TReturn TException)
+    
+eval (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled _ _))))   
+  = Pg lc db TException
 
 
 eval (Pg lc db (TUnlabel (TLabeled l t)))
