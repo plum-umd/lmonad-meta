@@ -40,9 +40,10 @@ simulationsTUpdate l lc db n t1@(TPred p) t2@(TJust (TLabeled l1 v1)) t3@(TJust 
 
 
 simulationsTUpdate l lc db n t1@(TPred p) t2@TNothing t3@(TJust (TLabeled l2 v2))  
-  | lc `canFlowTo` l
-  = assert (ς (Pg lc db (TUpdate n t1 t2 t3))) &&&
-    simulationsUpdateFlowsNothingJust l lc db n p l2 v2
+ | lc `canFlowTo` l
+  -- todo
+ = assert (ς (Pg lc db (TUpdate n t1 t2 t3))) -- &&&
+    -- simulationsUpdateFlowsNothingJust l lc db n p l2 v2
   | otherwise
   = assert (ς (Pg lc db (TUpdate n t1 t2 t3))) &&&
     simulationsUpdateDoesNotFlowNothingJust l lc db n p l2 v2
@@ -184,10 +185,10 @@ simulationsUpdateDoesNotFlow l lc db n p l1 v1 l2 v2
   -> p:Pred 
   -> l2:l
   -> v2:{SDBTerm l | ς (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2))))} 
-  -> { ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2)))))) == ε l (eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))) } 
+  -> { ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2)))))) == ε l (eval (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2))))) } 
   @-}
 simulationsUpdateDoesNotFlowNothingJust :: (Label l, Eq l) 
-  => l -> l -> DB l -> TName -> Pred -> l -> Term l ->  l -> Term l -> Proof
+  => l -> l -> DB l -> TName -> Pred -> l -> Term l -> Proof
 simulationsUpdateDoesNotFlowNothingJust l lc db n p l2 v2
   | Just t <- lookupTable n db
   -- this case eval part flows
@@ -206,7 +207,7 @@ simulationsUpdateDoesNotFlowNothingJust l lc db n p l2 v2
       ? assert (isJust (lookupTable n (εDB l db)))
       ? assert (updateLabelCheckNothingJust lc t p l2 v2)
       ? simulationsUpdateAnyNothingJust l lc db n p l2 v2 t
-      ? assert (εDB l db == εDB l (updateDB db n p v1 v2)) 
+      ? assert (εDB l db == εDB l (updateDBNothingJust db n p v2)) 
   -- the other end of proof
   -- up to this step it's getting hard since we need to actually evaluate it
   ==. PgHole (εDB l (updateDBNothingJust db n p v2))
@@ -221,9 +222,9 @@ simulationsUpdateDoesNotFlowNothingJust l lc db n p l2 v2
 
 -- the other two cases are trivial
 
-simulationsUpdateDoesNotFlow l lc db n p l1 v1 l2 v2   
+simulationsUpdateDoesNotFlowNothingJust l lc db n p l2 v2   
   | Just t <- lookupTable n db 
-  =   let lc' = (field1Label (tableInfo t) `join` l1) `join` tableLabel (tableInfo t) in 
+  =   let lc' = field1Label (tableInfo t) `join` tableLabel (tableInfo t) in 
       ε l (eval (ε l (Pg lc db (TUpdate n t1 t2 t3)))) 
   ==. ε l (eval (PgHole (εDB l db))) 
   ==. ε l (PgHole (εDB l db)) 
@@ -240,7 +241,7 @@ simulationsUpdateDoesNotFlow l lc db n p l1 v1 l2 v2
     t3 = TJust (TLabeled l2 v2)
 
 
-simulationsUpdateDoesNotFlowNothingJust l lc db n p l1 v1 l2 v2  
+simulationsUpdateDoesNotFlowNothingJust l lc db n p l2 v2  
   =   ε l (eval (ε l (Pg lc db (TUpdate n t1 t2 t3)))) 
   ==. ε l (eval (PgHole (εDB l db))) 
   ==. ε l (PgHole (εDB l db)) 

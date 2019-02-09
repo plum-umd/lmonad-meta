@@ -13,5 +13,6 @@ main = liquid [
   , "Simulations/UpdateOne.hs"
   , "Simulations/Update.hs"
   , "Simulations/TUpdateFound.hs"
+  , "Simulations/UpdateAnyNothingJust.hs"
   , "Simulations/TUpdate.hs"
   ]
