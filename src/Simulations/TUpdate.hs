@@ -42,8 +42,8 @@ simulationsTUpdate l lc db n t1@(TPred p) t2@(TJust (TLabeled l1 v1)) t3@(TJust 
 simulationsTUpdate l lc db n t1@(TPred p) t2@TNothing t3@(TJust (TLabeled l2 v2))  
  | lc `canFlowTo` l
   -- todo
- = assert (ς (Pg lc db (TUpdate n t1 t2 t3))) -- &&&
-    -- simulationsUpdateFlowsNothingJust l lc db n p l2 v2
+ = assert (ς (Pg lc db (TUpdate n t1 t2 t3))) &&&
+    simulationsUpdateFlowsNothingJust l lc db n p l2 v2
   | otherwise
   = assert (ς (Pg lc db (TUpdate n t1 t2 t3))) &&&
     simulationsUpdateDoesNotFlowNothingJust l lc db n p l2 v2
@@ -255,3 +255,43 @@ simulationsUpdateDoesNotFlowNothingJust l lc db n p l2 v2
     t1 = TPred p 
     t2 = TNothing
     t3 = TJust (TLabeled l2 v2)
+
+
+{-@ simulationsUpdateFlowsNothingJust
+  :: Label l => l:l 
+  -> lc:{l | canFlowTo lc l }
+  -> db:DB l 
+  -> n:TName 
+  -> p:Pred
+  -> l2:l
+  -> v2:SDBTerm l 
+  -> { ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2)))))) == ε l (eval (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2))))) } 
+  @-}
+simulationsUpdateFlowsNothingJust :: (Label l, Eq l) 
+  => l -> l -> DB l -> TName -> Pred -> l -> Term l -> Proof
+simulationsUpdateFlowsNothingJust l lc db n p l2 v2 
+  | Just t  <- lookupTable n db
+  , Just εt <- lookupTable n (εDB l db)
+  =   lookupTableErase l n db 
+  &&& simulationsUpdateFlowsFoundNothingJust l lc db n p l2 v2 t εt
+simulationsUpdateFlowsNothingJust l lc db n p l2 v2 
+  =   ε l (eval (ε l (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (εTerm l (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2)))))) 
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) (εTerm l TNothing) (εTerm l (TJust (TLabeled l2 v2))))))
+  ==. ε l (eval (Pg lc (εDB l db) (TUpdate n (εTerm l (TPred p)) TNothing (TJust (εTerm l (TLabeled l2 v2))))))
+      ? lookupTableErase l n db 
+      ? (case lookupTable n (εDB l db) of 
+          Just _ -> assert (isJust (lookupTable n db))
+          Nothing -> assert (not (isJust (lookupTable n db))))
+      ? (case lookupTable n db of 
+          Just _ -> assert (isJust (lookupTable n (εDB l db)))
+          Nothing -> assert (not (isJust (lookupTable n (εDB l db)))))
+  ==. ε l (Pg lc (εDB l db) TException) 
+  ==. Pg lc (εDB l (εDB l db)) (εTerm l TException) 
+      ? εDBIdempotent l db 
+  ==. Pg lc (εDB l db) (εTerm l TException) 
+  ==. ε l (Pg lc db TException) 
+      ? lookupTableErase l n db 
+  ==. ε l (eval (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2))))) 
+  *** QED 
+
