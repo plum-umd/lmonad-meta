@@ -8,7 +8,7 @@ import Programs
 import Predicates 
 
 import Idempotence 
-import EraseTableAny 
+import EraseTableAnyNothingJust
 import LookupTableErase 
 import LabelPredEraseEqual
 import LabelUpdateCheck
@@ -105,12 +105,12 @@ simulationsUpdateFlowsFoundNothingJust l lc db n p l2 v2 t εt
          then PgHole (εDB l (updateDBNothingJust (εDB l db) n p εv2)) 
          else PgHole (εDB l (εDB l db)))
       -- todo
-      -- ? εTableAny l n (εDB l db) p εv1 εv2
+      ? εTableAnyNothingJust l n (εDB l db) p εv2
   ==. PgHole (εDB l (εDB l db))
        ? εDBIdempotent l db 
   ==. PgHole (εDB l db)
   --todo
-      -- ? εTableAny l n db p v1 v2
+      ? εTableAnyNothingJust l n db p v2
   ==.(if a  
         then PgHole (εDB l (updateDBNothingJust db n p v2))
         else PgHole (εDB l db))
