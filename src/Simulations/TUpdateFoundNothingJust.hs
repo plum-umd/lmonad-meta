@@ -14,7 +14,7 @@ import LabelPredEraseEqual
 import LabelUpdateCheck
 import Simulations.Terms 
 import Simulations.UpdateNothingJust
--- import LabelUpdateCheckNothingJust
+import LabelUpdateCheckNothingJust
 -- import Simulations.UpdateOneNothingJust
 
 import Prelude hiding (Maybe(..), fromJust, isJust)
@@ -139,9 +139,7 @@ simulationsUpdateFlowsFoundNothingJust l lc db n p l2 v2 t εt
         then Pg εlc' (εDB l (εDB l db)) (εTerm l (TReturn TException))
              ? globals
              ? assert (εTable l t == fromJust (lookupTable n (εDB l db)))
-             -- todo
-             -- ? labelUpdateCheckEq l lc p l1 v1 l2 v2 t
-             ? assume (updateLabelCheckNothingJust lc t p l2 v2 == updateLabelCheckNothingJust lc (εTable l t) p l2 (if (canFlowTo l2 l) then (εTerm l v2) else THole))
+             ? labelUpdateCheckEqNothingJust l lc p l2 v2 t
               -- TUpdateFound.C1: raising with l1 and field 1 ensures that εlc' == lc' 
         else PgHole (εDB l (εDB l db)))
       ? globals
@@ -176,8 +174,7 @@ simulationsUpdateFlowsFoundNothingJust l lc db n p l2 v2 t εt
       ? globals 
   ==. (if field1Label ti `canFlowTo` l 
          then Pg εlc' (εDB l (updateDBNothingJust (εDB l db) n p εv2)) (εTerm l (TReturn TUnit))
-              -- todo
-              -- ? labelUpdateCheckEq l lc p l1 v1 l2 v2 t
+              ? labelUpdateCheckEqNothingJust l lc p l2 v2 t
               -- TUpdateFound.C1: raising with l1 and field 1 ensures that εlc' == lc' 
          else PgHole  (εDB l (updateDBNothingJust (εDB l db) n p εv2))
       )
@@ -187,7 +184,7 @@ simulationsUpdateFlowsFoundNothingJust l lc db n p l2 v2 t εt
       -- ? simulationsUpdateOneErased l lc db n p l1 v1 l2 v2 t εt
   ==. PgHole (εDB l db) 
       ? globals 
-      -- ? labelUpdateCheckEq l lc p l1 v1 l2 v2 t
+      ? labelUpdateCheckEqNothingJust l lc p l2 v2 t
       -- ? assert (not ((join (field1Label ti) l1) `canFlowTo` l))
       ? assert (not (lc' `canFlowTo` l))
   ==. ε l (Pg lc' db (TReturn TException))
