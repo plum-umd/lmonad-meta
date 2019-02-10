@@ -14,6 +14,7 @@ import LabelPredEraseEqual
 import LabelUpdateCheck
 import Simulations.Terms 
 import Simulations.UpdateNothingJust
+-- import LabelUpdateCheckNothingJust
 -- import Simulations.UpdateOneNothingJust
 
 import Prelude hiding (Maybe(..), fromJust, isJust)
@@ -140,6 +141,7 @@ simulationsUpdateFlowsFoundNothingJust l lc db n p l2 v2 t εt
              ? assert (εTable l t == fromJust (lookupTable n (εDB l db)))
              -- todo
              -- ? labelUpdateCheckEq l lc p l1 v1 l2 v2 t
+             ? assume (updateLabelCheckNothingJust lc t p l2 v2 == updateLabelCheckNothingJust lc (εTable l t) p l2 (if (canFlowTo l2 l) then (εTerm l v2) else THole))
               -- TUpdateFound.C1: raising with l1 and field 1 ensures that εlc' == lc' 
         else PgHole (εDB l (εDB l db)))
       ? globals
