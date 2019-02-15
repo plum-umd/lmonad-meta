@@ -15,7 +15,7 @@ import LabelUpdateCheck
 import Simulations.Terms 
 import Simulations.UpdateNothingJust
 import LabelUpdateCheckNothingJust
--- import Simulations.UpdateOneNothingJust
+import Simulations.UpdateOneNothingJust
 
 import Prelude hiding (Maybe(..), fromJust, isJust)
 
@@ -104,12 +104,10 @@ simulationsUpdateFlowsFoundNothingJust l lc db n p l2 v2 t εt
   ==. (if εa 
          then PgHole (εDB l (updateDBNothingJust (εDB l db) n p εv2)) 
          else PgHole (εDB l (εDB l db)))
-      -- todo
       ? εTableAnyNothingJust l n (εDB l db) p εv2
   ==. PgHole (εDB l (εDB l db))
        ? εDBIdempotent l db 
   ==. PgHole (εDB l db)
-  --todo
       ? εTableAnyNothingJust l n db p v2
   ==.(if a  
         then PgHole (εDB l (updateDBNothingJust db n p v2))
@@ -146,8 +144,7 @@ simulationsUpdateFlowsFoundNothingJust l lc db n p l2 v2 t εt
   ==. PgHole (εDB l (εDB l db))
       ? εDBIdempotent l db 
   ==. PgHole (εDB l db)
-      -- todo
-      -- ? simulationsUpdateOne l lc db n p l1 v1 l2 v2 t εt  
+      ? simulationsUpdateOneNothingJust l lc db n p l2 v2 t εt  
   ==. PgHole (εDB l (updateDBNothingJust db n p v2))
       ? globals  
   ==. (if field1Label ti `canFlowTo` l  
@@ -180,8 +177,7 @@ simulationsUpdateFlowsFoundNothingJust l lc db n p l2 v2 t εt
       )
       ? globals 
   ==. PgHole  (εDB l (updateDBNothingJust (εDB l db) n p εv2))
-      -- todo 
-      -- ? simulationsUpdateOneErased l lc db n p l1 v1 l2 v2 t εt
+      ? simulationsUpdateOneErasedNothingJust l lc db n p l2 v2 t εt
   ==. PgHole (εDB l db) 
       ? globals 
       ? labelUpdateCheckEqNothingJust l lc p l2 v2 t

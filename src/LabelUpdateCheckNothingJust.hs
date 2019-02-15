@@ -62,17 +62,14 @@ updateRowCheckEqNothingJust
 updateRowCheckEqNothingJust :: (Eq l, Label l) => l -> l -> l -> TInfo l -> Pred -> l -> Term l -> Row l -> Proof
 updateRowCheckEqNothingJust l lc lφ ti p l2 v2 r@(Row k v1 _) 
   =   updateRowCheckNothingJust lc lφ ti p l2 v2 r
-  ==! updateRowLabel2 lc lφ ti p (field1Label ti) v1 l2 v2 r
-  ==! ((l2 `join` lc) `join` lφ) `canFlowTo` makeValLabel ti v1
+  ==. updateRowLabel2 lc lφ ti p (field1Label ti) v1 l2 v2 r
+  ==. ((l2 `join` lc) `join` lφ) `canFlowTo` makeValLabel ti v1
       ? assert (canFlowTo (field1Label ti) l)
       ? assert (εv1 == v1)
-      ? assert ((rowField1 r) == (rowField1 (εRow l ti r)))
-      ? assert (v1 == rowField1 r)
-      ? assert (v1 == (rowField1 (εRow l ti r)))
-  ==! ((l2 `join` lc) `join` lφ) `canFlowTo` makeValLabel ti (rowField1 (εRow l ti r))
-  ==! updateRowLabel2 lc lφ ti p (field1Label ti) (rowField1 (εRow l ti r)) l2 εv2 (εRow l ti r)
-  ==! updateRowCheckNothingJust lc lφ ti p l2 εv2 (εRow l ti r)
-  ==! updateRowCheckNothingJust lc lφ ti p l2 (if (canFlowTo l2 l) then (εTerm l v2) else THole) (εRow l ti r)
+  ==. ((l2 `join` lc) `join` lφ) `canFlowTo` makeValLabel ti (rowField1 (εRow l ti r))
+  ==. updateRowLabel2 lc lφ ti p (field1Label ti) (rowField1 (εRow l ti r)) l2 εv2 (εRow l ti r)
+  ==. updateRowCheckNothingJust lc lφ ti p l2 εv2 (εRow l ti r)
+  ==. updateRowCheckNothingJust lc lφ ti p l2 (if (canFlowTo l2 l) then (εTerm l v2) else THole) (εRow l ti r)
   *** QED
   where εv1 = if (canFlowTo (field1Label ti) l) then (εTerm l v1) else THole
         εv2 = if (canFlowTo l2 l) then (εTerm l v2) else THole
