@@ -206,12 +206,21 @@ deleteRaws p (r:rs)
   | otherwise
   = r:deleteRaws p rs  
 
-{-@ reflect labelReadTable @-}
-labelReadTable :: (Eq l, Label l) => Pred -> TInfo l ->  l 
-labelReadTable p ti | not (pDep1 p)   -- select rows does not work with this   
-  = tableLabel ti
-labelReadTable p ti  
-  = tableLabel ti `join` field1Label ti 
+{-@ reflect labelRead @-}
+labelRead :: (Eq l, Label l) => Pred -> Table l ->  l
+labelRead p (Table ti _) 
+    | pDep2 p 
+    = field1Label ti
+    | otherwise
+    = bot
+
+
+-- {-@ reflect labelReadTable @-}
+-- labelReadTable :: (Eq l, Label l) => Pred -> TInfo l ->  l 
+-- labelReadTable p ti | not (pDep1 p)   -- select rows does not work with this   
+--   = tableLabel ti
+-- labelReadTable p ti  
+--   = tableLabel ti `join` field1Label ti 
 
 
 -- {-@ reflect labelSelectTable @-}
@@ -424,11 +433,11 @@ eval (Pg lc db (TDelete n (TPred p)))
   | Just t <- lookupTable n db
   , (lc `join` labelPred p t) `canFlowTo` tableLabel (tableInfo t)   
   -- , (lc `join` labelPredTable p t) `canFlowTo` tableLabel (tableInfo t)   
-  = Pg (lc `join` labelReadTable p (tableInfo t)) (deleteDB db n p) (TReturn TUnit)
+  = Pg (lc `join` labelRead p t) (deleteDB db n p) (TReturn TUnit)
 
 eval (Pg lc db (TDelete n (TPred p)))   
   | Just t <- lookupTable n db
-  = Pg (lc `join` labelReadTable p (tableInfo t)) db TException
+  = Pg (lc `join` labelRead p t) db TException
 
 eval (Pg lc db (TDelete n (TPred p)))   
   = Pg lc db TException
@@ -451,13 +460,18 @@ eval p@(Pg lc db (TUpdate _ _ _ _))
 eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))   
   | Just t <- lookupTable n db 
   , updateLabelCheck lc t p l1 v1 l2 v2 
-  = let lc' = lc `join` ((field1Label (tableInfo t) `join` l1) -- this is for TUpdateFound.C1
-                         `join` tableLabel (tableInfo t))      -- this is for TUpdateFound.C2
+  -- = let lc' = lc `join` ((field1Label (tableInfo t) `join` l1) -- this is for TUpdateFound.C1
+  --                        `join` tableLabel (tableInfo t))      -- this is for TUpdateFound.C2
+  --   in 
+  = let lc' = lc `join` l1 `join` labelRead p t
+                         `join` tableLabel (tableInfo t)      -- this is for TUpdateFound.C2
     in 
     Pg lc' (updateDB db n p v1 v2) (TReturn TUnit)
 eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled l1 v1)) (TJust (TLabeled l2 v2))))   
   | Just t <- lookupTable n db 
-  = let lc' = lc `join` ((field1Label (tableInfo t) `join` l1) `join` tableLabel (tableInfo t))  in 
+  = let lc' = lc `join` l1 `join` labelRead p t
+                         `join` tableLabel (tableInfo t)      -- this is for TUpdateFound.C2
+    in 
     Pg lc' db (TReturn TException)
 eval (Pg lc db (TUpdate n (TPred p) (TJust (TLabeled _ _)) (TJust (TLabeled _ _))))   
   = Pg lc db TException
@@ -466,15 +480,15 @@ eval (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2))))
   | Just t <- lookupTable n db
   , updateLabelCheckNothingJust lc t p l2 v2
   -- no need for label check since label info does not change
-  = let lc' = lc `join` (field1Label (tableInfo t)
-                         `join` tableLabel (tableInfo t))
+  = let lc' = lc `join` labelRead p t
+                         `join` tableLabel (tableInfo t)
     in Pg lc' (updateDBNothingJust db n p v2) (TReturn TUnit)
 
 eval (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled l2 v2))))
   | Just t <- lookupTable n db
   -- no need for label check since label info does not change
-  = let lc' = lc `join` (field1Label (tableInfo t)
-                         `join` tableLabel (tableInfo t))
+  = let lc' = lc `join` labelRead p t
+                         `join` tableLabel (tableInfo t)
     in Pg lc' db (TReturn TException)
     
 eval (Pg lc db (TUpdate n (TPred p) TNothing (TJust (TLabeled _ _))))   
