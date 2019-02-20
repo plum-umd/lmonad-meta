@@ -214,21 +214,21 @@ labelReadTable p ti
   = tableLabel ti `join` field1Label ti 
 
 
-{-@ reflect labelSelectTable @-}
-labelSelectTable :: (Eq l, Label l) => Pred -> Table l -> l 
-labelSelectTable p (Table ti rs) = labelSelectRows p ti rs 
-
-{-@ reflect labelSelectRows @-}
-labelSelectRows :: (Eq l, Label l) => Pred -> TInfo l -> [Row l] -> l 
-labelSelectRows p ti []
-  = tableLabel ti `join` field1Label ti
-labelSelectRows p ti (r:rs) 
-  = (tableLabel ti `join` labelPredRow p ti r) `join` labelSelectRows p ti rs
+-- {-@ reflect labelSelectTable @-}
+-- labelSelectTable :: (Eq l, Label l) => Pred -> Table l -> l 
+-- labelSelectTable p (Table ti rs) = labelSelectRows p ti rs 
+-- 
+-- {-@ reflect labelSelectRows @-}
+-- labelSelectRows :: (Eq l, Label l) => Pred -> TInfo l -> [Row l] -> l 
+-- labelSelectRows p ti []
+--   = tableLabel ti `join` field1Label ti
+-- labelSelectRows p ti (r:rs) 
+--   = (tableLabel ti `join` labelPredRow p ti r) `join` labelSelectRows p ti rs
 
 {-@ reflect updateLabelCheckNothingJust @-}
 updateLabelCheckNothingJust :: (Label l, Eq l) => l -> Table l -> Pred -> l -> Term l -> Bool 
 updateLabelCheckNothingJust lc t@(Table ti rs) p l2 v2  
-  = updateRowsCheckNothingJust lc (lfTable p t) ti p l2 v2 rs 
+  = updateRowsCheckNothingJust lc (labelPred p t) ti p l2 v2 rs 
 
 {-@ reflect updateRowsCheckNothingJust @-}
 updateRowsCheckNothingJust :: (Label l, Eq l) => l -> l -> TInfo l -> Pred -> l -> Term l -> [Row l] -> Bool 
@@ -244,7 +244,7 @@ updateRowsCheckNothingJust lc lφ ti p l2 v2 (r:rs) =
 {-@ reflect updateLabelCheck @-}
 updateLabelCheck :: (Label l, Eq l) => l -> Table l -> Pred -> l -> Term l -> l -> Term l -> Bool 
 updateLabelCheck lc t@(Table ti rs) p l1 v1 l2 v2  
-  = updateRowsCheck lc (lfTable p t) ti p l1 v1 l2 v2 rs 
+  = updateRowsCheck lc (labelPred p t) ti p l1 v1 l2 v2 rs 
 
 
 {-@ reflect updateRowsCheck @-}
@@ -287,52 +287,69 @@ updateRowLabel2 lc lφ ti p l1 v1 l2 v2 r -- @(Row _ o1 o2)
     {- &&if True {- (makeValLabel ti o1  /=  makeValLabel ti v1)-}  then  
        (makeValLabel ti o1 `canFlowTo` makeValLabel ti v1) else True  -}
 
-
-{-@ reflect lfTable @-}
-lfTable  :: (Eq l, Label l) => Pred -> Table l -> l 
-lfTable p (Table ti rs) = lfRows p ti rs  
-
-{-@ reflect lfRows @-}
-lfRows  :: (Eq l, Label l) => Pred -> TInfo l -> [Row l] -> l 
-lfRows p ti []     = bot 
-lfRows p ti (r:rs) = lfRow p ti r `join` lfRows p ti rs 
-
-
-{-@ reflect lfRow @-}
-lfRow  :: (Eq l, Label l) => Pred -> TInfo l -> Row l -> l 
-lfRow p ti r 
+{-@ reflect labelPred @-}
+labelPred :: (Eq l, Label l) => Pred -> Table l -> l 
+labelPred p (Table ti rs) 
   | pDep2 p 
-  = makeValLabel ti (rowField1 r)
+  = field1Label ti `join` labelPredField2Rows p ti rs
   | pDep1 p 
   = field1Label ti
   | otherwise 
   = bot 
 
-{-@ reflect labelPredTable @-}
-labelPredTable :: (Eq l, Label l) => Pred -> Table l -> l 
-labelPredTable p (Table ti rs) = labelPredRows p ti rs 
+{-@ reflect labelPredField2Rows @-}
+labelPredField2Rows :: (Eq l, Label l) => Pred -> TInfo l -> [Row l] -> l
+labelPredField2Rows p ti []     = bot
+labelPredField2Rows p ti (r:rs) = labelPredField2Row p ti r `join` labelPredField2Rows p ti rs
 
+labelPredField2Row :: (Eq l, Label l) => Pred -> TInfo l -> Row l -> l
+labelPredField2Row p ti r = makeValLabel ti (rowField1 r)
 
- 
-
-{-@ reflect labelPredRows @-}
-labelPredRows :: (Eq l, Label l) => Pred -> TInfo l -> [Row l] -> l 
-
-labelPredRows p ti rs
-  | not (pDep1 p)      
-  = tableLabel ti
-labelPredRows p ti []
-  = tableLabel ti `join` field1Label ti
-labelPredRows p ti (r:rs) 
-  = (tableLabel ti `join` labelPredRow p ti r) `join` labelPredRows p ti rs
-
-{-@ reflect labelPredRow @-}
-labelPredRow :: (Eq l, Label l) => Pred -> TInfo l -> Row l -> l 
-labelPredRow p ti r 
-  | pDep2 p 
-  = field1Label ti `join` makeValLabel ti (rowField1 r)
-  | otherwise 
-  = field1Label ti 
+-- {-@ reflect lfTable @-}
+-- lfTable  :: (Eq l, Label l) => Pred -> Table l -> l 
+-- lfTable p (Table ti rs) = lfRows p ti rs  
+-- 
+-- {-@ reflect lfRows @-}
+-- lfRows  :: (Eq l, Label l) => Pred -> TInfo l -> [Row l] -> l 
+-- lfRows p ti []     = bot 
+-- lfRows p ti (r:rs) = lfRow p ti r `join` lfRows p ti rs 
+-- 
+-- 
+-- {-@ reflect lfRow @-}
+-- lfRow  :: (Eq l, Label l) => Pred -> TInfo l -> Row l -> l 
+-- lfRow p ti r 
+--   | pDep2 p 
+--   = makeValLabel ti (rowField1 r)
+--   | pDep1 p 
+--   = field1Label ti
+--   | otherwise 
+--   = bot 
+-- 
+-- {-@ reflect labelPredTable @-}
+-- labelPredTable :: (Eq l, Label l) => Pred -> Table l -> l 
+-- labelPredTable p (Table ti rs) = labelPredRows p ti rs 
+-- 
+-- 
+--  
+-- 
+-- {-@ reflect labelPredRows @-}
+-- labelPredRows :: (Eq l, Label l) => Pred -> TInfo l -> [Row l] -> l 
+-- 
+-- labelPredRows p ti rs
+--   | not (pDep1 p)      
+--   = tableLabel ti
+-- labelPredRows p ti []
+--   = tableLabel ti `join` field1Label ti
+-- labelPredRows p ti (r:rs) 
+--   = (tableLabel ti `join` labelPredRow p ti r) `join` labelPredRows p ti rs
+-- 
+-- {-@ reflect labelPredRow @-}
+-- labelPredRow :: (Eq l, Label l) => Pred -> TInfo l -> Row l -> l 
+-- labelPredRow p ti r 
+--   | pDep2 p 
+--   = field1Label ti `join` makeValLabel ti (rowField1 r)
+--   | otherwise 
+--   = field1Label ti 
 
 
 
@@ -405,7 +422,8 @@ eval (Pg lc db (TInsert n t1 t2))
 
 eval (Pg lc db (TDelete n (TPred p)))   
   | Just t <- lookupTable n db
-  , (lc `join` labelPredTable p t) `canFlowTo` tableLabel (tableInfo t)   
+  , (lc `join` labelPred p t) `canFlowTo` tableLabel (tableInfo t)   
+  -- , (lc `join` labelPredTable p t) `canFlowTo` tableLabel (tableInfo t)   
   = Pg (lc `join` labelReadTable p (tableInfo t)) (deleteDB db n p) (TReturn TUnit)
 
 eval (Pg lc db (TDelete n (TPred p)))   
@@ -419,7 +437,8 @@ eval (Pg lc db (TDelete n t))
 
 eval (Pg lc db (TSelect n (TPred p)))   
   | Just t <- lookupTable n db 
-  = Pg (lc `join` labelSelectTable p t) db (TReturn (selectDB db n p)) 
+  = let lc' = lc `join` tableLabel (tableInfo t) `join` labelPred p t in
+    Pg lc' db (TReturn (selectDB db n p)) 
 eval (Pg lc db (TSelect n (TPred p)))   
   = Pg lc db TException
 eval (Pg lc db (TSelect n t))
